@@ -1,0 +1,25 @@
+{
+  "expo": {
+    "name": "Vybe",
+    "slug": "vybe-app",
+    "scheme": "vybe",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "O Vybe usa suas fotos para você escolher a capa da música."
+        }
+      ]
+    ],
+    "ios": { "supportsTablet": true },
+    "android": { "adaptiveIcon": { "backgroundColor": "#3B82F6" } }
+  }
+}
