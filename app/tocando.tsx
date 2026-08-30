@@ -60,6 +60,7 @@ function LayoutMobile() {
       >
         {/* ÚNICO CARD DE VIDRO UNIFICADO */}
         <BlurView 
+        experimentalBlurMethod="dimezisBlurView"
           intensity={30} 
           tint="dark" 
           className="w-full p-6 rounded-3xl border border-glass-white items-center overflow-hidden"
@@ -107,6 +108,7 @@ function LayoutDesktop() {
         
         {/* Card do Player */}
         <BlurView 
+        experimentalBlurMethod="dimezisBlurView"
           intensity={30} 
           tint="dark" 
           className="rounded-3xl p-8 items-center border border-glass-white overflow-hidden" 
@@ -122,6 +124,7 @@ function LayoutDesktop() {
 
         {/* Card da Playlist com flex-1 e style flex/minHeight para o scroll rodar */}
         <BlurView 
+        experimentalBlurMethod="dimezisBlurView"
           intensity={20} 
           tint="dark" 
           className="flex-1 rounded-3xl border border-glass-white overflow-hidden"

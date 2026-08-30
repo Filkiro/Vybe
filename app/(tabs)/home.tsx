@@ -165,6 +165,7 @@ export default function Home() {
               className="mb-4"
             >
               <BlurView
+              experimentalBlurMethod="dimezisBlurView"
                 intensity={20}
                 tint="dark"
                 className="flex-1 rounded-3xl p-3 overflow-hidden"
@@ -209,6 +210,7 @@ function SecaoAlbuns({ albuns }: { albuns: AlbumDestaque[] }) {
         renderItem={({ item }) => (
           <Pressable onPress={() => router.push(`/album/${item.id}`)} style={{ width: 140 }}>
             <BlurView
+            experimentalBlurMethod="dimezisBlurView"
               intensity={20}
               tint="dark"
               className="rounded-3xl p-3 overflow-hidden"

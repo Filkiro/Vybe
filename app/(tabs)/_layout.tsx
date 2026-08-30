@@ -18,7 +18,7 @@ export default function TabsLayout() {
 const naoLidas = useUnreadStore((state) => state.naoLidas);
   return (
     
-    <View style={{ flex: 1, backgroundColor: '#0B101E' }}>
+    <View  style={{ flex: 1, backgroundColor: '#0B101E', }}>
       <AppHeader />
 <Tabs
 initialRouteName="home"
@@ -50,13 +50,14 @@ initialRouteName="home"
           // Renderiza o vidro fosco por trás dos ícones
           tabBarBackground: () => (
             <BlurView 
-              intensity={95} 
+            experimentalBlurMethod="dimezisBlurView"
+              intensity={80} 
               tint="dark" 
               style={{
                 ...StyleSheet.absoluteFillObject,
                 borderTopWidth: 1,
-                borderTopColor: 'rgba(41, 80, 240, 0.05)',
-              }} 
+                borderTopColor: 'rgba(21, 59, 211, 0.05)',
+              }}
             />
           ),
           

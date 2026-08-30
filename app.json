@@ -2,6 +2,7 @@
   "expo": {
     "name": "Vybe",
     "slug": "vybe-app",
+    "icon": "./assets/icon.png",
     "scheme": "vybe",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -19,7 +20,25 @@
         }
       ]
     ],
-    "ios": { "supportsTablet": true },
-    "android": { "adaptiveIcon": { "backgroundColor": "#3B82F6" } }
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#3B82F6"
+      },
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ],
+      "package": "com.filkiro.vybeapp"
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "f3573d6c-58b7-45ba-a30e-68928f694b36"
+      }
+    }
   }
 }

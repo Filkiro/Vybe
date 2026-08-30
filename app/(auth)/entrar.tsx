@@ -5,7 +5,11 @@ import { X, Mail, Lock, User, AtSign, Sparkles } from "lucide-react-native";
 import { useAuthStore } from "../../store/authStore";
 import { AppLogo } from "../../components/AppLogo";
 import { colors } from "../../constants/theme";
+import Animated from 'react-native-reanimated';
+
+
 export default function AuthScreen() {
+  const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
   const { aba: abaParam } = useLocalSearchParams<{ aba?: string }>();
   const [aba, setAba] = useState<"cadastro" | "login">(abaParam === "login" ? "login" : "cadastro");
 
@@ -21,13 +25,13 @@ export default function AuthScreen() {
     <View className="flex-1 bg-[#0B101E]">
       {/* Botão de Fechar Premium - área de toque maior que o círculo visível,
           pra não precisar acertar em cima do ícone com precisão */}
-      <Pressable
+      <AnimatedPressable
         onPress={fechar}
         hitSlop={{ top: 16, right: 16, bottom: 16, left: 16 }}
         className="absolute top-8 right-8 w-10 h-10 bg-white/5 border border-white/10 rounded-full items-center justify-center z-20"
       >
         <X color={colors.textDark} size={20} />
-      </Pressable>
+      </AnimatedPressable>
 
       {/* Área da Logo e Boas-vindas (Centralizada no espaço superior) */}
       <View className="flex-[0.5] items-center justify-center w-full px-6 min-h-[220px]">
@@ -125,28 +129,28 @@ function FormCadastro() {
     }
     router.replace("/(tabs)/home");
   }
-
+  const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
   return (
     <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
       
       {/* Seletor de Conta (Segmented Control) */}
       <View className="flex-row mb-6 bg-white/5 rounded-2xl p-1 border border-white/5">
-        <Pressable
+        <AnimatedPressable
           onPress={() => setTipoConta("musico")}
           className={`flex-1 py-3 rounded-xl items-center ${tipoConta === "musico" ? "bg-primary shadow-sm" : ""}`}
         >
           <Text className={`font-medium ${tipoConta === "musico" ? "text-white" : "text-muted"}`}>
             Sou Músico
           </Text>
-        </Pressable>
-        <Pressable
+        </AnimatedPressable>
+        <AnimatedPressable
           onPress={() => setTipoConta("organizador")}
           className={`flex-1 py-3 rounded-xl items-center ${tipoConta === "organizador" ? "bg-primary shadow-sm" : ""}`}
         >
           <Text className={`font-medium ${tipoConta === "organizador" ? "text-white" : "text-muted"}`}>
             Sou Organizador
           </Text>
-        </Pressable>
+        </AnimatedPressable>
       </View>
 
       <Campo icone={User} placeholder="Nome completo" value={nome} onChangeText={setNome} />
