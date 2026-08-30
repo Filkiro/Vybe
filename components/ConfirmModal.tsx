@@ -26,6 +26,7 @@ export function ConfirmModal() {
         <Pressable onPress={(e) => e.stopPropagation()} className="w-full">
           {/* Card de Vidro Fosco */}
           <BlurView
+          experimentalBlurMethod="dimezisBlurView"
             intensity={40}
             tint="dark"
             className="w-full rounded-[32px] p-8 items-center border border-white/10 overflow-hidden"

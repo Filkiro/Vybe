@@ -20,6 +20,7 @@ export function MiniPlayer() {
 
   return (
     <BlurView 
+    experimentalBlurMethod="dimezisBlurView"
       intensity={40} 
       tint="dark" 
       className="mx-3 mb-2 rounded-2xl p-3 flex-row items-center border border-glass-white overflow-hidden"
