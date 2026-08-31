@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { View, Text, Pressable, TextInput, Switch, ScrollView, FlatList, Image, useWindowDimensions } from "react-native";
-import { useRouter, router } from "expo-router";
+import { View, Text, TextInput, Switch, ScrollView, Image, useWindowDimensions } from "react-native";
+import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
-import { Camera, LogOut } from "lucide-react-native";
+import { Camera, LogOut, BarChart3, Music, LifeBuoy } from "lucide-react-native";
 import { supabase, PerfilMusico, PerfilOrganizador } from "../../lib/supabase";
 import { useAuthStore, ehContaComum } from "../../store/authStore";
 import { enviarArquivoParaStorage } from "../../lib/upload";
@@ -10,13 +10,8 @@ import { usePlayerStore } from "../../store/playerStore";
 import { AppLogo } from "../../components/AppLogo";
 import { colors, rotulosTipoConta } from "../../constants/theme";
 import { usePlayerAwarePadding } from "../../hooks/usePlayerAwarePadding";
+import { Pressable } from "react-native";
 
-// Esta tela mostra SEMPRE o perfil do usuário logado — nunca
-// recebe parâmetro. Para ver o perfil de outra pessoa, existe uma
-// rota separada em app/usuario/[id].tsx (fora do grupo de abas),
-// evitando o bug de "perfil grudado na última pessoa vista": como
-// é uma rota diferente, ela não fica empilhada dentro da pilha de
-// navegação desta aba.
 export default function Perfil() {
   const usuario = useAuthStore((s) => s.usuario);
   const router = useRouter();
@@ -25,14 +20,9 @@ export default function Perfil() {
 
   async function handleLogout() {
     await supabase.auth.signOut();
-    // A Home é pública agora, então sair da conta só volta pra ela
-    // em vez de forçar a tela de login.
     router.replace("/(tabs)/home");
   }
 
-  // Home é pública, então quem chega aqui sem conta não está
-  // "carregando" — simplesmente não está logado ainda. Mostramos um
-  // convite pra cadastro/login em vez de travar a tela pra sempre.
   if (!usuario) {
     return (
       <View className="flex-1 bg-background items-center justify-center px-8">
@@ -99,6 +89,7 @@ export default function Perfil() {
 function CabecalhoPerfil({ usuario, onLogout }: { usuario: any; onLogout: () => void }) {
   const [fotoUrl, setFotoUrl] = useState<string | null>(null);
   const [enviandoFoto, setEnviandoFoto] = useState(false);
+  const router = useRouter();
   const ehMusico = usuario.tipo_conta === "musico";
 
   useEffect(() => {
@@ -141,8 +132,6 @@ function CabecalhoPerfil({ usuario, onLogout }: { usuario: any; onLogout: () => 
 
   return (
     <View>
-      {/* Faixa colorida no topo — dá profundidade sem precisar de
-          nenhuma dependência extra de gradiente. */}
       <View style={{ height: 120, backgroundColor: colors.primary }} className="rounded-b-[32px]" />
 
       <View className="items-center" style={{ marginTop: -48 }}>
@@ -176,23 +165,44 @@ function CabecalhoPerfil({ usuario, onLogout }: { usuario: any; onLogout: () => 
           </Text>
         </View>
 
-        <View className="flex-row gap-2 mt-3 flex-wrap justify-center px-4">
+        {/* Links de navegação adaptativos distribuídos por toda a largura */}
+        <View className="w-full mt-5 px-4 flex-row flex-wrap justify-between gap-2.5">
           {ehMusico && (
-            <Pressable onPress={() => router.push("/dashboard")} className="bg-surface rounded-full px-3 py-1.5">
-              <Text className="text-textDark text-xs font-medium">Dashboard de curtidas</Text>
+            <Pressable 
+              onPress={() => router.push("/dashboard")} 
+              className="bg-card border border-border rounded-2xl py-3 px-4 flex-row items-center gap-2.5 active:opacity-70 flex-1 min-w-[140px] justify-center"
+            >
+              <View className="w-8 h-8 rounded-full bg-surface items-center justify-center">
+                <BarChart3 color={colors.primary} size={16} />
+              </View>
+              <Text className="text-textDark font-semibold text-xs">Dashboard</Text>
             </Pressable>
           )}
-          <Pressable onPress={() => router.push("/minhas-publicacoes")} className="bg-surface rounded-full px-3 py-1.5">
-            <Text className="text-textDark text-xs font-medium">Minhas publicações</Text>
+
+          <Pressable 
+            onPress={() => router.push("/minhas-publicacoes")} 
+            className="bg-card border border-border rounded-2xl py-3 px-4 flex-row items-center gap-2.5 active:opacity-70 flex-1 min-w-[140px] justify-center"
+          >
+            <View className="w-8 h-8 rounded-full bg-surface items-center justify-center">
+              <Music color={colors.primary} size={16} />
+            </View>
+            <Text className="text-textDark font-semibold text-xs">Publicações</Text>
           </Pressable>
-          <Pressable onPress={() => router.push("/suporte")} className="bg-surface rounded-full px-3 py-1.5">
-            <Text className="text-textDark text-xs font-medium">Suporte</Text>
+
+          <Pressable 
+            onPress={() => router.push("/suporte")} 
+            className="bg-card border border-border rounded-2xl py-3 px-4 flex-row items-center gap-2.5 active:opacity-70 flex-1 min-w-[140px] justify-center"
+          >
+            <View className="w-8 h-8 rounded-full bg-surface items-center justify-center">
+              <LifeBuoy color={colors.primary} size={16} />
+            </View>
+            <Text className="text-textDark font-semibold text-xs">Suporte</Text>
           </Pressable>
         </View>
 
-        <Pressable onPress={onLogout} className="flex-row items-center mt-3 px-3 py-1.5">
-          <LogOut color={colors.danger} size={14} />
-          <Text className="text-red-500 text-xs ml-1.5 font-medium">Sair da conta</Text>
+        <Pressable onPress={onLogout} className="flex-row items-center mt-6 px-4 py-2">
+          <LogOut color={colors.danger} size={16} />
+          <Text className="text-red-500 text-sm ml-2 font-medium">Sair da conta</Text>
         </Pressable>
       </View>
     </View>
@@ -207,15 +217,8 @@ function SegmentoAba({ label, ativa, onPress }: { label: string; ativa: boolean;
   );
 }
 
-// -----------------------------------------------------------
-// Biblioteca fundida no Perfil (antes era uma aba separada)
-// -----------------------------------------------------------
 const LARGURA_IDEAL_CARD = 170;
 const MAX_COLUNAS = 6;
-// Quantos itens aparecem na prévia de cada seção antes do card
-// "Ver tudo" assumir o lugar do próximo item — mesmo limite usado
-// na ala de álbuns da Home, pra manter a mesma sensação em todo o
-// app.
 const LIMITE_PREVIA = 6;
 
 function BibliotecaPropria({ tipoConta, usuarioId }: { tipoConta: string; usuarioId: string }) {
@@ -227,6 +230,7 @@ function BibliotecaMusico({ usuarioId }: { usuarioId: string }) {
   const [musicas, setMusicas] = useState<any[]>([]);
   const [albuns, setAlbuns] = useState<any[]>([]);
   const tocarMusica = usePlayerStore((s) => s.tocarMusica);
+  const router = useRouter();
   const { width } = useWindowDimensions();
 
   const PADDING_HORIZONTAL = 16;
@@ -327,11 +331,6 @@ function BibliotecaMusico({ usuarioId }: { usuarioId: string }) {
   );
 }
 
-// Seção genérica com prévia limitada — quando tem mais itens do
-// que o limite, o último espaço da grade vira um card "Ver tudo"
-// que leva pra tela cheia daquela lista (que sempre tem botão de
-// voltar). Usada tanto pra Músicas quanto pra Álbuns, mantendo o
-// mesmo comportamento nos dois.
 function SecaoBiblioteca({
   titulo,
   itens,
@@ -351,6 +350,7 @@ function SecaoBiblioteca({
   vazio: string;
   renderItem: (item: any) => React.ReactNode;
 }) {
+  const router = useRouter();
   const excedente = itens.length - limite;
   const visiveis = excedente > 0 ? itens.slice(0, limite) : itens;
 
@@ -358,9 +358,6 @@ function SecaoBiblioteca({
     <View className="mb-6">
       <View className="flex-row items-center justify-between mb-3">
         <Text className="text-lg font-bold text-textDark">{titulo}</Text>
-        {/* Sempre visível, mesmo com poucos itens — sem isso, quem
-            tem 6 ou menos músicas/álbuns nunca via o card "Ver
-            tudo" e não tinha como chegar em editar/excluir. */}
         {itens.length > 0 && (
           <Pressable onPress={() => router.push(verTudoHref as any)} hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}>
             <Text className="text-primary text-sm font-medium">Gerenciar</Text>
@@ -424,9 +421,6 @@ function BibliotecaOrganizador({ usuarioId }: { usuarioId: string }) {
   );
 }
 
-// -----------------------------------------------------------
-// Formulários de edição (aba "Dados")
-// -----------------------------------------------------------
 function CampoTexto({ label, value, onChangeText, multiline }: { label: string; value: string; onChangeText: (v: string) => void; multiline?: boolean }) {
   return (
     <View className="mt-4">

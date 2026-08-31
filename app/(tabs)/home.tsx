@@ -1,8 +1,7 @@
 import { useCallback, useState } from "react";
-import { View, Text, FlatList, Pressable, Image, useWindowDimensions, StyleSheet, RefreshControl } from "react-native";
+import { View, Text, FlatList, Pressable, Image, useWindowDimensions, RefreshControl } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { router } from "expo-router";
-import { BlurView } from "expo-blur";
 import { supabase } from "../../lib/supabase";
 import { usePlayerStore } from "../../store/playerStore";
 import { useRequireAuth } from "../../store/authPromptStore";
@@ -46,7 +45,6 @@ export default function Home() {
   );
   const larguraCard = (larguraUtil - GAP * (numColunas - 1)) / numColunas;
 
-  // 1. Lógica de busca extraída para ser reutilizada
   const carregarDados = useCallback(async () => {
     const [{ data: dadosMusicas }, { data: dadosAlbuns }] = await Promise.all([
       supabase
@@ -86,7 +84,6 @@ export default function Home() {
     }
   }, []);
 
-  // 2. Chama os dados ao focar na tela pela primeira vez
   useFocusEffect(
     useCallback(() => {
       let ativo = true;
@@ -102,7 +99,6 @@ export default function Home() {
     }, [carregarDados])
   );
 
-  // 3. Função que executa ao arrastar para baixo
   async function aoAtualizar() {
     setAtualizando(true);
     await carregarDados();
@@ -122,7 +118,6 @@ export default function Home() {
           numColumns={numColunas}
           contentContainerStyle={{ paddingHorizontal: PADDING_HORIZONTAL, paddingBottom }}
           columnWrapperStyle={{ gap: GAP }}
-          // 4. Adicionado o RefreshControl aqui
           refreshControl={
             <RefreshControl refreshing={atualizando} onRefresh={aoAtualizar} tintColor="#8B95A8" />
           }
@@ -164,15 +159,8 @@ export default function Home() {
               style={{ width: larguraCard }}
               className="mb-4"
             >
-              <BlurView
-              experimentalBlurMethod="dimezisBlurView"
-                intensity={20}
-                tint="dark"
-                className="flex-1 rounded-3xl p-3 overflow-hidden"
-                style={{
-                  borderWidth: 1,
-                  borderColor: 'rgba(255, 255, 255, 0.08)',
-                }}
+              <View 
+                className="bg-card rounded-3xl p-3 border border-border overflow-hidden"
               >
                 {item.capa_url ? (
                   <Image source={{ uri: item.capa_url }} className="w-full aspect-square rounded-2xl mb-3" />
@@ -186,7 +174,7 @@ export default function Home() {
                 <Text numberOfLines={1} className="text-primaryLight text-xs font-medium mt-1">
                   {item.autor_apelido ?? "Autor desconhecido"}
                 </Text>
-              </BlurView>
+              </View>
             </Pressable>
           )}
         />
@@ -209,12 +197,8 @@ function SecaoAlbuns({ albuns }: { albuns: AlbumDestaque[] }) {
         contentContainerStyle={{ gap: 12, paddingRight: 12 }}
         renderItem={({ item }) => (
           <Pressable onPress={() => router.push(`/album/${item.id}`)} style={{ width: 140 }}>
-            <BlurView
-            experimentalBlurMethod="dimezisBlurView"
-              intensity={20}
-              tint="dark"
-              className="rounded-3xl p-3 overflow-hidden"
-              style={{ borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.08)" }}
+            <View 
+              className="bg-card rounded-3xl p-3 border border-border overflow-hidden"
             >
               {item.capa_url ? (
                 <Image source={{ uri: item.capa_url }} className="w-full aspect-square rounded-2xl mb-3" />
@@ -227,27 +211,10 @@ function SecaoAlbuns({ albuns }: { albuns: AlbumDestaque[] }) {
               <Text numberOfLines={1} className="text-primaryLight text-xs font-medium mt-1">
                 {item.autor_apelido ?? "Autor desconhecido"}
               </Text>
-            </BlurView>
+            </View>
           </Pressable>
         )}
       />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  imageContainer: {
-    shadowColor: '#3B82F6',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  imageGlow: {
-    shadowColor: '#3B82F6',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 8,
-  }
-});

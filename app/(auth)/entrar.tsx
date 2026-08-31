@@ -1,12 +1,11 @@
 import { useState } from "react";
-import { View, Text, TextInput, Pressable, ScrollView, StyleSheet } from "react-native";
+import { View, Text, TextInput, Pressable, ScrollView } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { X, Mail, Lock, User, AtSign, Sparkles } from "lucide-react-native";
 import { useAuthStore } from "../../store/authStore";
 import { AppLogo } from "../../components/AppLogo";
 import { colors } from "../../constants/theme";
 import Animated from 'react-native-reanimated';
-
 
 export default function AuthScreen() {
   const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -22,64 +21,64 @@ export default function AuthScreen() {
   }
 
   return (
-    <View className="flex-1 bg-[#0B101E]">
-      {/* Botão de Fechar Premium - área de toque maior que o círculo visível,
-          pra não precisar acertar em cima do ícone com precisão */}
-      <AnimatedPressable
-        onPress={fechar}
-        hitSlop={{ top: 16, right: 16, bottom: 16, left: 16 }}
-        className="absolute top-8 right-8 w-10 h-10 bg-white/5 border border-white/10 rounded-full items-center justify-center z-20"
-      >
-        <X color={colors.textDark} size={20} />
-      </AnimatedPressable>
-
-      {/* Área da Logo e Boas-vindas (Centralizada no espaço superior) */}
-      <View className="flex-[0.5] items-center justify-center w-full px-6 min-h-[220px]">
-        <AppLogo tamanho="grande" />
+    <ScrollView 
+      className="flex-1 bg-[#0B101E]"
+      contentContainerStyle={{ flexGrow: 1, alignItems: 'center' }}
+      showsVerticalScrollIndicator={false}
+    >
+      <View className="flex-1 w-full max-w-md relative">
         
-        {/* Título dinâmico que muda dependendo da aba selecionada */}
-        <Text className="text-white text-3xl font-bold mt-6 tracking-wide text-center">
-          {aba === "cadastro" ? "Comece no Vybe" : "Bem-vindo de volta"}
-        </Text>
-        
-        <Text className="text-muted text-base mt-2 text-center max-w-md">
-          A plataforma definitiva para conectar músicos, organizadores e o público.
-        </Text>
-      </View>
-
-      {/* Container do Formulário (Estilo Bottom Sheet) */}
-      <View className="flex-1 bg-[#121827] rounded-t-[40px] px-8 pt-8 border-t border-white/5 shadow-2xl">
-        
-        {/* Abas de Navegação */}
-        <View className="flex-row mb-8 justify-start">
-          <AbaBotao label="Criar Conta" ativa={aba === "cadastro"} onPress={() => setAba("cadastro")} />
-          <AbaBotao label="Entrar" ativa={aba === "login"} onPress={() => setAba("login")} />
+        <View className="w-full px-6 pt-12 pb-2 flex-row justify-end z-20">
+          <AnimatedPressable
+            onPress={fechar}
+            hitSlop={{ top: 16, right: 16, bottom: 16, left: 16 }}
+            className="w-10 h-10 bg-white/5 border border-white/10 rounded-full items-center justify-center"
+          >
+            <X color={colors.textDark} size={20} />
+          </AnimatedPressable>
         </View>
 
-        {aba === "cadastro" ? <FormCadastro /> : <FormLogin />}
+        <View className="items-center justify-center w-full px-6 pb-8">
+          <AppLogo tamanho="grande" />
+          
+          <Text className="text-white text-3xl font-bold mt-6 tracking-wide text-center">
+            {aba === "cadastro" ? "Comece no Vybe" : "Bem-vindo de volta"}
+          </Text>
+          
+          <Text className="text-muted text-base mt-2 text-center max-w-sm">
+            A plataforma definitiva para conectar músicos, organizadores e o público.
+          </Text>
+        </View>
+
+        <View className="flex-1 bg-[#121827] rounded-t-[40px] px-8 pt-8 border-t border-white/5 shadow-2xl">
+          <View className="flex-row mb-8 justify-start">
+            <AbaBotao label="Criar Conta" ativa={aba === "cadastro"} onPress={() => setAba("cadastro")} />
+            <AbaBotao label="Entrar" ativa={aba === "login"} onPress={() => setAba("login")} />
+          </View>
+
+          {aba === "cadastro" ? <FormCadastro /> : <FormLogin />}
+        </View>
       </View>
-    </View>
+    </ScrollView>
   );
 }
-// --- COMPONENTES VISUAIS ---
 
 function AbaBotao({ label, ativa, onPress }: { label: string; ativa: boolean; onPress: () => void }) {
   return (
     <Pressable onPress={onPress} className="mr-8 items-center">
-      <Text className={`text-xl transition-all ${ativa ? "font-bold text-textDark" : "font-medium text-muted"}`}>
+      <Text className={`text-xl ${ativa ? "font-bold text-textDark" : "font-medium text-muted"}`}>
         {label}
       </Text>
       {ativa && (
-        <View className="h-1 bg-primary rounded-full mt-2 w-full" style={styles.glowLine} />
+        <View className="h-1 bg-primary rounded-full mt-2 w-full" />
       )}
     </Pressable>
   );
 }
 
-// Campo de texto modernizado com suporte a ícones da Lucide
 function Campo({ icone: Icon, ...props }: React.ComponentProps<typeof TextInput> & { icone?: any }) {
   return (
-    <View className="flex-row items-center bg-white/5 border border-white/10 rounded-2xl px-4 h-14 mb-4 focus:border-primary/50 transition-colors">
+    <View className="flex-row items-center bg-white/5 border border-white/10 rounded-2xl px-4 h-14 mb-4">
       {Icon && <Icon color="#9CA3AF" size={20} />}
       <TextInput
         placeholderTextColor="#6B7280"
@@ -89,8 +88,6 @@ function Campo({ icone: Icon, ...props }: React.ComponentProps<typeof TextInput>
     </View>
   );
 }
-
-// --- FORMULÁRIOS ---
 
 function FormCadastro() {
   const [tipoConta, setTipoConta] = useState<"musico" | "organizador">("musico");
@@ -129,25 +126,32 @@ function FormCadastro() {
     }
     router.replace("/(tabs)/home");
   }
+
   const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
   return (
-    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
-      
-      {/* Seletor de Conta (Segmented Control) */}
-      <View className="flex-row mb-6 bg-white/5 rounded-2xl p-1 border border-white/5">
+    <View className="pb-10">
+      <View className="flex-row mb-6 bg-white/5 rounded-2xl p-1 border border-white/5 w-full">
         <AnimatedPressable
           onPress={() => setTipoConta("musico")}
-          className={`flex-1 py-3 rounded-xl items-center ${tipoConta === "musico" ? "bg-primary shadow-sm" : ""}`}
+          style={[
+            { flex: 1, borderRadius: 12, alignItems: 'center', justifyContent: 'center', paddingVertical: 12 },
+            tipoConta === "musico" && { backgroundColor: colors.primary }
+          ]}
         >
-          <Text className={`font-medium ${tipoConta === "musico" ? "text-white" : "text-muted"}`}>
+          <Text className={`font-medium text-center ${tipoConta === "musico" ? "text-white font-bold" : "text-muted"}`}>
             Sou Músico
           </Text>
         </AnimatedPressable>
+
         <AnimatedPressable
           onPress={() => setTipoConta("organizador")}
-          className={`flex-1 py-3 rounded-xl items-center ${tipoConta === "organizador" ? "bg-primary shadow-sm" : ""}`}
+          style={[
+            { flex: 1, borderRadius: 12, alignItems: 'center', justifyContent: 'center', paddingVertical: 12 },
+            tipoConta === "organizador" && { backgroundColor: colors.primary }
+          ]}
         >
-          <Text className={`font-medium ${tipoConta === "organizador" ? "text-white" : "text-muted"}`}>
+          <Text className={`font-medium text-center ${tipoConta === "organizador" ? "text-white font-bold" : "text-muted"}`}>
             Sou Organizador
           </Text>
         </AnimatedPressable>
@@ -169,7 +173,6 @@ function FormCadastro() {
         onPress={handleCadastrar}
         disabled={carregando}
         className="bg-primary rounded-2xl py-4 items-center mt-2 mb-6"
-        style={styles.buttonGlow}
       >
         <Text className="text-white font-bold text-base tracking-wide">
           {carregando ? "Criando conta..." : "Criar minha conta"}
@@ -183,11 +186,10 @@ function FormCadastro() {
       </View>
 
       <Pressable className="bg-white/5 border border-white/10 rounded-2xl py-4 flex-row justify-center items-center">
-        {/* Você pode substituir este ícone pela logo real do Google no futuro */}
         <Sparkles color={colors.textDark} size={18} className="mr-3" />
         <Text className="text-textDark font-medium text-base">Google</Text>
       </Pressable>
-    </ScrollView>
+    </View>
   );
 }
 
@@ -217,7 +219,7 @@ function FormLogin() {
   }
 
   return (
-    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+    <View className="pb-10">
       <Campo icone={Mail} placeholder="Seu e-mail" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
       <Campo icone={Lock} placeholder="Sua senha" value={senha} onChangeText={setSenha} secureTextEntry />
 
@@ -231,31 +233,11 @@ function FormLogin() {
         onPress={handleEntrar}
         disabled={carregando}
         className="bg-primary rounded-2xl py-4 items-center mb-6"
-        style={styles.buttonGlow}
       >
         <Text className="text-white font-bold text-base tracking-wide">
           {carregando ? "Acessando..." : "Entrar no Vybe"}
         </Text>
       </Pressable>
-    </ScrollView>
+    </View>
   );
 }
-
-// --- ESTILOS ---
-
-const styles = StyleSheet.create({
-  buttonGlow: {
-    shadowColor: '#3B82F6',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.5,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-  glowLine: {
-    shadowColor: '#3B82F6',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 4,
-    elevation: 4,
-  }
-});
