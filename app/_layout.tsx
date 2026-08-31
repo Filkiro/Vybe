@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Slot, useRouter, useSegments } from "expo-router";
+import { Stack, useRouter, useSegments } from "expo-router";
 import { View, Text } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
@@ -8,6 +8,19 @@ import { useAuthStore } from "../store/authStore";
 import { AuthPromptModal } from "../components/AuthPromptModal";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { UnreadMessagesListener } from "../components/UnreadMessagesListener";
+
+// Diz ao Expo Router que a rota "de verdade" da pilha raiz é o
+// grupo (tabs), não o `index`. Sem isso, telas fora de (tabs)
+// (dashboard, suporte, usuario/[id], album/[id], tocando, etc.)
+// sintetizavam o histórico de navegação usando `index` como base —
+// e como `index` só existe pra fazer <Redirect href="/(tabs)/home">,
+// TODO botão de voltar acabava caindo no index, que redirecionava
+// de novo pra Home na hora. Isso também é o motivo de `router.canGoBack()`
+// retornar true mesmo nesses casos: tecnicamente existe uma tela
+// anterior, só que ela é esse redirect fantasma.
+export const unstable_settings = {
+  initialRouteName: "(tabs)",
+};
 
 export default function RootLayout() {
   const inicializar = useAuthStore((s) => s.inicializar);
@@ -49,7 +62,7 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <StatusBar style="light" />
-      <Slot />
+      <Stack screenOptions={{ headerShown: false }} />
       <AuthPromptModal />
       <ConfirmModal />
       <UnreadMessagesListener />

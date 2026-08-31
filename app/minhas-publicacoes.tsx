@@ -129,7 +129,7 @@ export default function MinhasPublicacoes() {
 
   return (
     <View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
-      <View className="flex-row items-center px-4 pt-2 pb-1">
+      <View className="flex-row items-center px-4 pt-14 pb-3 bg-card border-b border-border">
         <Pressable onPress={() => router.back()} hitSlop={12} className="mr-2 p-1">
           <ChevronLeft color={colors.textDark} size={24} />
         </Pressable>
@@ -152,7 +152,7 @@ export default function MinhasPublicacoes() {
           renderItem={({ item }) => {
             const emEdicao = editandoId === item.id;
             return (
-              <View className="bg-card rounded-2xl mb-4 border border-border overflow-hidden">
+              <View className="bg-card rounded-2xl mb-4 border border-border overflow-hidden self-center w-full max-w-[700px]">
                 {item.evento && (
                   <View className="px-3 pt-3">
                     <Text className="text-primary text-xs font-bold">Evento: {item.evento.nome}</Text>

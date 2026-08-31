@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { Audio, AVPlaybackStatus } from "expo-av";
+import { createAudioPlayer, AudioPlayer, AudioStatus } from "expo-audio";
 
 type Musica = {
   id: string;
@@ -16,7 +16,7 @@ type PlayerState = {
   estaTocando: boolean;
   posicaoMs: number;
   duracaoMs: number;
-  sound: Audio.Sound | null;
+  sound: AudioPlayer | null;
   // "fila" é a lista de onde a música foi tocada (ex: a grade da
   // Home) — permite Próxima/Anterior de verdade em vez de botões
   // decorativos. Se omitida, a fila vira só a própria música.
@@ -31,22 +31,22 @@ type PlayerState = {
 
 // Contador global de "geração" — cada chamada de carregarESocar tira
 // um número. Existia um bug em que duas músicas tocavam juntas:
-// tocarMusica/proxima/anterior são assíncronos (createAsync depende
-// de rede), então se duas chamadas se sobrepunham (ex: tocar uma
-// música enquanto a anterior ainda estava carregando, ou "próxima"
-// automática disparando quase junto de um toque manual), as DUAS
-// liam `get().sound` como sendo a mesma música antiga, as DUAS
-// criavam seu próprio Audio.Sound novo, e a que terminasse de
+// tocarMusica/proxima/anterior são assíncronos (createAudioPlayer
+// depende de rede), então se duas chamadas se sobrepunham (ex: tocar
+// uma música enquanto a anterior ainda estava carregando, ou
+// "próxima" automática disparando quase junto de um toque manual),
+// as DUAS liam `get().sound` como sendo a mesma música antiga, as
+// DUAS criavam seu próprio AudioPlayer novo, e a que terminasse de
 // carregar primeiro tinha seu `sound` sobrescrito no store pela
-// segunda — sem nunca ser descarregada. Ela ficava tocando sozinha,
+// segunda — sem nunca ser liberada. Ela ficava tocando sozinha,
 // invisível pro store, ao lado da música nova.
 //
 // A correção: cada chamada guarda seu próprio número (`meuToken`).
 // Antes de mexer no estado global ou entregar o áudio pra tocar, ela
 // confere se ainda é a chamada mais recente (`meuToken === token`).
 // Se não for — porque uma chamada mais nova começou nesse meio
-// tempo — ela descarrega o que acabou de carregar e desiste, em vez
-// de sobrescrever o estado e abandonar o som tocando.
+// tempo — ela libera o que acabou de carregar e desiste, em vez de
+// sobrescrever o estado e abandonar o som tocando.
 let token = 0;
 
 async function carregarESocar(
@@ -59,57 +59,65 @@ async function carregarESocar(
   const atual = get().sound;
   if (atual) {
     try {
-      await atual.unloadAsync();
+      atual.remove();
     } catch {
-      // Som já pode ter sido descarregado por outra chamada; ignora.
+      // Player já pode ter sido liberado por outra chamada; ignora.
     }
   }
 
-  // Enquanto esperávamos o unloadAsync acima, outra chamada pode ter
+  // Enquanto liberávamos o player acima, outra chamada pode ter
   // começado (e já ter tomado a frente). Se não somos mais a mais
   // recente, para por aqui — nem chega a carregar o áudio novo.
   if (meuToken !== token) return;
 
-  const { sound } = await Audio.Sound.createAsync(
-    { uri: musica.arquivoUrl },
-    { shouldPlay: true },
-    (status: AVPlaybackStatus) => {
-      if (!status.isLoaded) return;
-      // Ignora atualizações de um som que já foi substituído — evita
-      // que um "didJustFinish" atrasado de uma música antiga dispare
-      // proxima()/seek() por cima da música atual.
-      if (meuToken !== token) return;
+  const player = createAudioPlayer({ uri: musica.arquivoUrl });
 
-      set({
-        posicaoMs: status.positionMillis,
-        duracaoMs: status.durationMillis ?? 0,
-        estaTocando: status.isPlaying,
-      });
+  player.addListener("playbackStatusUpdate", (status: AudioStatus) => {
+    if (!status.isLoaded) return;
+    // Ignora atualizações de um player que já foi substituído — evita
+    // que um "didJustFinish" atrasado de uma música antiga dispare
+    // proxima()/seek() por cima da música atual.
+    if (meuToken !== token) return;
 
-      // Música terminou: repete se "repetir" estiver ligado, senão
-      // avança pra próxima da fila (se houver).
-      if (status.didJustFinish) {
-        if (get().repetir) {
-          get().seek(0);
-        } else {
-          get().proxima();
-        }
+    set({
+      // expo-audio reporta currentTime/duration em SEGUNDOS —
+      // convertendo pra ms aqui, o resto do app (que usa posicaoMs/
+      // duracaoMs) não precisa mudar nada.
+      posicaoMs: status.currentTime * 1000,
+      duracaoMs: (status.duration ?? 0) * 1000,
+      estaTocando: status.playing,
+    });
+
+    // Música terminou: repete se "repetir" estiver ligado, senão
+    // avança pra próxima da fila (se houver). Diferente do expo-av,
+    // o expo-audio NÃO reinicia sozinho — o player fica pausado no
+    // fim, então o repeat precisa voltar pro início e mandar tocar
+    // de novo explicitamente.
+    if (status.didJustFinish) {
+      if (get().repetir) {
+        player.seekTo(0);
+        player.play();
+        set({ posicaoMs: 0, estaTocando: true });
+      } else {
+        get().proxima();
       }
     }
-  );
+  });
 
-  // Outra chamada pode ter começado enquanto createAsync (que
-  // depende de rede) ainda estava em andamento. Se sim, esse som que
-  // acabamos de carregar é descartável: descarrega e não toca — é
-  // exatamente esse caso que antes ficava tocando por baixo.
+  player.play();
+
+  // Outra chamada pode ter começado enquanto o player ainda estava
+  // carregando/conectando. Se sim, esse player que acabamos de criar
+  // é descartável: libera e não toca — é exatamente esse caso que
+  // antes ficava tocando por baixo.
   if (meuToken !== token) {
     try {
-      await sound.unloadAsync();
+      player.remove();
     } catch {}
     return;
   }
 
-  set({ sound, musicaAtual: musica, estaTocando: true });
+  set({ sound: player, musicaAtual: musica, estaTocando: true });
 }
 
 // Vive FORA da árvore de componentes do React — por isso nunca
@@ -130,17 +138,17 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   },
 
   pausar: async () => {
-    await get().sound?.pauseAsync();
+    get().sound?.pause();
     set({ estaTocando: false });
   },
 
   retomar: async () => {
-    await get().sound?.playAsync();
+    get().sound?.play();
     set({ estaTocando: true });
   },
 
   seek: async (ms) => {
-    await get().sound?.setPositionAsync(ms);
+    get().sound?.seekTo(ms / 1000);
     set({ posicaoMs: ms });
   },
 

@@ -100,7 +100,7 @@ export default function Explorar() {
             </Text>
           }
           renderItem={({ item }) => (
-            <View className="w-full self-center" style={{ maxWidth: 600, maxHeight: 650 }}>
+            <View className="w-full self-center" style={{ maxWidth: 600 }}>
               <PublicacaoCard item={item} />
             </View>
           )}

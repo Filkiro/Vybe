@@ -18,7 +18,9 @@
         {
           "photosPermission": "O Vybe usa suas fotos para você escolher a capa da música."
         }
-      ]
+      ],
+      "expo-asset",
+      "expo-audio"
     ],
     "ios": {
       "supportsTablet": true

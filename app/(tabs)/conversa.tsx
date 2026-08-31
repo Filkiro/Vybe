@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { View, Text, FlatList, Pressable, Image } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 import { MessageCircle } from "lucide-react-native";
@@ -13,6 +13,7 @@ type ConversaComContato = {
   contatoNome: string;
   contatoFotoUrl: string | null;
   ultimaMensagem: string | null;
+  ultimaMensagemData: string | null;
   ultimaMensagemEhMinha: boolean;
   naoLida: boolean;
   naoLidasContagem: number;
@@ -24,9 +25,16 @@ export default function Conversa() {
   const [carregando, setCarregando] = useState(true);
   const paddingBottom = usePlayerAwarePadding(140);
 
-  const carregar = useCallback(async () => {
+  // Controla se já foi feita a primeira carga desta tela nesta
+  // sessão do app — só ela mostra o "Carregando..."/esvazia a lista.
+  // Recargas seguintes (toda vez que a aba ganha foco de novo)
+  // buscam os dados atualizados em segundo plano, sem esconder o
+  // que já está na tela nem piscar um spinner.
+  const jaCarregouUmaVez = useRef(false);
+
+  const carregar = useCallback(async (mostrarCarregando: boolean) => {
     if (!usuario) return;
-    setCarregando(true);
+    if (mostrarCarregando) setCarregando(true);
 
     const { data: linhas } = await supabase
       .from("conversa")
@@ -47,9 +55,9 @@ export default function Conversa() {
         supabase.from("usuario").select("id, nome").eq("id", contatoId).single(),
         supabase
           .from("mensagem")
-          .select("conteudo, remetente_id, lida")
+          .select("conteudo, remetente_id, lida, data_hora")
           .eq("conversa_id", linha.id)
-          .order("data_hora", { ascending: true })
+          .order("data_hora", { ascending: false })
           .limit(1),
         supabase
           .from("mensagem")
@@ -75,6 +83,7 @@ export default function Conversa() {
         contatoNome: contato?.nome ?? "Usuário",
         contatoFotoUrl: pMusico?.foto_url ?? null,
         ultimaMensagem: ultima?.conteudo ?? null,
+        ultimaMensagemData: ultima?.data_hora ?? null,
         ultimaMensagemEhMinha,
         // "Não lida" pra fins de negrito só se aplica à última
         // mensagem quando ela veio da OUTRA pessoa — uma mensagem
@@ -85,22 +94,35 @@ export default function Conversa() {
       });
     }
 
+    // Ordena pela conversa com a mensagem mais recente primeiro
+    // (seja ela enviada por mim ou recebida). Conversas sem nenhuma
+    // mensagem ainda ficam por último.
+    resultado.sort((a, b) => {
+      if (!a.ultimaMensagemData) return 1;
+      if (!b.ultimaMensagemData) return -1;
+      return new Date(b.ultimaMensagemData).getTime() - new Date(a.ultimaMensagemData).getTime();
+    });
+
     setConversas(resultado);
     setCarregando(false);
   }, [usuario]);
 
   useFocusEffect(
     useCallback(() => {
-      carregar();
+      // Só mostra o spinner/esvazia a lista na primeiríssima vez.
+      // Nas próximas entradas na aba, atualiza por baixo dos panos.
+      carregar(!jaCarregouUmaVez.current);
+      jaCarregouUmaVez.current = true;
 
       // Enquanto essa tela estiver aberta, qualquer mensagem nova ou
       // marcada como lida (em qualquer conversa) recarrega a lista —
       // assim o número de não lidas e o negrito da prévia atualizam
-      // sozinhos, sem precisar sair e voltar pra tela.
+      // sozinhos, sem precisar sair e voltar pra tela. Sempre em
+      // segundo plano, sem spinner.
       const canal = supabase
         .channel("lista-conversas")
-        .on("postgres_changes", { event: "INSERT", schema: "public", table: "mensagem" }, () => carregar())
-        .on("postgres_changes", { event: "UPDATE", schema: "public", table: "mensagem" }, () => carregar())
+        .on("postgres_changes", { event: "INSERT", schema: "public", table: "mensagem" }, () => carregar(false))
+        .on("postgres_changes", { event: "UPDATE", schema: "public", table: "mensagem" }, () => carregar(false))
         .subscribe();
 
       return () => {
