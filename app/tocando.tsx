@@ -7,7 +7,7 @@ import ImageColors from "react-native-image-colors";
 import { usePlayerStore } from "../store/playerStore";
 import { colors } from "../constants/theme";
 
-const LARGURA_PAINEL_DESKTOP = 420;
+const LARGURA_PAINEL_DESKTOP = "50%";
 
 type CorAnimada = Animated.AnimatedInterpolation<string | number>;
 
@@ -204,7 +204,7 @@ function LayoutDesktop({
         >
           <Animated.View 
             className="p-8 items-center justify-center h-full"
-            style={{ backgroundColor: corFundoAnimada as any, height: "100%", padding: 20 }}
+            style={{ backgroundColor: corFundoAnimada as any, height: "100%", padding: 30, justifyContent:"center" }}
           >
             <Capa tamanho={200} corGlow={corDinamica} />
             
@@ -450,7 +450,7 @@ function PainelFila() {
             className={`flex-row items-center px-4 py-3 rounded-2xl mb-2 border ${ehAtual ? "bg-glass-white border-primary" : "bg-transparent border-glass-white"}`}
           >
             {item.capaUrl ? (
-              <Image source={{ uri: item.capaUrl }} className="w-12 h-12 rounded-xl mr-4" />
+              <Image source={{ uri: item.capaUrl }} className="w-15 h-15 rounded-xl mr-4" />
             ) : (
               <View className="w-12 h-12 rounded-xl bg-surface mr-4" />
             )}
