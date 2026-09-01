@@ -51,7 +51,7 @@ initialRouteName="home"
           tabBarBackground: () => (
             <BlurView 
             experimentalBlurMethod="dimezisBlurView"
-              intensity={80} 
+              intensity={60} 
               tint="dark" 
               style={{
                 ...StyleSheet.absoluteFillObject,
