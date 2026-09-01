@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { createAudioPlayer, AudioPlayer, AudioStatus } from "expo-audio";
+import { createAudioPlayer, AudioPlayer, AudioStatus, setAudioModeAsync } from "expo-audio";
 
 type Musica = {
   id: string;
@@ -41,36 +41,28 @@ async function carregarESocar(
       atual.pause();
       atual.release();
       atual.remove();
-    } catch {
-      // Player já pode ter sido liberado por outra chamada; ignora.
-    }
+    } catch {}
   }
 
-  // Enquanto liberávamos o player acima, outra chamada pode ter
-  // começado (e já ter tomado a frente). Se não somos mais a mais
-  // recente, para por aqui — nem chega a carregar o áudio novo.
   if (meuToken !== token) return;
+
+  // Garante que a sessão de áudio permita execução em segundo plano (Mobile)
+await setAudioModeAsync({
+    playsInSilentMode: true,
+  });
 
   const player = createAudioPlayer({ uri: musica.arquivoUrl });
 
   player.addListener("playbackStatusUpdate", (status: AudioStatus) => {
     if (!status.isLoaded) return;
-    // Ignora atualizações de um player que já foi substituído — evita
-    // que um "didJustFinish" atrasado de uma música antiga dispare
-    // proxima()/seek() por cima da música atual.
     if (meuToken !== token) return;
 
     set({
-      // expo-audio reporta currentTime/duration em SEGUNDOS —
-      // convertendo pra ms aqui, o resto do app (que usa posicaoMs/
-      // duracaoMs) não precisa mudar nada.
       posicaoMs: status.currentTime * 1000,
       duracaoMs: (status.duration ?? 0) * 1000,
       estaTocando: status.playing,
     });
 
-    // Música terminou: repete se "repetir" estiver ligado, senão
-    // avança pra próxima da fila (se houver).
     if (status.didJustFinish) {
       if (get().repetir) {
         player.seekTo(0);
@@ -84,9 +76,20 @@ async function carregarESocar(
 
   player.play();
 
-  // Outra chamada pode ter começado enquanto o player ainda estava
-  // carregando/conectando. Se sim, esse player que acabamos de criar
-  // é descartável: libera e não toca.
+  // Integração com a Media Session API (Para Web e Controles de Tela de Bloqueio)
+  if (typeof navigator !== 'undefined' && 'mediaSession' in navigator) {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: musica.nome,
+      artist: musica.autorApelido ?? "Autor desconhecido",
+      artwork: musica.capaUrl ? [{ src: musica.capaUrl, sizes: '512x512', type: 'image/jpeg' }] : []
+    });
+
+    navigator.mediaSession.setActionHandler('play', () => get().retomar());
+    navigator.mediaSession.setActionHandler('pause', () => get().pausar());
+    navigator.mediaSession.setActionHandler('previoustrack', () => get().anterior());
+    navigator.mediaSession.setActionHandler('nexttrack', () => get().proxima());
+  }
+
   if (meuToken !== token) {
     try {
       player.pause();
