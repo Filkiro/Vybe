@@ -35,22 +35,12 @@
           "audio"
         ]
       }
-      "supportsTablet": true,
-      "infoPlist": {
-        "UIBackgroundModes": [
-          "audio"
-        ]
-      }
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#3B82F6"
       },
       "permissions": [
-        "android.permission.RECORD_AUDIO",
-        "WAKE_LOCK",
-        "FOREGROUND_SERVICE",
-        "FOREGROUND_SERVICE_MEDIA_PLAYBACK"
         "android.permission.RECORD_AUDIO",
         "WAKE_LOCK",
         "FOREGROUND_SERVICE",
