@@ -1,12 +1,18 @@
 import { useState, useEffect, useRef } from "react";
 import { View, Text, Pressable, Image, useWindowDimensions, GestureResponderEvent, StyleSheet, ScrollView, Animated, Easing } from "react-native";
+import { useState, useEffect, useRef } from "react";
+import { View, Text, Pressable, Image, useWindowDimensions, GestureResponderEvent, StyleSheet, ScrollView, Animated, Easing } from "react-native";
 import { router } from "expo-router";
 import { ChevronDown, Play, Pause, SkipBack, SkipForward, Repeat, Heart } from "lucide-react-native";
 import { BlurView } from "expo-blur";
 import ImageColors from "react-native-image-colors";
+import ImageColors from "react-native-image-colors";
 import { usePlayerStore } from "../store/playerStore";
 import { colors } from "../constants/theme";
 
+const LARGURA_PAINEL_DESKTOP = "50%";
+
+type CorAnimada = Animated.AnimatedInterpolation<string | number>;
 const LARGURA_PAINEL_DESKTOP = "50%";
 
 type CorAnimada = Animated.AnimatedInterpolation<string | number>;
@@ -22,6 +28,61 @@ export default function TocandoAgora() {
   const { width } = useWindowDimensions();
   const ehDesktop = width >= 768;
   const { musicaAtual } = usePlayerStore();
+
+  const corAnimada = useRef(new Animated.Value(0)).current;
+  const [corAtual, setCorAtual] = useState<string>("#3B82F6");
+  const [corAnterior, setCorAnterior] = useState<string>("#3B82F6");
+
+  useEffect(() => {
+    if (!musicaAtual?.capaUrl) return;
+
+    ImageColors.getColors(musicaAtual.capaUrl, {
+      fallback: "#3B82F6",
+      cache: true,
+      key: musicaAtual.capaUrl,
+    }).then((colors) => {
+      let novaCor = "#3B82F6";
+      switch (colors.platform) {
+        case "android":
+          novaCor = colors.vibrant || colors.dominant || "#3B82F6";
+          break;
+        case "ios":
+          novaCor = colors.background || colors.primary || "#3B82F6";
+          break;
+        case "web":
+          novaCor = colors.vibrant || colors.dominant || "#3B82F6";
+          break;
+      }
+
+      setCorAnterior(corAtual);
+      setCorAtual(novaCor);
+
+      corAnimada.setValue(0);
+      Animated.timing(corAnimada, {
+        toValue: 1,
+        duration: 650,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: false,
+      }).start();
+    }).catch(() => {
+      setCorAtual("#3B82F6");
+    });
+  }, [musicaAtual?.capaUrl]);
+
+  const corPrincipalAnimada = corAnimada.interpolate({
+    inputRange: [0, 1],
+    outputRange: [corAnterior, corAtual],
+  });
+
+  const backgroundColorInterpolado = corAnimada.interpolate({
+    inputRange: [0, 1],
+    outputRange: [`${corAnterior}15`, `${corAtual}25`],
+  });
+
+  const borderColorInterpolado = corAnimada.interpolate({
+    inputRange: [0, 1],
+    outputRange: [`${corAnterior}40`, `${corAtual}60`],
+  });
 
   const corAnimada = useRef(new Animated.Value(0)).current;
   const [corAtual, setCorAtual] = useState<string>("#3B82F6");
@@ -102,11 +163,33 @@ export default function TocandoAgora() {
       corDinamica={corPrincipalAnimada}
     />
   );
+  return ehDesktop ? (
+    <LayoutDesktop
+      corFundoAnimada={backgroundColorInterpolado}
+      corBordaAnimada={borderColorInterpolado}
+      corDinamica={corPrincipalAnimada}
+    />
+  ) : (
+    <LayoutMobile
+      corFundoAnimada={backgroundColorInterpolado}
+      corBordaAnimada={borderColorInterpolado}
+      corDinamica={corPrincipalAnimada}
+    />
+  );
 }
 
 // ---------------------------------------------------------------
 // Mobile: Painel Único Unificado com ScrollView
 // ---------------------------------------------------------------
+function LayoutMobile({
+  corFundoAnimada,
+  corBordaAnimada,
+  corDinamica,
+}: {
+  corFundoAnimada: CorAnimada;
+  corBordaAnimada: CorAnimada;
+  corDinamica: CorAnimada;
+}) {
 function LayoutMobile({
   corFundoAnimada,
   corBordaAnimada,
@@ -137,6 +220,8 @@ function LayoutMobile({
         <BlurView 
           experimentalBlurMethod="dimezisBlurView"
           intensity={20} 
+          experimentalBlurMethod="dimezisBlurView"
+          intensity={20} 
           tint="dark" 
           className="w-full rounded-3xl overflow-hidden border"
           style={{ borderColor: corBordaAnimada as any }}
@@ -150,7 +235,24 @@ function LayoutMobile({
             <View className="w-full mt-5 items-center">
               <InfoMusica alinhamento="center" />
             </View>
+          className="w-full rounded-3xl overflow-hidden border"
+          style={{ borderColor: corBordaAnimada as any }}
+        >
+          <Animated.View 
+            className="w-full p-6 items-center justify-center"
+            style={{ backgroundColor: corFundoAnimada as any, padding: 20 }}
+          >
+            <Capa tamanho={200} corGlow={corDinamica} />
+            
+            <View className="w-full mt-5 items-center">
+              <InfoMusica alinhamento="center" />
+            </View>
 
+            <View className="w-full mt-5">
+              <BarraProgresso corDinamica={corDinamica} />
+              <Controles tamanhoBotaoPrincipal={60} corDinamica={corDinamica} />
+            </View>
+          </Animated.View>
             <View className="w-full mt-5">
               <BarraProgresso corDinamica={corDinamica} />
               <Controles tamanhoBotaoPrincipal={60} corDinamica={corDinamica} />
@@ -180,6 +282,15 @@ function LayoutDesktop({
   corBordaAnimada: CorAnimada;
   corDinamica: CorAnimada;
 }) {
+function LayoutDesktop({
+  corFundoAnimada,
+  corBordaAnimada,
+  corDinamica,
+}: {
+  corFundoAnimada: CorAnimada;
+  corBordaAnimada: CorAnimada;
+  corDinamica: CorAnimada;
+}) {
   const { musicaAtual } = usePlayerStore();
   if (!musicaAtual) return null;
 
@@ -195,10 +306,15 @@ function LayoutDesktop({
       <View className="flex-row items-stretch gap-6" style={{ maxWidth: 960, width: "100%", maxHeight: 660 }}>
         
         {/* Card do Player com altura sincronizada ao card da playlist via items-stretch */}
+        {/* Card do Player com altura sincronizada ao card da playlist via items-stretch */}
         <BlurView 
           experimentalBlurMethod="dimezisBlurView"
           intensity={20} 
+          experimentalBlurMethod="dimezisBlurView"
+          intensity={20} 
           tint="dark" 
+          className="rounded-3xl border overflow-hidden"
+          style={{ width: LARGURA_PAINEL_DESKTOP, borderColor: corBordaAnimada as any }}
           className="rounded-3xl border overflow-hidden"
           style={{ width: LARGURA_PAINEL_DESKTOP, borderColor: corBordaAnimada as any }}
         >
@@ -217,10 +333,27 @@ function LayoutDesktop({
               <Controles tamanhoBotaoPrincipal={60} corDinamica={corDinamica} />
             </View>
           </Animated.View>
+          <Animated.View 
+            className="p-8 items-center justify-center h-full"
+            style={{ backgroundColor: corFundoAnimada as any, height: "100%", padding: 30, justifyContent:"center" }}
+          >
+            <Capa tamanho={200} corGlow={corDinamica} />
+            
+            <View className="w-full mt-6 items-center">
+              <InfoMusica alinhamento="center" />
+            </View>
+
+            <View className="w-full mt-5">
+              <BarraProgresso corDinamica={corDinamica} />
+              <Controles tamanhoBotaoPrincipal={60} corDinamica={corDinamica} />
+            </View>
+          </Animated.View>
         </BlurView>
 
         {/* Card da Playlist */}
+        {/* Card da Playlist */}
         <BlurView 
+          experimentalBlurMethod="dimezisBlurView"
           experimentalBlurMethod="dimezisBlurView"
           intensity={20} 
           tint="dark" 
@@ -241,6 +374,10 @@ function LayoutDesktop({
   );
 }
 
+// ---------------------------------------------------------------
+// Componente Capa com Blur e Glow nas Bordas
+// ---------------------------------------------------------------
+function Capa({ tamanho, corGlow }: { tamanho: number; corGlow: CorAnimada }) {
 // ---------------------------------------------------------------
 // Componente Capa com Blur e Glow nas Bordas
 // ---------------------------------------------------------------
@@ -286,14 +423,54 @@ function Capa({ tamanho, corGlow }: { tamanho: number; corGlow: CorAnimada }) {
           overflow: 'hidden',
         }}
       >
+    <View style={{ alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+      {/* Camada de Blur nas bordas (fundo ambiente espelhado e borrachudo) */}
+      {musicaAtual.capaUrl && (
+        <View
+          style={{
+            position: 'absolute',
+            width: tamanho,
+            height: tamanho,
+            borderRadius: 24,
+            transform: [{ scale: 1.07 }],
+            opacity: 0.3,
+            overflow: 'hidden',
+          }}
+        >
+          <Image
+            source={{ uri: musicaAtual.capaUrl }}
+            style={{ width: '100%', height: '100%', borderRadius: 24 }}
+            blurRadius={10}
+            
+          />
+        </View>
+      )}
+
+      {/* Capa Principal com Glow Dinâmico */}
+      <Animated.View 
+        style={{
+          width: tamanho,
+          height: tamanho,
+          borderRadius: 24,
+          shadowColor: corGlow as any,
+          shadowOffset: { width: 0, height: 6 },
+          shadowOpacity: 0.6,
+          shadowRadius: 18,
+          elevation: 10,
+          overflow: 'hidden',
+        }}
+      >
         {musicaAtual.capaUrl ? (
           <Image
             source={{ uri: musicaAtual.capaUrl }}
             style={{ width: '100%', height: '100%', borderRadius: 24 }}
+            style={{ width: '100%', height: '100%', borderRadius: 24 }}
           />
         ) : (
           <View style={{ width: '100%', height: '100%', borderRadius: 24 }} className="bg-surface" />
+          <View style={{ width: '100%', height: '100%', borderRadius: 24 }} className="bg-surface" />
         )}
+      </Animated.View>
       </Animated.View>
     </View>
   );
@@ -315,6 +492,7 @@ function InfoMusica({ alinhamento }: { alinhamento: "left" | "center" }) {
   );
 }
 
+function BarraProgresso({ corDinamica }: { corDinamica: CorAnimada }) {
 function BarraProgresso({ corDinamica }: { corDinamica: CorAnimada }) {
   const { posicaoMs, duracaoMs, seek } = usePlayerStore();
   const [largura, setLargura] = useState(300);
@@ -363,6 +541,18 @@ function BarraProgresso({ corDinamica }: { corDinamica: CorAnimada }) {
               },
             ]} 
           />
+          <Animated.View 
+            style={[
+              styles.progressGlow,
+              {
+                height: 6,
+                borderRadius: 999,
+                width: `${progresso * 100}%`,
+                backgroundColor: corDinamica as any,
+                shadowColor: corDinamica as any,
+              },
+            ]} 
+          />
         </View>
       </Pressable>
 
@@ -377,6 +567,9 @@ function BarraProgresso({ corDinamica }: { corDinamica: CorAnimada }) {
 const RepeatAnimado = Animated.createAnimatedComponent(Repeat);
 
 function Controles({ tamanhoBotaoPrincipal, corDinamica }: { tamanhoBotaoPrincipal: number; corDinamica: CorAnimada }) {
+const RepeatAnimado = Animated.createAnimatedComponent(Repeat);
+
+function Controles({ tamanhoBotaoPrincipal, corDinamica }: { tamanhoBotaoPrincipal: number; corDinamica: CorAnimada }) {
   const { estaTocando, repetir, fila, pausar, retomar, proxima, anterior, alternarRepetir } = usePlayerStore();
   const [curtido, setCurtido] = useState(false);
   const temFila = fila.length > 1;
@@ -385,6 +578,7 @@ function Controles({ tamanhoBotaoPrincipal, corDinamica }: { tamanhoBotaoPrincip
     <View className="flex-row items-center justify-between mt-4">
       <Pressable onPress={alternarRepetir} className="p-2">
         <RepeatAnimado color={(repetir ? corDinamica : colors.muted) as any} size={20} />
+        <RepeatAnimado color={(repetir ? corDinamica : colors.muted) as any} size={20} />
       </Pressable>
 
       <Pressable onPress={anterior} disabled={!temFila} style={{ opacity: temFila ? 1 : 0.4 }} className="p-2">
@@ -392,11 +586,36 @@ function Controles({ tamanhoBotaoPrincipal, corDinamica }: { tamanhoBotaoPrincip
       </Pressable>
 
       <Animated.View
+      <Animated.View
         style={[
           {
             width: tamanhoBotaoPrincipal,
             height: tamanhoBotaoPrincipal,
             borderRadius: tamanhoBotaoPrincipal / 2,
+            backgroundColor: corDinamica as any,
+            shadowColor: corDinamica as any,
+            shadowOffset: { width: 0, height: 6 },
+            shadowOpacity: 0.8,
+            shadowRadius: 14,
+            elevation: 10,
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderWidth: 1,
+            borderColor: 'rgba(255,255,255,0.3)',
+          },
+        ]}
+      >
+        <Pressable
+          onPress={() => (estaTocando ? pausar() : retomar())}
+          style={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }}
+        >
+          {estaTocando ? (
+            <Pause color="white" size={tamanhoBotaoPrincipal * 0.4} fill="white" />
+          ) : (
+            <Play color="white" size={tamanhoBotaoPrincipal * 0.4} fill="white" style={{ marginLeft: 4 }} />
+          )}
+        </Pressable>
+      </Animated.View>
             backgroundColor: corDinamica as any,
             shadowColor: corDinamica as any,
             shadowOffset: { width: 0, height: 6 },
