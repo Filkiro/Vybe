@@ -1,12 +1,15 @@
-import { useState } from "react";
-import { View, Text, Pressable, Image, useWindowDimensions, GestureResponderEvent, StyleSheet, ScrollView } from "react-native";
+import { useState, useEffect, useRef } from "react";
+import { View, Text, Pressable, Image, useWindowDimensions, GestureResponderEvent, StyleSheet, ScrollView, Animated, Easing } from "react-native";
 import { router } from "expo-router";
 import { ChevronDown, Play, Pause, SkipBack, SkipForward, Repeat, Heart } from "lucide-react-native";
 import { BlurView } from "expo-blur";
+import ImageColors from "react-native-image-colors";
 import { usePlayerStore } from "../store/playerStore";
 import { colors } from "../constants/theme";
 
-const LARGURA_PAINEL_DESKTOP = 420;
+const LARGURA_PAINEL_DESKTOP = "50%";
+
+type CorAnimada = Animated.AnimatedInterpolation<string | number>;
 
 function formatarTempo(ms: number) {
   const totalSegundos = Math.floor(ms / 1000);
@@ -20,6 +23,61 @@ export default function TocandoAgora() {
   const ehDesktop = width >= 768;
   const { musicaAtual } = usePlayerStore();
 
+  const corAnimada = useRef(new Animated.Value(0)).current;
+  const [corAtual, setCorAtual] = useState<string>("#3B82F6");
+  const [corAnterior, setCorAnterior] = useState<string>("#3B82F6");
+
+  useEffect(() => {
+    if (!musicaAtual?.capaUrl) return;
+
+    ImageColors.getColors(musicaAtual.capaUrl, {
+      fallback: "#3B82F6",
+      cache: true,
+      key: musicaAtual.capaUrl,
+    }).then((colors) => {
+      let novaCor = "#3B82F6";
+      switch (colors.platform) {
+        case "android":
+          novaCor = colors.vibrant || colors.dominant || "#3B82F6";
+          break;
+        case "ios":
+          novaCor = colors.background || colors.primary || "#3B82F6";
+          break;
+        case "web":
+          novaCor = colors.vibrant || colors.dominant || "#3B82F6";
+          break;
+      }
+
+      setCorAnterior(corAtual);
+      setCorAtual(novaCor);
+
+      corAnimada.setValue(0);
+      Animated.timing(corAnimada, {
+        toValue: 1,
+        duration: 650,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: false,
+      }).start();
+    }).catch(() => {
+      setCorAtual("#3B82F6");
+    });
+  }, [musicaAtual?.capaUrl]);
+
+  const corPrincipalAnimada = corAnimada.interpolate({
+    inputRange: [0, 1],
+    outputRange: [corAnterior, corAtual],
+  });
+
+  const backgroundColorInterpolado = corAnimada.interpolate({
+    inputRange: [0, 1],
+    outputRange: [`${corAnterior}15`, `${corAtual}25`],
+  });
+
+  const borderColorInterpolado = corAnimada.interpolate({
+    inputRange: [0, 1],
+    outputRange: [`${corAnterior}40`, `${corAtual}60`],
+  });
+
   if (!musicaAtual) {
     return (
       <View className="flex-1 bg-bg-dark items-center justify-center px-8">
@@ -31,19 +89,38 @@ export default function TocandoAgora() {
     );
   }
 
-  return ehDesktop ? <LayoutDesktop /> : <LayoutMobile />;
+  return ehDesktop ? (
+    <LayoutDesktop
+      corFundoAnimada={backgroundColorInterpolado}
+      corBordaAnimada={borderColorInterpolado}
+      corDinamica={corPrincipalAnimada}
+    />
+  ) : (
+    <LayoutMobile
+      corFundoAnimada={backgroundColorInterpolado}
+      corBordaAnimada={borderColorInterpolado}
+      corDinamica={corPrincipalAnimada}
+    />
+  );
 }
 
 // ---------------------------------------------------------------
 // Mobile: Painel Único Unificado com ScrollView
 // ---------------------------------------------------------------
-function LayoutMobile() {
+function LayoutMobile({
+  corFundoAnimada,
+  corBordaAnimada,
+  corDinamica,
+}: {
+  corFundoAnimada: CorAnimada;
+  corBordaAnimada: CorAnimada;
+  corDinamica: CorAnimada;
+}) {
   const { musicaAtual, fila } = usePlayerStore();
   if (!musicaAtual) return null;
 
   return (
     <View className="flex-1 bg-bg-dark">
-      {/* Header Fixo */}
       <View className="flex-row items-center justify-between px-4 pt-14 pb-2 z-10">
         <Pressable onPress={() => router.back()} className="w-10 h-10 rounded-full border border-glass-white items-center justify-center bg-glass-white">
           <ChevronDown color={colors.textDark} size={22} />
@@ -52,32 +129,35 @@ function LayoutMobile() {
         <View className="w-10" />
       </View>
 
-      {/* Conteúdo rolável contendo o painel unificado e a playlist */}
       <ScrollView 
         className="flex-1 px-5" 
         contentContainerStyle={{ alignItems: 'center', paddingBottom: 40, paddingTop: 12 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* ÚNICO CARD DE VIDRO UNIFICADO */}
         <BlurView 
-        experimentalBlurMethod="dimezisBlurView"
-          intensity={30} 
+          experimentalBlurMethod="dimezisBlurView"
+          intensity={20} 
           tint="dark" 
-          className="w-full p-6 rounded-3xl border border-glass-white items-center overflow-hidden"
+          className="w-full rounded-3xl overflow-hidden border"
+          style={{ borderColor: corBordaAnimada as any }}
         >
-          <Capa tamanho={200} />
-          
-          <View className="w-full mt-5">
-            <InfoMusica alinhamento="center" />
-          </View>
+          <Animated.View 
+            className="w-full p-6 items-center justify-center"
+            style={{ backgroundColor: corFundoAnimada as any, padding: 20 }}
+          >
+            <Capa tamanho={200} corGlow={corDinamica} />
+            
+            <View className="w-full mt-5 items-center">
+              <InfoMusica alinhamento="center" />
+            </View>
 
-          <View className="w-full mt-5">
-            <BarraProgresso />
-            <Controles tamanhoBotaoPrincipal={60} />
-          </View>
+            <View className="w-full mt-5">
+              <BarraProgresso corDinamica={corDinamica} />
+              <Controles tamanhoBotaoPrincipal={60} corDinamica={corDinamica} />
+            </View>
+          </Animated.View>
         </BlurView>
 
-        {/* Playlist logo abaixo */}
         {fila.length > 1 && (
           <View className="w-full mt-6">
             <PainelFila />
@@ -91,7 +171,15 @@ function LayoutMobile() {
 // ---------------------------------------------------------------
 // Desktop: Cards com efeito Glassmorphism lado a lado
 // ---------------------------------------------------------------
-function LayoutDesktop() {
+function LayoutDesktop({
+  corFundoAnimada,
+  corBordaAnimada,
+  corDinamica,
+}: {
+  corFundoAnimada: CorAnimada;
+  corBordaAnimada: CorAnimada;
+  corDinamica: CorAnimada;
+}) {
   const { musicaAtual } = usePlayerStore();
   if (!musicaAtual) return null;
 
@@ -104,27 +192,36 @@ function LayoutDesktop() {
         <ChevronDown color={colors.textDark} size={22} />
       </Pressable>
 
-      <View className="flex-row gap-6" style={{ maxWidth: 960, width: "100%", maxHeight: "80%" }}>
+      <View className="flex-row items-stretch gap-6" style={{ maxWidth: 960, width: "100%", maxHeight: 660 }}>
         
-        {/* Card do Player */}
+        {/* Card do Player com altura sincronizada ao card da playlist via items-stretch */}
         <BlurView 
-        experimentalBlurMethod="dimezisBlurView"
-          intensity={30} 
+          experimentalBlurMethod="dimezisBlurView"
+          intensity={20} 
           tint="dark" 
-          className="rounded-3xl p-8 items-center border border-glass-white overflow-hidden" 
-          style={{ width: LARGURA_PAINEL_DESKTOP }}
+          className="rounded-3xl border overflow-hidden"
+          style={{ width: LARGURA_PAINEL_DESKTOP, borderColor: corBordaAnimada as any }}
         >
-          <Capa tamanho={260} />
-          <InfoMusica alinhamento="center" />
-          <View className="w-full mt-8">
-            <BarraProgresso />
-            <Controles tamanhoBotaoPrincipal={64} />
-          </View>
+          <Animated.View 
+            className="p-8 items-center justify-center h-full"
+            style={{ backgroundColor: corFundoAnimada as any, height: "100%", padding: 30, justifyContent:"center" }}
+          >
+            <Capa tamanho={200} corGlow={corDinamica} />
+            
+            <View className="w-full mt-6 items-center">
+              <InfoMusica alinhamento="center" />
+            </View>
+
+            <View className="w-full mt-5">
+              <BarraProgresso corDinamica={corDinamica} />
+              <Controles tamanhoBotaoPrincipal={60} corDinamica={corDinamica} />
+            </View>
+          </Animated.View>
         </BlurView>
 
-        {/* Card da Playlist com flex-1 e style flex/minHeight para o scroll rodar */}
+        {/* Card da Playlist */}
         <BlurView 
-        experimentalBlurMethod="dimezisBlurView"
+          experimentalBlurMethod="dimezisBlurView"
           intensity={20} 
           tint="dark" 
           className="flex-1 rounded-3xl border border-glass-white overflow-hidden"
@@ -144,22 +241,60 @@ function LayoutDesktop() {
   );
 }
 
-function Capa({ tamanho }: { tamanho: number }) {
+// ---------------------------------------------------------------
+// Componente Capa com Blur e Glow nas Bordas
+// ---------------------------------------------------------------
+function Capa({ tamanho, corGlow }: { tamanho: number; corGlow: CorAnimada }) {
   const { musicaAtual } = usePlayerStore();
   if (!musicaAtual) return null;
 
   return (
-    <View style={styles.glowShadow}>
-      <View style={{ width: tamanho, height: tamanho, borderRadius: 24, overflow: 'hidden' }}>
+    <View style={{ alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+      {/* Camada de Blur nas bordas (fundo ambiente espelhado e borrachudo) */}
+      {musicaAtual.capaUrl && (
+        <View
+          style={{
+            position: 'absolute',
+            width: tamanho,
+            height: tamanho,
+            borderRadius: 24,
+            transform: [{ scale: 1.07 }],
+            opacity: 0.3,
+            overflow: 'hidden',
+          }}
+        >
+          <Image
+            source={{ uri: musicaAtual.capaUrl }}
+            style={{ width: '100%', height: '100%', borderRadius: 24 }}
+            blurRadius={10}
+            
+          />
+        </View>
+      )}
+
+      {/* Capa Principal com Glow Dinâmico */}
+      <Animated.View 
+        style={{
+          width: tamanho,
+          height: tamanho,
+          borderRadius: 24,
+          shadowColor: corGlow as any,
+          shadowOffset: { width: 0, height: 6 },
+          shadowOpacity: 0.6,
+          shadowRadius: 18,
+          elevation: 10,
+          overflow: 'hidden',
+        }}
+      >
         {musicaAtual.capaUrl ? (
           <Image
             source={{ uri: musicaAtual.capaUrl }}
-            style={{ width: '100%', height: '100%' }}
+            style={{ width: '100%', height: '100%', borderRadius: 24 }}
           />
         ) : (
-          <View style={{ width: '100%', height: '100%' }} className="bg-surface" />
+          <View style={{ width: '100%', height: '100%', borderRadius: 24 }} className="bg-surface" />
         )}
-      </View>
+      </Animated.View>
     </View>
   );
 }
@@ -180,7 +315,7 @@ function InfoMusica({ alinhamento }: { alinhamento: "left" | "center" }) {
   );
 }
 
-function BarraProgresso() {
+function BarraProgresso({ corDinamica }: { corDinamica: CorAnimada }) {
   const { posicaoMs, duracaoMs, seek } = usePlayerStore();
   const [largura, setLargura] = useState(300);
 
@@ -188,7 +323,6 @@ function BarraProgresso() {
     if (!duracaoMs || duracaoMs <= 0 || !isFinite(duracaoMs)) return;
 
     const nativeEvt = evento.nativeEvent as any;
-    // Captura o X tanto no mobile (locationX) quanto na web (offsetX ou clientX)
     const x = nativeEvt.locationX ?? nativeEvt.offsetX ?? nativeEvt.layerX;
 
     if (typeof x !== 'number' || !isFinite(x)) return;
@@ -208,7 +342,6 @@ function BarraProgresso() {
 
   return (
     <View>
-      {/* Container com padding vertical para ampliar a área de clique sem engrossar a barra visual */}
       <Pressable
         onPress={aoTocarNaBarra}
         onLayout={(e) => {
@@ -218,7 +351,18 @@ function BarraProgresso() {
         style={{ paddingVertical: 12, justifyContent: "center" }}
       >
         <View className="h-1.5 bg-glass-white rounded-full overflow-hidden w-full">
-          <View className="h-1.5 bg-primary rounded-full" style={[{ width: `${progresso * 100}%` }, styles.progressGlow]} />
+          <Animated.View 
+            style={[
+              styles.progressGlow,
+              {
+                height: 6,
+                borderRadius: 999,
+                width: `${progresso * 100}%`,
+                backgroundColor: corDinamica as any,
+                shadowColor: corDinamica as any,
+              },
+            ]} 
+          />
         </View>
       </Pressable>
 
@@ -230,7 +374,9 @@ function BarraProgresso() {
   );
 }
 
-function Controles({ tamanhoBotaoPrincipal }: { tamanhoBotaoPrincipal: number }) {
+const RepeatAnimado = Animated.createAnimatedComponent(Repeat);
+
+function Controles({ tamanhoBotaoPrincipal, corDinamica }: { tamanhoBotaoPrincipal: number; corDinamica: CorAnimada }) {
   const { estaTocando, repetir, fila, pausar, retomar, proxima, anterior, alternarRepetir } = usePlayerStore();
   const [curtido, setCurtido] = useState(false);
   const temFila = fila.length > 1;
@@ -238,31 +384,43 @@ function Controles({ tamanhoBotaoPrincipal }: { tamanhoBotaoPrincipal: number })
   return (
     <View className="flex-row items-center justify-between mt-4">
       <Pressable onPress={alternarRepetir} className="p-2">
-        <Repeat color={repetir ? colors.primary : colors.muted} size={20} />
+        <RepeatAnimado color={(repetir ? corDinamica : colors.muted) as any} size={20} />
       </Pressable>
 
       <Pressable onPress={anterior} disabled={!temFila} style={{ opacity: temFila ? 1 : 0.4 }} className="p-2">
         <SkipBack color={colors.textDark} size={24} fill={colors.textDark} />
       </Pressable>
 
-      <Pressable
-        onPress={() => (estaTocando ? pausar() : retomar())}
+      <Animated.View
         style={[
-          styles.buttonGlow,
           {
             width: tamanhoBotaoPrincipal,
             height: tamanhoBotaoPrincipal,
             borderRadius: tamanhoBotaoPrincipal / 2,
-          }
+            backgroundColor: corDinamica as any,
+            shadowColor: corDinamica as any,
+            shadowOffset: { width: 0, height: 6 },
+            shadowOpacity: 0.8,
+            shadowRadius: 14,
+            elevation: 10,
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderWidth: 1,
+            borderColor: 'rgba(255,255,255,0.3)',
+          },
         ]}
-        className="bg-primary items-center justify-center border border-blue-400"
       >
-        {estaTocando ? (
-          <Pause color="white" size={tamanhoBotaoPrincipal * 0.4} fill="white" />
-        ) : (
-          <Play color="white" size={tamanhoBotaoPrincipal * 0.4} fill="white" style={{ marginLeft: 4 }} />
-        )}
-      </Pressable>
+        <Pressable
+          onPress={() => (estaTocando ? pausar() : retomar())}
+          style={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }}
+        >
+          {estaTocando ? (
+            <Pause color="white" size={tamanhoBotaoPrincipal * 0.4} fill="white" />
+          ) : (
+            <Play color="white" size={tamanhoBotaoPrincipal * 0.4} fill="white" style={{ marginLeft: 4 }} />
+          )}
+        </Pressable>
+      </Animated.View>
 
       <Pressable onPress={proxima} disabled={!temFila} style={{ opacity: temFila ? 1 : 0.4 }} className="p-2">
         <SkipForward color={colors.textDark} size={24} fill={colors.textDark} />
@@ -292,7 +450,7 @@ function PainelFila() {
             className={`flex-row items-center px-4 py-3 rounded-2xl mb-2 border ${ehAtual ? "bg-glass-white border-primary" : "bg-transparent border-glass-white"}`}
           >
             {item.capaUrl ? (
-              <Image source={{ uri: item.capaUrl }} className="w-12 h-12 rounded-xl mr-4" />
+              <Image source={{ uri: item.capaUrl }} className="w-14 h-14 rounded-xl mr-4" />
             ) : (
               <View className="w-12 h-12 rounded-xl bg-surface mr-4" />
             )}
@@ -313,13 +471,6 @@ function PainelFila() {
 }
 
 const styles = StyleSheet.create({
-  glowShadow: {
-    shadowColor: '#3B82F6',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.5,
-    shadowRadius: 20,
-    elevation: 15,
-  },
   buttonGlow: {
     shadowColor: '#60A5FA',
     shadowOffset: { width: 0, height: 6 },
@@ -328,7 +479,6 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   progressGlow: {
-    shadowColor: '#3B82F6',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 1,
     shadowRadius: 8,

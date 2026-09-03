@@ -6,17 +6,36 @@ import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
 import { supabase } from "../../lib/supabase";
 import { enviarArquivoParaStorage } from "../../lib/upload";
-import { useAuthStore } from "../../store/authStore";
+import { useAuthStore, bloqueioAtivo  } from "../../store/authStore";
 import { colors } from "../../constants/theme";
 import { usePlayerAwarePadding } from "../../hooks/usePlayerAwarePadding";
 
 export default function Criar() {
   const usuario = useAuthStore((s) => s.usuario);
+  const restricaoAtiva = useAuthStore((s) => s.restricaoAtiva);
 
   if (!usuario) {
     return (
       <View className="flex-1 bg-background items-center justify-center">
         <Text className="text-muted">Carregando...</Text>
+      </View>
+    );
+  }
+   if (bloqueioAtivo(usuario, restricaoAtiva)) {
+    const dataFormatada = restricaoAtiva?.data_fim
+      ? new Date(restricaoAtiva.data_fim).toLocaleDateString("pt-BR")
+      : null;
+    return (
+      <View className="flex-1 bg-background items-center justify-center px-8">
+        <Text className="text-lg font-bold text-textDark text-center mb-2">
+          Você está temporariamente bloqueado
+        </Text>
+        <Text className="text-muted text-center mb-2">
+          Não é possível publicar conteúdo no momento{dataFormatada ? ` até ${dataFormatada}` : ""}.
+        </Text>
+        {restricaoAtiva?.motivo && (
+          <Text className="text-muted text-center text-sm mt-2">Motivo: {restricaoAtiva.motivo}</Text>
+        )}
       </View>
     );
   }

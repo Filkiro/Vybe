@@ -8,6 +8,15 @@ import { colors } from "../constants/theme";
 
 type Aba = "musicas" | "albuns" | "perfis";
 
+function obterIniciais(titulo: string) {
+  if (!titulo) return "VY";
+  const partes = titulo.trim().split(/\s+/);
+  if (partes.length === 1) {
+    return partes[0].slice(0, 2).toUpperCase();
+  }
+  return (partes[0][0] + partes[1][0]).toUpperCase();
+}
+
 export default function Pesquisa() {
   const insets = useSafeAreaInsets();
   const [aba, setAba] = useState<Aba>("perfis");
@@ -31,7 +40,7 @@ export default function Pesquisa() {
           .limit(20),
         supabase
           .from("perfil_organizador")
-          .select("usuario_id, localizacao, nicho_trabalho, usuario:usuario_id(nome)")
+          .select("usuario_id, localizacao, nicho_trabalho, usuario:usuario_id!inner(nome)")
           .ilike("usuario.nome", termo)
           .limit(20),
       ]);
@@ -39,14 +48,14 @@ export default function Pesquisa() {
         ...(musicos ?? []).map((m: any) => ({
           tipo: "musico",
           usuario_id: m.usuario_id,
-          titulo: m.apelido ?? m.usuario?.nome,
+          titulo: m.apelido ?? (Array.isArray(m.usuario) ? m.usuario[0]?.nome : m.usuario?.nome),
           subtitulo: [m.genero_musical, m.localizacao].filter(Boolean).join(" · "),
           foto_url: m.foto_url,
         })),
         ...(organizadores ?? []).map((o: any) => ({
           tipo: "organizador",
           usuario_id: o.usuario_id,
-          titulo: o.usuario?.nome,
+          titulo: Array.isArray(o.usuario) ? o.usuario[0]?.nome : o.usuario?.nome,
           subtitulo: [o.nicho_trabalho, o.localizacao].filter(Boolean).join(" · "),
           foto_url: null,
         })),
@@ -54,7 +63,7 @@ export default function Pesquisa() {
     } else if (aba === "musicas") {
       const { data } = await supabase
         .from("musica")
-        .select("id, nome, capa_url, genero, usuario_id, perfil:usuario_id(apelido)")
+        .select("id, nome, capa_url, genero, usuario_id")
         .ilike("nome", termo)
         .eq("status", "ativo")
         .limit(30);
@@ -63,14 +72,15 @@ export default function Pesquisa() {
           tipo: "musica",
           id: m.id,
           titulo: m.nome,
-          subtitulo: [m.genero, m.perfil?.apelido].filter(Boolean).join(" · "),
+          subtitulo: m.genero,
           foto_url: m.capa_url,
+          usuario_id: m.usuario_id,
         }))
       );
     } else {
       const { data } = await supabase
         .from("album")
-        .select("id, nome, capa_url, usuario_id, perfil:usuario_id(apelido)")
+        .select("id, nome, capa_url, usuario_id")
         .ilike("nome", termo)
         .eq("status", "ativo")
         .limit(30);
@@ -79,8 +89,9 @@ export default function Pesquisa() {
           tipo: "album",
           id: a.id,
           titulo: a.nome,
-          subtitulo: a.perfil?.apelido,
+          subtitulo: null,
           foto_url: a.capa_url,
+          usuario_id: a.usuario_id,
         }))
       );
     }
@@ -136,12 +147,18 @@ export default function Pesquisa() {
         renderItem={({ item }) => (
           <Pressable onPress={() => abrir(item)} className="flex-row items-center bg-card rounded-2xl p-3 mb-3">
             {item.foto_url ? (
-              <Image source={{ uri: item.foto_url }} className="w-14 h-14 rounded-xl mr-3" />
+              <Image source={{ uri: item.foto_url }} style={{borderRadius:48}} className="w-14 h-14 mr-3" />
             ) : (
-              <View className="w-14 h-14 rounded-xl bg-surface mr-3" />
+              <View style={{borderRadius:48}} className="w-14 h-14 bg-surface mr-3 items-center justify-center">
+                <Text className="text-primaryLight font-bold text-base">
+                  {obterIniciais(item.titulo)}
+                </Text>
+              </View>
             )}
             <View className="flex-1">
-              <Text className="font-bold text-textDark">{item.titulo}</Text>
+              <Text className="font-bold text-textDark">
+                {item.titulo} <Text className="font-normal text-muted">- {item.tipo ? item.tipo.charAt(0).toUpperCase() + item.tipo.slice(1) : ""}</Text>
+              </Text>
               {!!item.subtitulo && (
                 <Text className="text-muted text-xs" numberOfLines={1}>
                   {item.subtitulo}

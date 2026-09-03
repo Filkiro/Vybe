@@ -7,6 +7,7 @@ type AuthState = {
   usuario: Usuario | null;
   carregando: boolean;
   inicializar: () => Promise<void>;
+  restricaoAtiva: { tipo: string; motivo: string | null; data_fim: string | null } | null;
   entrar: (email: string, senha: string) => Promise<{ error: string | null }>;
   cadastrar: (params: {
     nome: string;
@@ -18,9 +19,21 @@ type AuthState = {
   sair: () => Promise<void>;
 };
 
+async function carregarRestricao(usuarioId: string, set: any) {
+  const { data } = await supabase
+    .from("restricao")
+    .select("tipo, motivo, data_fim")
+    .eq("usuario_id", usuarioId)
+    .order("data_inicio", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  set({ restricaoAtiva: data ?? null });
+}
+
 export const useAuthStore = create<AuthState>((set) => ({
   usuario: null,
   carregando: true,
+  restricaoAtiva: null,
 
   inicializar: async () => {
     const { data } = await supabase.auth.getSession();
@@ -161,4 +174,18 @@ export function ehModerador(usuario: Usuario | null): boolean {
 
 export function ehContaComum(usuario: Usuario | null): boolean {
   return usuario?.tipo_conta === "musico" || usuario?.tipo_conta === "organizador";
+}
+
+export function ehBanido(usuario: Usuario | null): boolean {
+  return usuario?.status === "banido";
+}
+
+export function bloqueioAtivo(
+  usuario: Usuario | null,
+  restricao: { tipo: string; data_fim: string | null } | null
+): boolean {
+  if (usuario?.status !== "bloqueado") return false;
+  if (!restricao || restricao.tipo !== "bloqueio") return true;
+  if (!restricao.data_fim) return true;
+  return new Date(restricao.data_fim) > new Date();
 }

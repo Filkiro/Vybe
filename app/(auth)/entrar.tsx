@@ -7,8 +7,10 @@ import { AppLogo } from "../../components/AppLogo";
 import { colors } from "../../constants/theme";
 import Animated from 'react-native-reanimated';
 
+// Correção: Criado fora dos componentes para manter a estabilidade da árvore do React
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
 export default function AuthScreen() {
-  const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
   const { aba: abaParam } = useLocalSearchParams<{ aba?: string }>();
   const [aba, setAba] = useState<"cadastro" | "login">(abaParam === "login" ? "login" : "cadastro");
 
@@ -27,7 +29,6 @@ export default function AuthScreen() {
       showsVerticalScrollIndicator={false}
     >
       <View className="flex-1 w-full max-w-md relative">
-        
         <View className="w-full px-6 pt-12 pb-2 flex-row justify-end z-20">
           <AnimatedPressable
             onPress={fechar}
@@ -126,8 +127,6 @@ function FormCadastro() {
     }
     router.replace("/(tabs)/home");
   }
-
-  const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
   return (
     <View className="pb-10">

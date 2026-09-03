@@ -4,7 +4,8 @@ import { View, Text } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import "../global.css";
-import { useAuthStore } from "../store/authStore";
+import { useAuthStore, ehBanido } from "../store/authStore";
+import { ContaBanidaOverlay } from "../components/ContaBanidaOverlay";
 import { AuthPromptModal } from "../components/AuthPromptModal";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { UnreadMessagesListener } from "../components/UnreadMessagesListener";
@@ -28,6 +29,9 @@ export default function RootLayout() {
   const carregando = useAuthStore((s) => s.carregando);
   const router = useRouter();
   const segmentos = useSegments();
+  const restricaoAtiva = useAuthStore((s) => s.restricaoAtiva);
+  const banido = ehBanido(usuario);
+
 
   useEffect(() => {
     inicializar();
@@ -59,13 +63,19 @@ export default function RootLayout() {
     );
   }
 
-  return (
-    <SafeAreaProvider>
-      <StatusBar style="light" />
-      <Stack screenOptions={{ headerShown: false }} />
-      <AuthPromptModal />
-      <ConfirmModal />
-      <UnreadMessagesListener />
-    </SafeAreaProvider>
-  );
+return (
+  <SafeAreaProvider>
+    <StatusBar style="light" />
+    {banido ? (
+      <ContaBanidaOverlay motivo={restricaoAtiva?.motivo ?? null} />
+    ) : (
+      <>
+        <Stack screenOptions={{ headerShown: false }} />
+        <AuthPromptModal />
+        <ConfirmModal />
+        <UnreadMessagesListener />
+      </>
+    )}
+  </SafeAreaProvider>
+);
 }

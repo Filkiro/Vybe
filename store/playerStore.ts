@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { createAudioPlayer, AudioPlayer, AudioStatus } from "expo-audio";
+import { createAudioPlayer, AudioPlayer, AudioStatus, setAudioModeAsync } from "expo-audio";
 
 type Musica = {
   id: string;
@@ -17,9 +17,6 @@ type PlayerState = {
   posicaoMs: number;
   duracaoMs: number;
   sound: AudioPlayer | null;
-  // "fila" é a lista de onde a música foi tocada (ex: a grade da
-  // Home) — permite Próxima/Anterior de verdade em vez de botões
-  // decorativos. Se omitida, a fila vira só a própria música.
   tocarMusica: (musica: Musica, fila?: Musica[]) => Promise<void>;
   pausar: () => Promise<void>;
   retomar: () => Promise<void>;
@@ -29,24 +26,6 @@ type PlayerState = {
   alternarRepetir: () => void;
 };
 
-// Contador global de "geração" — cada chamada de carregarESocar tira
-// um número. Existia um bug em que duas músicas tocavam juntas:
-// tocarMusica/proxima/anterior são assíncronos (createAudioPlayer
-// depende de rede), então se duas chamadas se sobrepunham (ex: tocar
-// uma música enquanto a anterior ainda estava carregando, ou
-// "próxima" automática disparando quase junto de um toque manual),
-// as DUAS liam `get().sound` como sendo a mesma música antiga, as
-// DUAS criavam seu próprio AudioPlayer novo, e a que terminasse de
-// carregar primeiro tinha seu `sound` sobrescrito no store pela
-// segunda — sem nunca ser liberada. Ela ficava tocando sozinha,
-// invisível pro store, ao lado da música nova.
-//
-// A correção: cada chamada guarda seu próprio número (`meuToken`).
-// Antes de mexer no estado global ou entregar o áudio pra tocar, ela
-// confere se ainda é a chamada mais recente (`meuToken === token`).
-// Se não for — porque uma chamada mais nova começou nesse meio
-// tempo — ela libera o que acabou de carregar e desiste, em vez de
-// sobrescrever o estado e abandonar o som tocando.
 let token = 0;
 
 async function carregarESocar(
@@ -59,40 +38,31 @@ async function carregarESocar(
   const atual = get().sound;
   if (atual) {
     try {
+      atual.pause();
+      atual.release();
       atual.remove();
-    } catch {
-      // Player já pode ter sido liberado por outra chamada; ignora.
-    }
+    } catch {}
   }
 
-  // Enquanto liberávamos o player acima, outra chamada pode ter
-  // começado (e já ter tomado a frente). Se não somos mais a mais
-  // recente, para por aqui — nem chega a carregar o áudio novo.
   if (meuToken !== token) return;
+
+  // Garante que a sessão de áudio permita execução em segundo plano (Mobile)
+await setAudioModeAsync({
+    playsInSilentMode: true,
+  });
 
   const player = createAudioPlayer({ uri: musica.arquivoUrl });
 
   player.addListener("playbackStatusUpdate", (status: AudioStatus) => {
     if (!status.isLoaded) return;
-    // Ignora atualizações de um player que já foi substituído — evita
-    // que um "didJustFinish" atrasado de uma música antiga dispare
-    // proxima()/seek() por cima da música atual.
     if (meuToken !== token) return;
 
     set({
-      // expo-audio reporta currentTime/duration em SEGUNDOS —
-      // convertendo pra ms aqui, o resto do app (que usa posicaoMs/
-      // duracaoMs) não precisa mudar nada.
       posicaoMs: status.currentTime * 1000,
       duracaoMs: (status.duration ?? 0) * 1000,
       estaTocando: status.playing,
     });
 
-    // Música terminou: repete se "repetir" estiver ligado, senão
-    // avança pra próxima da fila (se houver). Diferente do expo-av,
-    // o expo-audio NÃO reinicia sozinho — o player fica pausado no
-    // fim, então o repeat precisa voltar pro início e mandar tocar
-    // de novo explicitamente.
     if (status.didJustFinish) {
       if (get().repetir) {
         player.seekTo(0);
@@ -106,12 +76,24 @@ async function carregarESocar(
 
   player.play();
 
-  // Outra chamada pode ter começado enquanto o player ainda estava
-  // carregando/conectando. Se sim, esse player que acabamos de criar
-  // é descartável: libera e não toca — é exatamente esse caso que
-  // antes ficava tocando por baixo.
+  // Integração com a Media Session API (Para Web e Controles de Tela de Bloqueio)
+  if (typeof navigator !== 'undefined' && 'mediaSession' in navigator) {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: musica.nome,
+      artist: musica.autorApelido ?? "Autor desconhecido",
+      artwork: musica.capaUrl ? [{ src: musica.capaUrl, sizes: '512x512', type: 'image/jpeg' }] : []
+    });
+
+    navigator.mediaSession.setActionHandler('play', () => get().retomar());
+    navigator.mediaSession.setActionHandler('pause', () => get().pausar());
+    navigator.mediaSession.setActionHandler('previoustrack', () => get().anterior());
+    navigator.mediaSession.setActionHandler('nexttrack', () => get().proxima());
+  }
+
   if (meuToken !== token) {
     try {
+      player.pause();
+      player.release();
       player.remove();
     } catch {}
     return;
@@ -120,9 +102,6 @@ async function carregarESocar(
   set({ sound: player, musicaAtual: musica, estaTocando: true });
 }
 
-// Vive FORA da árvore de componentes do React — por isso nunca
-// "reseta" ao trocar de tela/rota, resolvendo o mesmo problema que
-// tivemos no FlutterFlow (player reiniciando a cada navegação).
 export const usePlayerStore = create<PlayerState>((set, get) => ({
   musicaAtual: null,
   fila: [],

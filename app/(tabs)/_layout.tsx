@@ -4,6 +4,7 @@ import { Home, Compass, Plus, User, ShieldCheck, Settings, MessageCircle } from 
 import { BlurView } from "expo-blur";
 import { MiniPlayer } from "../../components/MiniPlayer";
 import { AppHeader } from "../../components/AppHeader";
+import { useSegments } from "expo-router";
 import { useAuthStore, ehContaComum, ehModerador, ehAdministrador } from "../../store/authStore";
 import { useUnreadStore } from "../../store/unreadStore";
 import { colors } from "../../constants/theme";
@@ -20,8 +21,8 @@ const naoLidas = useUnreadStore((state) => state.naoLidas);
     
     <View  style={{ flex: 1, backgroundColor: '#0B101E', }}>
       <AppHeader />
-<Tabs
-initialRouteName="home"
+      <Tabs
+        initialRouteName="home"
         screenOptions={{
           headerShown: false,
           tabBarActiveTintColor: '#3B82F6', // Azul vibrante
@@ -51,7 +52,7 @@ initialRouteName="home"
           tabBarBackground: () => (
             <BlurView 
             experimentalBlurMethod="dimezisBlurView"
-              intensity={80} 
+              intensity={60} 
               tint="dark" 
               style={{
                 ...StyleSheet.absoluteFillObject,

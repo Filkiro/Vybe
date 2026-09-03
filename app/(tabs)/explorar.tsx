@@ -82,8 +82,7 @@ export default function Explorar() {
   }
 
   return (
-    <View className="flex-1 bg-background">
-      <Text className="text-2xl font-bold px-4 pt-6 pb-4 text-textDark">Explorar</Text>
+    <View className="flex-1 bg-background pt-10">
 
       {carregando ? (
         <Text className="text-muted text-center mt-8">Carregando...</Text>

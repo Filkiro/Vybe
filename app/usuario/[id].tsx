@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { View, Text, Pressable, Image, ScrollView, Share, FlatList, useWindowDimensions } from "react-native";
-import { useLocalSearchParams, useRouter, router } from "expo-router";
+import { View, Text, Pressable, Image, ScrollView, Share, TextInput, useWindowDimensions } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { ChevronLeft, Flag, Share2 } from "lucide-react-native";
 import { supabase, Usuario } from "../../lib/supabase";
 import { useAuthStore } from "../../store/authStore";
@@ -27,6 +27,9 @@ export default function PerfilPublico() {
   const [carregando, setCarregando] = useState(true);
   const [contatando, setContatando] = useState(false);
   const [denunciaAberta, setDenunciaAberta] = useState(false);
+  const [motivoEscolhido, setMotivoEscolhido] = useState<string | null>(null);
+  const [descricaoDenuncia, setDescricaoDenuncia] = useState("");
+  const [erroDenuncia, setErroDenuncia] = useState<string | null>(null);
 
   useEffect(() => {
     carregar();
@@ -95,13 +98,29 @@ export default function PerfilPublico() {
     await Share.share({ message: `Confira o perfil de ${usuario?.nome} no Vybe: vybe://usuario/${usuario?.id}` });
   }
 
-  async function enviarDenuncia(motivo: string) {
+  async function enviarDenuncia(motivo: string, descricao: string | null) {
     if (!usuarioLogado || !usuario) return;
     const { error } = await supabase
       .from("denuncia")
-      .insert({ denunciante_id: usuarioLogado.id, tipo_alvo: "usuario", alvo_id: usuario.id, motivo });
+      .insert({ denunciante_id: usuarioLogado.id, tipo_alvo: "usuario", alvo_id: usuario.id, motivo, descricao });
     setDenunciaAberta(false);
+    setMotivoEscolhido(null);
+    setDescricaoDenuncia("");
+    setErroDenuncia(null);
     avisar(error ? "Erro" : "Denúncia enviada", error ? error.message : "A equipe de moderação vai analisar.");
+  }
+
+  function confirmarDenuncia() {
+    if (!motivoEscolhido) {
+      setErroDenuncia("Escolha um motivo.");
+      return;
+    }
+    if (motivoEscolhido === "Outro motivo" && !descricaoDenuncia.trim()) {
+      setErroDenuncia("Descreva o motivo da denúncia.");
+      return;
+    }
+    setErroDenuncia(null);
+    enviarDenuncia(motivoEscolhido, motivoEscolhido === "Outro motivo" ? descricaoDenuncia.trim() : null);
   }
 
   const PADDING_HORIZONTAL = 16;
@@ -145,7 +164,7 @@ export default function PerfilPublico() {
             className="rounded-full items-center justify-center bg-surface"
             style={{ width: 96, height: 96, borderWidth: 4, borderColor: colors.background }}
           >
-            <Text className="text-3xl font-bold text-muted">{usuario.nome.charAt(0).toUpperCase()}</Text>
+            <Text className="text-3xl font-bold text-primaryLight">{usuario.nome.charAt(0).toUpperCase()}</Text>
           </View>
         )}
 
@@ -185,11 +204,43 @@ export default function PerfilPublico() {
           <View className="bg-card border border-border rounded-2xl p-4 mx-4 mt-3 w-full">
             <Text className="text-textDark font-medium mb-2">Por que você está denunciando?</Text>
             {["Conteúdo ofensivo", "Spam ou golpe", "Perfil falso", "Outro motivo"].map((motivo) => (
-              <Pressable key={motivo} onPress={() => enviarDenuncia(motivo)} className="py-2 border-b border-border">
-                <Text className="text-textDark">{motivo}</Text>
+              <Pressable
+                key={motivo}
+                onPress={() => setMotivoEscolhido(motivo)}
+                className="py-2 border-b border-border flex-row items-center justify-between"
+              >
+                <Text className={motivoEscolhido === motivo ? "text-primary font-bold" : "text-textDark"}>
+                  {motivo}
+                </Text>
               </Pressable>
             ))}
-            <Pressable onPress={() => setDenunciaAberta(false)} className="pt-2">
+
+            {motivoEscolhido === "Outro motivo" && (
+              <TextInput
+                placeholder="Descreva o motivo da denúncia"
+                placeholderTextColor="#9CA3AF"
+                value={descricaoDenuncia}
+                onChangeText={setDescricaoDenuncia}
+                multiline
+                className="border border-border rounded-2xl px-4 py-3 mt-2 text-textDark"
+              />
+            )}
+
+            {erroDenuncia && <Text className="text-red-500 text-xs mt-2">{erroDenuncia}</Text>}
+
+            <Pressable onPress={confirmarDenuncia} className="bg-primary rounded-xl py-3 items-center mt-3">
+              <Text className="text-white font-bold text-sm">Enviar denúncia</Text>
+            </Pressable>
+
+            <Pressable
+              onPress={() => {
+                setDenunciaAberta(false);
+                setMotivoEscolhido(null);
+                setDescricaoDenuncia("");
+                setErroDenuncia(null);
+              }}
+              className="pt-3"
+            >
               <Text className="text-muted text-center">Cancelar</Text>
             </Pressable>
           </View>

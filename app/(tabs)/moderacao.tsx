@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { View, Text, ScrollView, Pressable, RefreshControl } from "react-native";
+import { View, Text, ScrollView, Pressable, RefreshControl, TextInput } from "react-native";
 import { Redirect, useFocusEffect, useRouter } from "expo-router";
 import { 
   TriangleAlert, 
@@ -10,7 +10,8 @@ import {
   CheckCircle2, 
   Clock,
   LifeBuoy,
-  MessageSquareText
+  MessageSquareText,
+  Lock
 } from "lucide-react-native";
 import { supabase } from "../../lib/supabase";
 import { useAuthStore } from "../../store/authStore";
@@ -41,6 +42,7 @@ export default function ModeracaoScreen() {
   const usuario = useAuthStore((s) => s.usuario);
   const router = useRouter();
   const paddingBottom = usePlayerAwarePadding(140);
+  
 
   if (usuario && usuario.tipo_conta !== "moderador" && usuario.tipo_conta !== "adm") {
     return <Redirect href="/(tabs)/home" />;
@@ -50,6 +52,37 @@ export default function ModeracaoScreen() {
   const [chamados, setChamados] = useState<ChamadoSuporte[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [processando, setProcessando] = useState<string | null>(null);
+  const [bloqueandoId, setBloqueandoId] = useState<string | null>(null);
+  const [dataFimBloqueio, setDataFimBloqueio] = useState("");
+  const [erroBloqueio, setErroBloqueio] = useState<string | null>(null);
+
+  async function bloquearUsuario(denuncia: DenunciaCompleta) {
+  if (denuncia.tipo_alvo !== "usuario") return;
+  if (!dataFimBloqueio) {
+    setErroBloqueio("Escolha até quando o usuário fica bloqueado.");
+    return;
+  }
+  setErroBloqueio(null);
+  setProcessando(denuncia.id);
+
+  await supabase.from("restricao").insert({
+    usuario_id: denuncia.alvo_id,
+    moderador_id: usuario?.id,
+    tipo: "bloqueio",
+    motivo: denuncia.motivo,
+    data_fim: dataFimBloqueio,
+  });
+  await supabase.from("usuario").update({ status: "bloqueado" }).eq("id", denuncia.alvo_id);
+  await supabase
+    .from("denuncia")
+    .update({ status: "resolvida", moderador_id: usuario?.id })
+    .eq("id", denuncia.id);
+
+  setProcessando(null);
+  setBloqueandoId(null);
+  setDataFimBloqueio("");
+  setDenuncias((atual) => atual.filter((d) => d.id !== denuncia.id));
+}
 
   const carregar = useCallback(async () => {
     setCarregando(true);
@@ -260,19 +293,19 @@ export default function ModeracaoScreen() {
               <View className="flex-row flex-wrap justify-between gap-2 border-t border-border/50 pt-4 mt-2">
                 
                 {/* Botão de Ver Perfil/Conteúdo */}
-<Pressable
-  onPress={() => {
-    if (item.tipo_alvo === "usuario") {
-      router.push(`/usuario/${item.alvo_id}`); // Ajustado para a sua rota
-    }
-  }}
-  className="bg-primary/10 px-3 py-2 rounded-xl flex-row items-center"
->
-  <UserSearch color={colors.primary} size={16} />
-  <Text className="text-primary font-bold text-xs ml-2">Ver Perfil</Text>
-</Pressable>
+                <Pressable
+                  onPress={() => {
+                    if (item.tipo_alvo === "usuario") {
+                      router.push(`/usuario/${item.alvo_id}`);
+                    }
+                  }}
+                  className="bg-primary/10 px-3 py-2 rounded-xl flex-row items-center"
+                >
+                  <UserSearch color={colors.primary} size={16} />
+                  <Text className="text-primary font-bold text-xs ml-2">Ver Perfil</Text>
+                </Pressable>
 
-                <View className="flex-row gap-2">
+                <View className="flex-row gap-2 flex-wrap">
                   <Pressable
                     onPress={() => marcarResolvida(item.id)}
                     disabled={processando === item.id}
@@ -282,6 +315,17 @@ export default function ModeracaoScreen() {
                     <CheckCircle2 color={colors.textDark} size={16} />
                     <Text className="text-textDark font-bold text-xs ml-2">Ignorar / Resolver</Text>
                   </Pressable>
+
+                  {item.tipo_alvo === "usuario" && (
+                    <Pressable
+                      onPress={() => setBloqueandoId(bloqueandoId === item.id ? null : item.id)}
+                      disabled={processando === item.id}
+                      className="bg-primary/10 px-4 py-2 rounded-xl flex-row items-center"
+                    >
+                      <Lock color={colors.primary} size={16} />
+                      <Text className="text-primary font-bold text-xs ml-2">Bloquear</Text>
+                    </Pressable>
+                  )}
 
                   {item.tipo_alvo === "usuario" && (
                     <Pressable
@@ -297,6 +341,29 @@ export default function ModeracaoScreen() {
                 </View>
 
               </View>
+
+              {/* Formulário de Bloqueio Temporário */}
+              {bloqueandoId === item.id && (
+                <View className="mt-3 bg-background border border-border rounded-xl p-3">
+                  <Text className="text-textDark text-sm font-semibold mb-2">Bloquear até quando?</Text>
+                  <TextInput
+                    placeholder="AAAA-MM-DD"
+                    placeholderTextColor="#9CA3AF"
+                    value={dataFimBloqueio}
+                    onChangeText={setDataFimBloqueio}
+                    className="border border-border rounded-xl bg-card px-3 py-2 text-textDark mb-2"
+                  />
+                  {erroBloqueio && <Text className="text-red-500 text-xs mb-2">{erroBloqueio}</Text>}
+                  <Pressable
+                    onPress={() => bloquearUsuario(item)}
+                    disabled={processando === item.id}
+                    className="bg-primary rounded-xl py-2.5 items-center"
+                  >
+                    <Text className="text-white font-bold text-xs">Confirmar bloqueio</Text>
+                  </Pressable>
+                </View>
+              )}
+
             </View>
           </View>
         ))}
