@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { View, Text, TextInput, Pressable, ScrollView } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
-import { X, Mail, Lock, User, AtSign, Sparkles } from "lucide-react-native";
+import { X, Mail, Lock, User, AtSign, Sparkles, Eye, EyeOff } from "lucide-react-native";
 import { useAuthStore } from "../../store/authStore";
 import { AppLogo } from "../../components/AppLogo";
 import { colors } from "../../constants/theme";
@@ -77,15 +77,31 @@ function AbaBotao({ label, ativa, onPress }: { label: string; ativa: boolean; on
   );
 }
 
-function Campo({ icone: Icon, ...props }: React.ComponentProps<typeof TextInput> & { icone?: any }) {
+function Campo({ 
+  icone: Icon, 
+  isPassword, 
+  ...props 
+}: React.ComponentProps<typeof TextInput> & { icone?: any; isPassword?: boolean }) {
+  const [secureText, setSecureText] = useState(isPassword);
+
   return (
     <View className="flex-row items-center bg-white/5 border border-white/10 rounded-2xl px-4 h-14 mb-4">
       {Icon && <Icon color="#9CA3AF" size={20} />}
       <TextInput
         placeholderTextColor="#6B7280"
         className="flex-1 ml-3 text-base text-textDark"
+        secureTextEntry={secureText}
         {...props}
       />
+      {isPassword && (
+        <Pressable onPress={() => setSecureText(!secureText)} hitSlop={8} className="p-1">
+          {secureText ? (
+            <EyeOff color="#9CA3AF" size={20} />
+          ) : (
+            <Eye color="#9CA3AF" size={20} />
+          )}
+        </Pressable>
+      )}
     </View>
   );
 }
@@ -163,8 +179,8 @@ function FormCadastro() {
       )}
       
       <Campo icone={Mail} placeholder="E-mail" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
-      <Campo icone={Lock} placeholder="Criar senha" value={senha} onChangeText={setSenha} secureTextEntry />
-      <Campo icone={Lock} placeholder="Confirmar senha" value={confirmarSenha} onChangeText={setConfirmarSenha} secureTextEntry />
+      <Campo icone={Lock} placeholder="Criar senha" value={senha} onChangeText={setSenha} isPassword />
+      <Campo icone={Lock} placeholder="Confirmar senha" value={confirmarSenha} onChangeText={setConfirmarSenha} isPassword />
 
       {erro && <Text className="text-red-400 mb-4 text-center font-medium">{erro}</Text>}
 
@@ -220,7 +236,7 @@ function FormLogin() {
   return (
     <View className="pb-10">
       <Campo icone={Mail} placeholder="Seu e-mail" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
-      <Campo icone={Lock} placeholder="Sua senha" value={senha} onChangeText={setSenha} secureTextEntry />
+      <Campo icone={Lock} placeholder="Sua senha" value={senha} onChangeText={setSenha} isPassword />
 
       {erro && <Text className="text-red-400 mb-4 text-center font-medium">{erro}</Text>}
 
