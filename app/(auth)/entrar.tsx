@@ -83,22 +83,37 @@ function Campo({
   ...props 
 }: React.ComponentProps<typeof TextInput> & { icone?: any; isPassword?: boolean }) {
   const [secureText, setSecureText] = useState(isPassword);
+  const [focado, setFocado] = useState(false);
 
   return (
-    <View className="flex-row items-center bg-white/5 border border-white/10 rounded-2xl px-4 h-14 mb-4">
-      {Icon && <Icon color="#9CA3AF" size={20} />}
+    <View 
+      className={`flex-row items-center bg-white/5 rounded-2xl px-4 h-14 mb-4 border transition-all ${
+        focado 
+          ? "border-primary shadow-lg shadow-primary/30 bg-white/[0.08]" 
+          : "border-white/10"
+      }`}
+    >
+      {Icon && <Icon color={focado ? colors.primary : "#9CA3AF"} size={20} />}
       <TextInput
         placeholderTextColor="#6B7280"
-        className="flex-1 ml-3 text-base text-textDark"
+        className="flex-1 ml-3 text-xl text-textDark"
         secureTextEntry={secureText}
+        underlineColorAndroid="transparent"
+        selectionColor={colors.primary}
+        onFocus={() => setFocado(true)}
+        onBlur={() => setFocado(false)}
+        style={{ 
+          outlineStyle: 'none',
+          caretColor: colors.primary,
+        } as any}
         {...props}
       />
       {isPassword && (
-        <Pressable onPress={() => setSecureText(!secureText)} hitSlop={8} className="p-1">
+        <Pressable onPress={() => setSecureText(!secureText)} hitSlop={8} className="p-1" >
           {secureText ? (
-            <EyeOff color="#9CA3AF" size={20} />
+            <EyeOff color={focado ? colors.primary : "#9CA3AF"} size={20} />
           ) : (
-            <Eye color="#9CA3AF" size={20} />
+            <Eye color={focado ? colors.primary : "#9CA3AF"} size={20}  />
           )}
         </Pressable>
       )}
