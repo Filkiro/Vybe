@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { View, Text, TextInput, Switch, ScrollView, Image, useWindowDimensions } from "react-native";
+import { View, Text, TextInput, Switch, ScrollView, Image, useWindowDimensions, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { Camera, LogOut, BarChart3, Music, LifeBuoy } from "lucide-react-native";
+import { BlurView } from "expo-blur";
 import { supabase, PerfilMusico, PerfilOrganizador } from "../../lib/supabase";
 import { useAuthStore, ehContaComum } from "../../store/authStore";
 import { enviarArquivoParaStorage } from "../../lib/upload";
@@ -132,7 +133,13 @@ function CabecalhoPerfil({ usuario, onLogout }: { usuario: any; onLogout: () => 
 
   return (
     <View>
-      <View style={{ height: 120, backgroundColor: colors.primary }} className="rounded-b-[32px]" />
+      {/* Barra do topo com glow, contida dentro da própria altura (overflow hidden) */}
+      <View style={{ height: 110, overflow: "hidden" }} className="rounded-b-[32px]">
+        <View style={{ ...StyleSheet.absoluteFillObject, backgroundColor: colors.primary }} />
+        <View style={{ position: "absolute", top: -60, left: -40, width: 200, height: 150, borderRadius: 100, backgroundColor: "rgba(99,102,241,0.5)" }} />
+        <View style={{ position: "absolute", top: -20, right: -60, width: 180, height: 150, borderRadius: 90, backgroundColor: "rgba(59,130,246,0.55)" }} />
+        <BlurView intensity={50} tint="dark" style={StyleSheet.absoluteFillObject} />
+      </View>
 
       <View className="items-center" style={{ marginTop: -48 }}>
         <Pressable onPress={ehMusico ? trocarFoto : undefined} disabled={!ehMusico || enviandoFoto}>

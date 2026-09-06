@@ -7,53 +7,58 @@ import { AppHeader } from "../../components/AppHeader";
 import { useSegments } from "expo-router";
 import { useAuthStore, ehContaComum, ehModerador, ehAdministrador } from "../../store/authStore";
 import { useUnreadStore } from "../../store/unreadStore";
+import { LinearGradient } from "expo-linear-gradient";
 import { colors } from "../../constants/theme";
 import { TAB_BAR_HEIGHT } from "../../constants/layout";
 
 export default function TabsLayout() {
   const usuario = useAuthStore((s) => s.usuario);
-
   const comum = ehContaComum(usuario);
   const moderacao = ehModerador(usuario);
   const admin = ehAdministrador(usuario);
-const naoLidas = useUnreadStore((state) => state.naoLidas);
+  const naoLidas = useUnreadStore((state) => state.naoLidas);
+
   return (
-    
-    <View  style={{ flex: 1, backgroundColor: '#0B101E', }}>
+    <View style={{ flex: 1, backgroundColor: '#0B101E' }}>
+      {/* Brilho fixo no topo — atrás do header e do início do conteúdo, sempre no mesmo lugar */}
+<View style={{ position: "absolute", top: 0, left: 0, right: 0, height: 420, overflow: "hidden" }} pointerEvents="none">
+  <View style={{ position: "absolute", top: -100, left: -80, width: 340, height: 340, borderRadius: 170, backgroundColor: "rgba(59,130,246,0.75)" }} />
+  <View style={{ position: "absolute", top: -40, right: -90, width: 300, height: 300, borderRadius: 150, backgroundColor: "rgba(99,102,241,0.6)" }} />
+  <BlurView intensity={70} tint="dark" style={StyleSheet.absoluteFillObject} />
+    <LinearGradient
+    colors={["transparent", "transparent", "#0B101E"]}
+    locations={[0, 0.4, 1]}
+    style={StyleSheet.absoluteFillObject}
+  />
+</View>
+
       <AppHeader />
-      <Tabs
+      <View style={{ flex: 1, backgroundColor: 'transparent' }}>   
+      <Tabs 
         initialRouteName="home"
         screenOptions={{
           headerShown: false,
-          tabBarActiveTintColor: '#3B82F6', // Azul vibrante
+          tabBarActiveTintColor: '#3B82F6',
+   sceneStyle: { backgroundColor: "#0B101E" },
           tabBarInactiveTintColor: colors.muted,
-          
-          // Mantém os textos ativados embaixo dos ícones
           tabBarShowLabel: true,
-
-          // 👇 A mágica acontece aqui: força o texto para baixo do ícone
           tabBarLabelPosition: 'below-icon',
-
-          // Estilo compacto para o texto alinhar perfeitamente embaixo do ícone
           tabBarLabelStyle: {
             fontSize: 12,
             fontWeight: '500',
             marginTop: 2,
             marginBottom: 2,
           },
-
           tabBarItemStyle: {
             paddingVertical: 4,
-            justifyContent: 'center', // Garante o alinhamento central
+            justifyContent: 'center',
             alignItems: 'center',
           },
-
-          // Renderiza o vidro fosco por trás dos ícones
           tabBarBackground: () => (
-            <BlurView 
-            experimentalBlurMethod="dimezisBlurView"
-              intensity={60} 
-              tint="dark" 
+            <BlurView
+              experimentalBlurMethod="dimezisBlurView"
+              intensity={60}
+              tint="dark"
               style={{
                 ...StyleSheet.absoluteFillObject,
                 borderTopWidth: 1,
@@ -61,14 +66,13 @@ const naoLidas = useUnreadStore((state) => state.naoLidas);
               }}
             />
           ),
-          
           tabBarStyle: {
             position: 'absolute',
             height: TAB_BAR_HEIGHT,
             paddingBottom: 4,
             paddingTop: 4,
             backgroundColor: 'transparent',
-            borderTopWidth: 0, 
+            borderTopWidth: 0,
             elevation: 0,
           },
         }}
@@ -77,8 +81,6 @@ const naoLidas = useUnreadStore((state) => state.naoLidas);
           name="home"
           options={{ title: "Início", tabBarIcon: ({ color }) => <Home color={color} size={20} /> }}
         />
-
-        {/* Telas de contas comuns (Músico/Organizador) */}
         <Tabs.Screen
           name="explorar"
           options={{
@@ -101,16 +103,10 @@ const naoLidas = useUnreadStore((state) => state.naoLidas);
             href: comum ? "/(tabs)/conversa" : null,
             title: "Conversas",
             tabBarIcon: ({ color }) => <MessageCircle color={color} size={20} />,
-            // Balãozinho azul com o número de mensagens não lidas —
-            // some sozinho quando naoLidas volta a 0 (undefined
-            // esconde o badge). Acima de 9 mostra "9+" pra não
-            // estourar o círculo.
-tabBarBadge: naoLidas > 0 ? naoLidas : undefined,
+            tabBarBadge: naoLidas > 0 ? naoLidas : undefined,
             tabBarBadgeStyle: { backgroundColor: colors.primary, color: "white" },
           }}
         />
-
-        {/* Telas exclusivas da equipe (Moderador/Administrador) */}
         <Tabs.Screen
           name="moderacao"
           options={{
@@ -127,15 +123,12 @@ tabBarBadge: naoLidas > 0 ? naoLidas : undefined,
             tabBarIcon: ({ color }) => <Settings color={color} size={20} />,
           }}
         />
-
-        {/* Perfil */}
         <Tabs.Screen
           name="perfil"
           options={{ title: "Perfil", tabBarIcon: ({ color }) => <User color={color} size={20} /> }}
         />
       </Tabs>
-
-      {/* O MiniPlayer flutua perfeitamente acima da barra ajustada */}
+</View>
       <View style={{ position: "absolute", left: 0, right: 0, bottom: TAB_BAR_HEIGHT, paddingBottom: 8 }}>
         <MiniPlayer />
       </View>
