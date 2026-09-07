@@ -233,7 +233,7 @@ function LayoutDesktop({ corDinamica }: { corDinamica: CorAnimada }) {
             >
               <ArrowLeft color="#FFFFFF" size={20} />
             </Pressable>
-            <Text className="text-white font-semibold">Now Playing</Text>
+            <Text className="text-white font-semibold">Tocando Agora</Text>
             <Pressable
               onPress={() => setCurtido((v) => !v)}
               className="w-10 h-10 rounded-full bg-white/10 items-center justify-center"

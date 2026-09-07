@@ -8,6 +8,7 @@ import { supabase } from "../../lib/supabase";
 import { enviarArquivoParaStorage } from "../../lib/upload";
 import { useAuthStore, bloqueioAtivo  } from "../../store/authStore";
 import { colors } from "../../constants/theme";
+import { useHomeStore } from "../../store/homeStore";
 import { usePlayerAwarePadding } from "../../hooks/usePlayerAwarePadding";
 
 export default function Criar() {
@@ -176,6 +177,7 @@ function FormMusica({ usuarioId }: { usuarioId: string }) {
         data_lancamento: dataLancamento || null,
         capa_url: capaUrl,
         arquivo_url: arquivoUrl,
+        
       });
       if (error) throw error;
 
@@ -189,6 +191,7 @@ function FormMusica({ usuarioId }: { usuarioId: string }) {
     } catch (e: any) {
       setErro(e.message ?? "Erro ao publicar música.");
     } finally {
+      useHomeStore.getState().invalidarHome();
       setEnviando(false);
     }
   }
@@ -327,6 +330,7 @@ function FormAlbum({ usuarioId }: { usuarioId: string }) {
     } catch (e: any) {
       setErro(e.message ?? "Erro ao criar álbum.");
     } finally {
+      useHomeStore.getState().invalidarHome();
       setEnviando(false);
     }
   }
@@ -553,6 +557,7 @@ function FormPublicacaoMusico({ usuarioId }: { usuarioId: string }) {
     } catch (e: any) {
       setErro(e.message ?? "Erro ao publicar.");
     } finally {
+      useHomeStore.getState().invalidarHome();
       setEnviando(false);
     }
   }
@@ -668,6 +673,7 @@ function FormPublicacaoOrganizador({ usuarioId }: { usuarioId: string }) {
     } catch (e: any) {
       setErro(e.message ?? "Erro ao publicar.");
     } finally {
+      useHomeStore.getState().invalidarHome();
       setEnviando(false);
     }
   }

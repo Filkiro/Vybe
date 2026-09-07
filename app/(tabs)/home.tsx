@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { View, Text, FlatList, Pressable, Image, RefreshControl, ScrollView, ImageBackground, Modal, StyleSheet } from "react-native";
 import { BlurView } from 'expo-blur'
 import { useFocusEffect } from "@react-navigation/native";
@@ -7,6 +7,7 @@ import { supabase } from "../../lib/supabase";
 import { usePlayerStore } from "../../store/playerStore";
 import { useRequireAuth } from "../../store/authPromptStore";
 import { usePlayerAwarePadding } from "../../hooks/usePlayerAwarePadding";
+import { useHomeStore } from "../../store/homeStore";
 import { LinearGradient } from "expo-linear-gradient";
 import { MapPin, Play, User as UserIcon, Calendar, Heart, X } from "lucide-react-native";
 import { AnimatedBackgroundBlobs } from "../../components/AnimatedBackgroundBlobs";
@@ -93,6 +94,15 @@ export default function Home() {
   const paddingBottom = usePlayerAwarePadding(120);
   const tocarMusica = usePlayerStore((s) => s.tocarMusica);
   const requireAuth = useRequireAuth();
+
+  // Cache global — só recarrega quando algo novo for publicado (invalidarHome)
+  const precisaAtualizar = useHomeStore((s) => s.precisaAtualizar);
+  const marcarCarregado = useHomeStore((s) => s.marcarCarregado);
+
+  // Controla se ESTA instância do componente já carregou pelo menos uma vez.
+  // Evita loading infinito quando precisaAtualizar já é false no momento em
+  // que a Home é montada de novo (ex: logo após o login).
+  const jaCarregouNestaInstancia = useRef(false);
 
   // --- Descobre quem é o usuário logado e seu tipo real ---
   const carregarPerfilLogado = useCallback(async () => {
@@ -291,17 +301,28 @@ export default function Home() {
     }
   }, [carregarPerfilLogado, carregarEventosProximos, carregarArtistasDestaque]);
 
+  // Recarrega ao focar apenas se: (a) esta instância do componente ainda não
+  // carregou nada, ou (b) algo novo foi publicado (invalidarHome foi chamado).
+  // O check em (a) é o que evita o loading infinito: mesmo que o cache global
+  // já esteja "atualizado" de uma navegação anterior, a instância atual da
+  // Home (ex: recém-montada após o login) ainda precisa buscar os dados dela.
   useFocusEffect(
     useCallback(() => {
+      if (jaCarregouNestaInstancia.current && !precisaAtualizar) return;
+
       let ativo = true;
       const iniciar = async () => {
         setCarregando(true);
         await carregarDados();
-        if (ativo) setCarregando(false);
+        if (ativo) {
+          jaCarregouNestaInstancia.current = true;
+          setCarregando(false);
+          marcarCarregado();
+        }
       };
       iniciar();
       return () => { ativo = false; };
-    }, [carregarDados])
+    }, [precisaAtualizar, carregarDados, marcarCarregado])
   );
 
   async function aoAtualizar() {

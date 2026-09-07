@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { cancelAnimation } from "react-native-reanimated";
 import { View, Text, TextInput, Switch, ScrollView, Image, useWindowDimensions, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
@@ -118,6 +119,12 @@ function HeaderBlueGlow() {
       -1,
       true
     );
+
+    // 👇 essencial: mata o worklet antes do componente sumir
+    return () => {
+      cancelAnimation(blobX);
+      cancelAnimation(blobScale);
+    };
   }, []);
 
   const animatedStyle1 = useAnimatedStyle(() => ({

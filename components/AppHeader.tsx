@@ -79,7 +79,7 @@ export function AppHeader() {
             </View>
             <View>
               {rotuloPerfil && <Text className="text-muted text-sm font-medium">{rotuloPerfil}</Text>}
-              <Text className="text-textDark text-2xl font-bold tracking-tight">Olá, {nomeExibido}</Text>
+              <Text className="text-textDark text-xl font-bold tracking-tight">Olá, {nomeExibido}</Text>
             </View>
           </View>
         ) : (

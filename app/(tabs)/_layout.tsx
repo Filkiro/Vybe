@@ -181,6 +181,8 @@ export default function TabsLayout() {
             name="perfil"
             options={{
               title: "Perfil",
+                              // @ts-ignore
+              unmountOnBlur: true,
               tabBarIcon: ({ focused }) => <TabIcon Icone={User} focado={focused} />,
             }}
           />
