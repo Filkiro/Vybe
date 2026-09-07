@@ -44,3 +44,12 @@ export async function excluirAlbum(album: { id: string; capa_url: string | null 
   if (error) throw error;
   if (!data || data.length === 0) throw erroSemPermissao("o álbum");
 }
+
+// Apaga um evento de verdade. Evento não guarda arquivo no Storage,
+// e publicacao.evento_id tem ON DELETE SET NULL — então publicações
+// que divulgavam esse evento continuam existindo, só perdem o vínculo.
+export async function excluirEvento(evento: { id: string }): Promise<void> {
+  const { data, error } = await supabase.from("evento").delete().eq("id", evento.id).select("id");
+  if (error) throw error;
+  if (!data || data.length === 0) throw erroSemPermissao("o evento");
+}

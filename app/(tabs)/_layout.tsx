@@ -1,135 +1,206 @@
 import { Tabs } from "expo-router";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Platform } from "react-native";
 import { Home, Compass, Plus, User, ShieldCheck, Settings, MessageCircle } from "lucide-react-native";
 import { BlurView } from "expo-blur";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MiniPlayer } from "../../components/MiniPlayer";
 import { AppHeader } from "../../components/AppHeader";
-import { useSegments } from "expo-router";
+import { AnimatedBackgroundBlobs } from "../../components/AnimatedBackgroundBlobs";
 import { useAuthStore, ehContaComum, ehModerador, ehAdministrador } from "../../store/authStore";
 import { useUnreadStore } from "../../store/unreadStore";
-import { LinearGradient } from "expo-linear-gradient";
 import { colors } from "../../constants/theme";
-import { TAB_BAR_HEIGHT } from "../../constants/layout";
+import { TAB_BAR_CAPSULE_HEIGHT } from "../../constants/layout";
+
+// Ícone de cada aba: quando ativa, ganha um "pill" preenchido com efeito neon glow estilo YouTube Music
+function TabIcon({ Icone, focado }: { Icone: any; focado: boolean }) {
+  return (
+    <View
+      style={{
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: focado ? colors.primary : "transparent",
+        shadowColor: focado ? "#3B82F6" : "transparent",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: focado ? 0.8 : 0,
+        shadowRadius: 10,
+        elevation: focado ? 8 : 0,
+      }}
+    >
+      <Icone color={focado ? "#FFFFFF" : colors.muted} size={20} />
+    </View>
+  );
+}
 
 export default function TabsLayout() {
+  const insets = useSafeAreaInsets();
   const usuario = useAuthStore((s) => s.usuario);
   const comum = ehContaComum(usuario);
   const moderacao = ehModerador(usuario);
   const admin = ehAdministrador(usuario);
   const naoLidas = useUnreadStore((state) => state.naoLidas);
 
-  return (
-    <View style={{ flex: 1, backgroundColor: '#0B101E' }}>
-      {/* Brilho fixo no topo — atrás do header e do início do conteúdo, sempre no mesmo lugar */}
-<View style={{ position: "absolute", top: 0, left: 0, right: 0, height: 420, overflow: "hidden" }} pointerEvents="none">
-  <View style={{ position: "absolute", top: -100, left: -80, width: 340, height: 340, borderRadius: 170, backgroundColor: "rgba(59,130,246,0.75)" }} />
-  <View style={{ position: "absolute", top: -40, right: -90, width: 300, height: 300, borderRadius: 150, backgroundColor: "rgba(99,102,241,0.6)" }} />
-  <BlurView intensity={70} tint="dark" style={StyleSheet.absoluteFillObject} />
-    <LinearGradient
-    colors={["transparent", "transparent", "#0B101E"]}
-    locations={[0, 0.4, 1]}
-    style={StyleSheet.absoluteFillObject}
-  />
-</View>
+  // Calcula margem inferior considerando safe areas (home indicator do iOS / gesture nav do Android)
+  const bottomInset = Math.max(insets.bottom, 14);
 
+  return (
+    <View style={{ flex: 1, backgroundColor: "#0B101E" }}>
       <AppHeader />
-      <View style={{ flex: 1, backgroundColor: 'transparent' }}>   
-      <Tabs 
-        initialRouteName="home"
-        screenOptions={{
-          headerShown: false,
-          tabBarActiveTintColor: '#3B82F6',
-   sceneStyle: { backgroundColor: "#0B101E" },
-          tabBarInactiveTintColor: colors.muted,
-          tabBarShowLabel: true,
-          tabBarLabelPosition: 'below-icon',
-          tabBarLabelStyle: {
-            fontSize: 12,
-            fontWeight: '500',
-            marginTop: 2,
-            marginBottom: 2,
-          },
-          tabBarItemStyle: {
-            paddingVertical: 4,
-            justifyContent: 'center',
-            alignItems: 'center',
-          },
-          tabBarBackground: () => (
-            <BlurView
-              experimentalBlurMethod="dimezisBlurView"
-              intensity={60}
-              tint="dark"
-              style={{
-                ...StyleSheet.absoluteFillObject,
-                borderTopWidth: 1,
-                borderTopColor: 'rgba(21, 59, 211, 0.05)',
-              }}
-            />
-          ),
-          tabBarStyle: {
-            position: 'absolute',
-            height: TAB_BAR_HEIGHT,
-            paddingBottom: 4,
-            paddingTop: 4,
-            backgroundColor: 'transparent',
-            borderTopWidth: 0,
-            elevation: 0,
-          },
+
+      <View style={{ flex: 1, backgroundColor: "transparent" }}>
+        <Tabs
+          initialRouteName="home"
+          safeAreaInsets={{ bottom: 0 }}
+          screenOptions={
+            {
+              headerShown: false,
+              unmountOnBlur: true,
+              tabBarActiveTintColor: "#3B82F6",
+              sceneStyle: { backgroundColor: "#0B101E" },
+              tabBarInactiveTintColor: colors.muted,
+              tabBarShowLabel: false,
+              tabBarIconStyle: {
+                width: "100%",
+                height: "100%",
+                justifyContent: "center",
+                alignItems: "center",
+              },
+              tabBarItemStyle: {
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+                padding: 0,
+                paddingTop: 0,
+                paddingBottom: 0,
+                marginTop: 0,
+                marginBottom: 0,
+                height: TAB_BAR_CAPSULE_HEIGHT,
+                borderWidth: 0,
+                // @ts-ignore
+                outlineStyle: "none",
+              },
+              tabBarBackground: () => (
+                <View
+                  style={{
+                    ...StyleSheet.absoluteFillObject,
+                    borderRadius: TAB_BAR_CAPSULE_HEIGHT / 2,
+                    overflow: "hidden",
+                    borderWidth: 1,
+                    borderColor: "rgba(255, 255, 255, 0.14)",
+                    backgroundColor: "rgba(15, 22, 38, 0.75)",
+                  }}
+                >
+                  <BlurView
+                    experimentalBlurMethod="dimezisBlurView"
+                    intensity={80}
+                    tint="dark"
+                    style={StyleSheet.absoluteFillObject}
+                  />
+                </View>
+              ),
+              tabBarStyle: {
+                position: "absolute",
+                left: 0,
+                right: 0,
+                bottom: bottomInset,
+                width: "92%",
+                maxWidth: 480,
+                alignSelf: "center",
+                marginHorizontal: "auto",
+                height: TAB_BAR_CAPSULE_HEIGHT,
+                borderRadius: TAB_BAR_CAPSULE_HEIGHT / 2,
+                backgroundColor: "transparent",
+                borderTopWidth: 0,
+                elevation: 12,
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 10 },
+                shadowOpacity: 0.5,
+                shadowRadius: 20,
+                paddingTop: 0,
+                paddingBottom: 0,
+              },
+            } as any
+          }
+        >
+          <Tabs.Screen
+            name="home"
+            options={{
+              title: "Início",
+              tabBarIcon: ({ focused }) => <TabIcon Icone={Home} focado={focused} />,
+            }}
+          />
+          <Tabs.Screen
+            name="explorar"
+            options={{
+              href: comum ? "/(tabs)/explorar" : null,
+              title: "Explorar",
+              tabBarIcon: ({ focused }) => <TabIcon Icone={Compass} focado={focused} />,
+            }}
+          />
+          <Tabs.Screen
+            name="criar"
+            options={{
+              href: comum ? "/(tabs)/criar" : null,
+              title: "Criar",
+              tabBarIcon: ({ focused }) => <TabIcon Icone={Plus} focado={focused} />,
+            }}
+          />
+          <Tabs.Screen
+            name="conversa"
+            options={{
+              href: comum ? "/(tabs)/conversa" : null,
+              title: "Conversas",
+              tabBarIcon: ({ focused }) => <TabIcon Icone={MessageCircle} focado={focused} />,
+              tabBarBadge: naoLidas > 0 ? naoLidas : undefined,
+              tabBarBadgeStyle: {
+                backgroundColor: colors.primary,
+                color: "white",
+                transform: [{ translateY: 2 }],
+              },
+            }}
+          />
+          <Tabs.Screen
+            name="moderacao"
+            options={{
+              href: moderacao ? "/(tabs)/moderacao" : null,
+              title: "Moderação",
+              tabBarIcon: ({ focused }) => <TabIcon Icone={ShieldCheck} focado={focused} />,
+            }}
+          />
+          <Tabs.Screen
+            name="admin"
+            options={{
+              href: admin ? "/(tabs)/admin" : null,
+              title: "Painel",
+              tabBarIcon: ({ focused }) => <TabIcon Icone={Settings} focado={focused} />,
+            }}
+          />
+          <Tabs.Screen
+            name="perfil"
+            options={{
+              title: "Perfil",
+              tabBarIcon: ({ focused }) => <TabIcon Icone={User} focado={focused} />,
+            }}
+          />
+        </Tabs>
+      </View>
+
+      {/* MiniPlayer flutuante perfeitamente ancorado acima da bottom bar centralizada */}
+      <View
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: TAB_BAR_CAPSULE_HEIGHT + bottomInset + 10,
+          width: "92%",
+          maxWidth: 480,
+          alignSelf: "center",
+          marginHorizontal: "auto",
         }}
+        pointerEvents="box-none"
       >
-        <Tabs.Screen
-          name="home"
-          options={{ title: "Início", tabBarIcon: ({ color }) => <Home color={color} size={20} /> }}
-        />
-        <Tabs.Screen
-          name="explorar"
-          options={{
-            href: comum ? "/(tabs)/explorar" : null,
-            title: "Explorar",
-            tabBarIcon: ({ color }) => <Compass color={color} size={20} />,
-          }}
-        />
-        <Tabs.Screen
-          name="criar"
-          options={{
-            href: comum ? "/(tabs)/criar" : null,
-            title: "Criar",
-            tabBarIcon: ({ color }) => <Plus color={color} size={20} />,
-          }}
-        />
-        <Tabs.Screen
-          name="conversa"
-          options={{
-            href: comum ? "/(tabs)/conversa" : null,
-            title: "Conversas",
-            tabBarIcon: ({ color }) => <MessageCircle color={color} size={20} />,
-            tabBarBadge: naoLidas > 0 ? naoLidas : undefined,
-            tabBarBadgeStyle: { backgroundColor: colors.primary, color: "white" },
-          }}
-        />
-        <Tabs.Screen
-          name="moderacao"
-          options={{
-            href: moderacao ? "/(tabs)/moderacao" : null,
-            title: "Moderação",
-            tabBarIcon: ({ color }) => <ShieldCheck color={color} size={20} />,
-          }}
-        />
-        <Tabs.Screen
-          name="admin"
-          options={{
-            href: admin ? "/(tabs)/admin" : null,
-            title: "Painel",
-            tabBarIcon: ({ color }) => <Settings color={color} size={20} />,
-          }}
-        />
-        <Tabs.Screen
-          name="perfil"
-          options={{ title: "Perfil", tabBarIcon: ({ color }) => <User color={color} size={20} /> }}
-        />
-      </Tabs>
-</View>
-      <View style={{ position: "absolute", left: 0, right: 0, bottom: TAB_BAR_HEIGHT, paddingBottom: 8 }}>
         <MiniPlayer />
       </View>
     </View>

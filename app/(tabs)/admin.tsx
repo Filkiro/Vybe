@@ -38,7 +38,7 @@ export default function AdminScreen() {
   }
 
   return (
-    <View className="flex-1 bg-background">
+    <View className="flex-1 bg-[#0B101E]">
       <ScrollView contentContainerStyle={{ paddingBottom }} showsVerticalScrollIndicator={false}>
         <View className="w-full max-w-5xl mx-auto px-4 md:px-10 pt-6 md:pt-8">
           

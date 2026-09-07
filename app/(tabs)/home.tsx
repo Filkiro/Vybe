@@ -9,6 +9,7 @@ import { useRequireAuth } from "../../store/authPromptStore";
 import { usePlayerAwarePadding } from "../../hooks/usePlayerAwarePadding";
 import { LinearGradient } from "expo-linear-gradient";
 import { MapPin, Play, User as UserIcon, Calendar, Heart, X } from "lucide-react-native";
+import { AnimatedBackgroundBlobs } from "../../components/AnimatedBackgroundBlobs";
 
 type MusicaComAutor = {
   id: string;
@@ -313,6 +314,9 @@ export default function Home() {
 
   const renderHeaderComponent = () => (
     <View className="mb-6">
+      {/* Background animado de alta performance no topo do conteúdo (estilo YouTube Music que rola junto) */}
+      <AnimatedBackgroundBlobs height={500} />
+
       {/* CARD HERO — eventos futuros (músico) ou artistas em destaque por curtidas (organizador) */}
       <View className="px-5 pt-6">
         <Text className="text-xl font-bold text-textDark mb-4">
@@ -354,7 +358,11 @@ export default function Home() {
             )
           ) : artistasDestaque.length > 0 ? (
             artistasDestaque.map((artista) => (
-              <Pressable key={artista.id} className="w-72 h-48 rounded-3xl overflow-hidden relative border border-border">
+              <Pressable
+                key={artista.id}
+                onPress={() => router.push(`/usuario/${artista.id}`)}
+                className="w-72 h-48 rounded-3xl overflow-hidden relative border border-border"
+              >
                 <ImageBackground
                   source={{ uri: artista.imagem_url ?? "https://images.unsplash.com/photo-1493225457124-a1a2a5f5f9af?q=80&w=500&auto=format&fit=crop" }}
                   className="w-full h-full"
@@ -416,7 +424,7 @@ export default function Home() {
         </View>
       )}
 
-      {/* CABEÇALHO DA LISTA DE MÚSICAS */}
+      {/* CABEÇALHO DA LISTA PRINCIPAL — o título muda com o chip escolhido */}
       <Text className="text-xl font-bold px-5 pt-8 pb-0 text-textDark">
         {tipoUsuario === "musico" ? "Lançamentos" : "Músicas em Alta"}
       </Text>
@@ -424,19 +432,7 @@ export default function Home() {
   );
 
   return (
-    <View style={{ flex: 1,  backgroundColor: '#0B101E' }}>
-      {/* Gradiente fixo no topo — não acompanha o scroll do conteúdo */}
-        <View style={{ position: "absolute", top: 0, left: 0, right: 0, height: 700, overflow: "hidden" }} pointerEvents="none">
-      <View style={{ position: "absolute", top: -100, left: -80, width: 340, height: 340, borderRadius: 170, backgroundColor: "rgba(59,130,246,0.6)" }} />
-      <View style={{ position: "absolute", top: -40, right: -90, width: 300, height: 300, borderRadius: 150, backgroundColor: "rgba(99,102,241,0.45)" }} />
-      
-      <BlurView intensity={75} tint="dark" style={StyleSheet.absoluteFillObject} />
-      <LinearGradient
-        colors={["transparent", "transparent", "#0B101E"]}
-        locations={[0, 0.4, 1]}
-        style={StyleSheet.absoluteFillObject}
-      />
-    </View>
+    <View style={{ flex: 1, backgroundColor: '#0B101E' }}>
       {carregando ? (
         <View className="flex-1 items-center justify-center">
           <Text className="text-muted text-center">Carregando o seu Vybe...</Text>
@@ -449,7 +445,11 @@ export default function Home() {
           contentContainerStyle={{ paddingBottom, }}
           refreshControl={<RefreshControl refreshing={atualizando} onRefresh={aoAtualizar} tintColor="#3B82F6" />}
           ListHeaderComponent={renderHeaderComponent}
-          ListEmptyComponent={<Text className="text-muted text-center mt-8 px-4">Nenhuma música encontrada no momento.</Text>}
+          ListEmptyComponent={
+            <Text className="text-muted text-center mt-8 px-4">
+              Nenhuma música encontrada no momento.
+            </Text>
+          }
           ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
           renderItem={({ item }) => (
             <Pressable
@@ -463,7 +463,7 @@ export default function Home() {
                     capaUrl: m.capa_url,
                   }));
                   tocarMusica(
-                    { id: item.id, nome: item.nome, autorApelido: item.autor_apelido, arquivoUrl: item.arquivo_url, capaUrl: item.capa_url },
+                    { id: item.id, nome: item.nome, autorApelido: item.autor_apelido, arquivoUrl: (item as MusicaComAutor).arquivo_url, capaUrl: item.capa_url },
                     fila
                   );
                   router.push("/tocando");

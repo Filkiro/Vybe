@@ -7,6 +7,7 @@ import { supabase } from "../lib/supabase";
 import { colors } from "../constants/theme";
 
 type Aba = "musicas" | "albuns" | "perfis";
+type ModoPerfil = "nome" | "genero";
 
 function obterIniciais(titulo: string) {
   if (!titulo) return "VY";
@@ -20,6 +21,7 @@ function obterIniciais(titulo: string) {
 export default function Pesquisa() {
   const insets = useSafeAreaInsets();
   const [aba, setAba] = useState<Aba>("perfis");
+  const [modoPerfil, setModoPerfil] = useState<ModoPerfil>("nome");
   const [busca, setBusca] = useState("");
   const [resultados, setResultados] = useState<any[]>([]);
   const [carregando, setCarregando] = useState(false);
@@ -31,7 +33,26 @@ export default function Pesquisa() {
     setBuscou(true);
     const termo = `%${busca}%`;
 
-    if (aba === "perfis") {
+    if (aba === "perfis" && modoPerfil === "genero") {
+      // Busca só entre músicos, comparando com o gênero musical que
+      // cada um preencheu no perfil (ex: buscar "rap" acha quem tem
+      // "Rap", "Rap Nacional", etc. — ilike com % dos dois lados).
+      const { data: musicos } = await supabase
+        .from("perfil_musico")
+        .select("usuario_id, apelido, foto_url, genero_musical, localizacao, usuario:usuario_id(nome)")
+        .ilike("genero_musical", termo)
+        .limit(30);
+
+      setResultados(
+        (musicos ?? []).map((m: any) => ({
+          tipo: "musico",
+          usuario_id: m.usuario_id,
+          titulo: m.apelido ?? (Array.isArray(m.usuario) ? m.usuario[0]?.nome : m.usuario?.nome),
+          subtitulo: [m.genero_musical, m.localizacao].filter(Boolean).join(" · "),
+          foto_url: m.foto_url,
+        }))
+      );
+    } else if (aba === "perfis") {
       const [{ data: musicos }, { data: organizadores }] = await Promise.all([
         supabase
           .from("perfil_musico")
@@ -119,10 +140,36 @@ export default function Pesquisa() {
         <AbaChip label="Álbuns" ativa={aba === "albuns"} onPress={() => { setAba("albuns"); setResultados([]); setBuscou(false); }} />
       </View>
 
+      {/* Dentro de Perfis dá pra escolher se a busca é pelo nome/apelido
+          da pessoa ou pelo gênero musical que os músicos preencheram no
+          perfil (ex: buscar "rap" traz todo mundo que tocar esse estilo).
+          Organizador não tem gênero musical, então esse modo só retorna
+          músicos. */}
+      {aba === "perfis" && (
+        <View className="flex-row px-4 mb-3 gap-2">
+          <AbaChip
+            label="Nome"
+            ativa={modoPerfil === "nome"}
+            onPress={() => { setModoPerfil("nome"); setResultados([]); setBuscou(false); }}
+          />
+          <AbaChip
+            label="Gênero musical"
+            ativa={modoPerfil === "genero"}
+            onPress={() => { setModoPerfil("genero"); setResultados([]); setBuscou(false); }}
+          />
+        </View>
+      )}
+
       <View className="px-4 mb-3">
         <TextInput
           placeholder={
-            aba === "perfis" ? "Buscar por apelido ou nome..." : aba === "musicas" ? "Buscar música..." : "Buscar álbum..."
+            aba === "perfis"
+              ? modoPerfil === "genero"
+                ? "Buscar gênero musical (ex: rap)..."
+                : "Buscar por apelido ou nome..."
+              : aba === "musicas"
+              ? "Buscar música..."
+              : "Buscar álbum..."
           }
           placeholderTextColor="#9CA3AF"
           value={busca}

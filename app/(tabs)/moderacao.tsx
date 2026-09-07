@@ -213,11 +213,12 @@ export default function ModeracaoScreen() {
   };
 
   return (
-    <ScrollView
-      className="flex-1 bg-background"
-      contentContainerStyle={{ paddingBottom }}
-      refreshControl={<RefreshControl refreshing={carregando} onRefresh={carregar} tintColor={colors.primary} />}
-    >
+    <View className="flex-1 bg-[#0B101E]">
+      <ScrollView
+        className="flex-1 bg-transparent"
+        contentContainerStyle={{ paddingBottom }}
+        refreshControl={<RefreshControl refreshing={carregando} onRefresh={carregar} tintColor={colors.primary} />}
+      >
       <View className="px-4 pt-6 md:px-10 max-w-4xl mx-auto w-full">
         <View className="mb-6 md:mb-8">
           <Text className="text-2xl md:text-3xl font-bold text-textDark mb-1">Central de Moderação</Text>
@@ -416,5 +417,6 @@ export default function ModeracaoScreen() {
         ))}
       </View>
     </ScrollView>
-  );
+  </View>
+);
 }

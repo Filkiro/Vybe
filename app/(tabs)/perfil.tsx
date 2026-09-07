@@ -12,6 +12,14 @@ import { AppLogo } from "../../components/AppLogo";
 import { colors, rotulosTipoConta } from "../../constants/theme";
 import { usePlayerAwarePadding } from "../../hooks/usePlayerAwarePadding";
 import { Pressable } from "react-native";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withTiming,
+  withSequence,
+  Easing,
+} from "react-native-reanimated";
 
 export default function Perfil() {
   const usuario = useAuthStore((s) => s.usuario);
@@ -26,7 +34,7 @@ export default function Perfil() {
 
   if (!usuario) {
     return (
-      <View className="flex-1 bg-background items-center justify-center px-8">
+      <View className="flex-1 bg-[#0B101E] items-center justify-center px-8">
         <AppLogo />
         <Text className="text-lg font-bold text-textDark text-center mt-4 mb-2">
           Você ainda não tem conta
@@ -53,12 +61,13 @@ export default function Perfil() {
   const temBiblioteca = ehContaComum(usuario);
 
   return (
-    <ScrollView className="flex-1 bg-background" contentContainerStyle={{ paddingBottom }} stickyHeaderIndices={temBiblioteca ? [1] : undefined} showsVerticalScrollIndicator={false}>
+    <View className="flex-1 bg-[#0B101E]">
+      <ScrollView className="flex-1 bg-transparent" contentContainerStyle={{ paddingBottom }} stickyHeaderIndices={temBiblioteca ? [1] : undefined} showsVerticalScrollIndicator={false}>
       <CabecalhoPerfil usuario={usuario} onLogout={handleLogout} />
 
       {temBiblioteca ? (
         <>
-          <View className="bg-background px-4 pt-4 pb-2 flex-row gap-2">
+          <View className="bg-transparent px-4 pt-4 pb-2 flex-row gap-2">
             <SegmentoAba label="Biblioteca" ativa={aba === "biblioteca"} onPress={() => setAba("biblioteca")} />
             <SegmentoAba label="Dados" ativa={aba === "dados"} onPress={() => setAba("dados")} />
           </View>
@@ -83,7 +92,74 @@ export default function Perfil() {
           </Text>
         </View>
       )}
-    </ScrollView>
+      </ScrollView>
+    </View>
+  );
+}
+
+function HeaderBlueGlow() {
+  const blobX = useSharedValue(0);
+  const blobScale = useSharedValue(1);
+
+  useEffect(() => {
+    blobX.value = withRepeat(
+      withSequence(
+        withTiming(40, { duration: 5000, easing: Easing.inOut(Easing.quad) }),
+        withTiming(-40, { duration: 6000, easing: Easing.inOut(Easing.quad) })
+      ),
+      -1,
+      true
+    );
+    blobScale.value = withRepeat(
+      withSequence(
+        withTiming(1.3, { duration: 4500, easing: Easing.inOut(Easing.quad) }),
+        withTiming(0.9, { duration: 5500, easing: Easing.inOut(Easing.quad) })
+      ),
+      -1,
+      true
+    );
+  }, []);
+
+  const animatedStyle1 = useAnimatedStyle(() => ({
+    transform: [{ translateX: blobX.value }, { scale: blobScale.value }],
+  }));
+
+  const animatedStyle2 = useAnimatedStyle(() => ({
+    transform: [{ translateX: -blobX.value }, { scale: blobScale.value }],
+  }));
+
+  return (
+    <View style={{ height: 110, overflow: "hidden" }} className="rounded-b-[32px]">
+      <View style={{ ...StyleSheet.absoluteFillObject, backgroundColor: "#1d4fd841" }} />
+      <Animated.View
+        style={[
+          {
+            position: "absolute",
+            top: -50,
+            left: -30,
+            width: 240,
+            height: 180,
+            borderRadius: 120,
+            backgroundColor: "rgba(59, 130, 246, 0.85)",
+          },
+          animatedStyle1,
+        ]}
+      />
+      <Animated.View
+        style={[
+          {
+            position: "absolute",
+            top: -30,
+            right: -40,
+            width: 220,
+            height: 170,
+            borderRadius: 110,
+          },
+          animatedStyle2,
+        ]}
+      />
+      <BlurView intensity={45} tint="dark" style={StyleSheet.absoluteFillObject} />
+    </View>
   );
 }
 
@@ -133,13 +209,8 @@ function CabecalhoPerfil({ usuario, onLogout }: { usuario: any; onLogout: () => 
 
   return (
     <View>
-      {/* Barra do topo com glow, contida dentro da própria altura (overflow hidden) */}
-      <View style={{ height: 110, overflow: "hidden" }} className="rounded-b-[32px]">
-        <View style={{ ...StyleSheet.absoluteFillObject, backgroundColor: colors.primary }} />
-        <View style={{ position: "absolute", top: -60, left: -40, width: 200, height: 150, borderRadius: 100, backgroundColor: "rgba(99,102,241,0.5)" }} />
-        <View style={{ position: "absolute", top: -20, right: -60, width: 180, height: 150, borderRadius: 90, backgroundColor: "rgba(59,130,246,0.55)" }} />
-        <BlurView intensity={50} tint="dark" style={StyleSheet.absoluteFillObject} />
-      </View>
+      {/* Barra do topo com glow azul animado estilo YouTube Music */}
+      <HeaderBlueGlow />
 
       <View className="items-center" style={{ marginTop: -48 }}>
         <Pressable onPress={ehMusico ? trocarFoto : undefined} disabled={!ehMusico || enviandoFoto}>
@@ -399,6 +470,7 @@ function SecaoBiblioteca({
 }
 
 function BibliotecaOrganizador({ usuarioId }: { usuarioId: string }) {
+  const router = useRouter();
   const [eventos, setEventos] = useState<any[]>([]);
 
   useEffect(() => {
@@ -416,12 +488,24 @@ function BibliotecaOrganizador({ usuarioId }: { usuarioId: string }) {
         <Text className="text-muted text-center mt-8">Você ainda não criou nenhum evento. Toque em "Criar" pra começar.</Text>
       )}
       {eventos.map((item) => (
-        <View key={item.id} className="bg-card rounded-2xl p-4 mb-3">
-          <Text className="font-bold text-textDark">{item.nome}</Text>
-          <Text className="text-muted text-sm mt-1">
-            {item.data} · {item.localizacao ?? "Local a definir"}
-          </Text>
-          <Text className="text-primary text-xs mt-1 capitalize">{item.status}</Text>
+        <View key={item.id} className="bg-card rounded-2xl p-4 mb-3 flex-row items-center justify-between">
+          <View className="flex-1 pr-3">
+            <Text className="font-bold text-textDark">{item.nome}</Text>
+            <Text className="text-muted text-sm mt-1">
+              {item.data} · {item.localizacao ?? "Local a definir"}
+            </Text>
+            <Text className="text-primary text-xs mt-1 capitalize">{item.status}</Text>
+          </View>
+          {/* Só o organizador dono do evento vê esse botão — é ele quem
+              criou o evento, então é ele quem pode alterar tudo (o link
+              cai em app/evento/editar/[id].tsx, que confere de novo se
+              quem abriu é realmente o dono antes de deixar editar). */}
+          <Pressable
+            onPress={() => router.push(`/evento/editar/${item.id}`)}
+            className="bg-primary/10 rounded-full px-3 py-2"
+          >
+            <Text className="text-primary text-sm font-medium">Gerenciar</Text>
+          </Pressable>
         </View>
       ))}
     </View>

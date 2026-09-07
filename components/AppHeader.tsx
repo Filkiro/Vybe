@@ -3,7 +3,7 @@ import { View, Pressable, Text, Image } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useSegments } from "expo-router";
 import { Search } from "lucide-react-native";
-import { useAuthStore, ehContaComum } from "../store/authStore";
+import { useAuthStore } from "../store/authStore";
 import { supabase } from "../lib/supabase";
 
 const titulosAbas: Record<string, string> = {

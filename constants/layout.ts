@@ -2,7 +2,13 @@
 // bar e o MiniPlayer) quanto pelas telas (pra saber quanto espaço
 // reservar no final do conteúdo e não deixar nada tampado). Ficam
 // aqui, num lugar só, pra tab bar e telas nunca desalinharem.
-export const TAB_BAR_HEIGHT = 76;
+export const TAB_BAR_HEIGHT = 84;
+
+// Altura "própria" da cápsula flutuante (sem contar a margem até a
+// borda da tela) — usada só dentro do _layout das tabs pra desenhar
+// a barra; o resto do app continua enxergando só TAB_BAR_HEIGHT.
+export const TAB_BAR_CAPSULE_HEIGHT = 64;
+export const TAB_BAR_MARGIN = 16;
 
 // Altura reservada pro MiniPlayer quando ele está visível: p-3 (24)
 // + linha de conteúdo (~48, a capa 12x12) + mb-2 (8) + paddingBottom

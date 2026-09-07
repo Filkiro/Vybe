@@ -16,7 +16,7 @@ export default function Criar() {
 
   if (!usuario) {
     return (
-      <View className="flex-1 bg-background items-center justify-center">
+      <View className="flex-1 bg-[#0B101E] items-center justify-center">
         <Text className="text-muted">Carregando...</Text>
       </View>
     );
@@ -26,7 +26,7 @@ export default function Criar() {
       ? new Date(restricaoAtiva.data_fim).toLocaleDateString("pt-BR")
       : null;
     return (
-      <View className="flex-1 bg-background items-center justify-center px-8">
+      <View className="flex-1 bg-[#0B101E] items-center justify-center px-8">
         <Text className="text-lg font-bold text-textDark text-center mb-2">
           Você está temporariamente bloqueado
         </Text>
@@ -44,7 +44,7 @@ export default function Criar() {
   if (usuario.tipo_conta === "organizador") return <CriarOrganizador usuarioId={usuario.id} />;
 
   return (
-    <View className="flex-1 bg-background items-center justify-center px-8">
+    <View className="flex-1 bg-[#0B101E] items-center justify-center px-8">
       <Text className="text-lg text-muted text-center">
         Contas de moderador/administrador não publicam conteúdo por aqui.
       </Text>
@@ -69,7 +69,7 @@ function CriarMusico({ usuarioId }: { usuarioId: string }) {
   const [aba, setAba] = useState<"musica" | "album" | "publicacao">("musica");
 
   return (
-    <View className="flex-1 bg-background">
+    <View className="flex-1 bg-[#0B101E]">
       <View className="flex-row gap-2 px-4 pt-6 pb-2">
         <SegmentoAba label="Música" ativa={aba === "musica"} onPress={() => setAba("musica")} />
         <SegmentoAba label="Álbum" ativa={aba === "album"} onPress={() => setAba("album")} />
@@ -90,7 +90,7 @@ function CriarOrganizador({ usuarioId }: { usuarioId: string }) {
   const [aba, setAba] = useState<"evento" | "publicacao">("evento");
 
   return (
-    <View className="flex-1 bg-background">
+    <View className="flex-1 bg-[#0B101E]">
       <View className="flex-row gap-2 px-4 pt-6 pb-2">
         <SegmentoAba label="Evento" ativa={aba === "evento"} onPress={() => setAba("evento")} />
         <SegmentoAba label="Publicação" ativa={aba === "publicacao"} onPress={() => setAba("publicacao")} />

@@ -134,7 +134,7 @@ export default function Conversa() {
   if (!usuario) return null;
 
   return (
-    <View className="flex-1 bg-background pt-10">
+    <View className="flex-1 bg-[#0B101E]">
 
       {carregando ? (
         <Text className="text-muted text-center">Carregando...</Text>
