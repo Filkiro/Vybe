@@ -24,6 +24,7 @@ type PlayerState = {
   proxima: () => Promise<void>;
   anterior: () => Promise<void>;
   alternarRepetir: () => void;
+  resetar: () => void;
 };
 
 let token = 0;
@@ -148,4 +149,39 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   },
 
   alternarRepetir: () => set((s) => ({ repetir: !s.repetir })),
+
+  // Para e libera o áudio atual e limpa o estado do player.
+  // Usado no logout: sem isso, uma música que já estava carregada
+  // continua tocando/pausável mesmo sem usuário autenticado.
+  resetar: () => {
+    // Invalida qualquer callback de carregamento em andamento (evita que
+    // um carregarESocar() que já estava em voo "reviva" o player depois).
+    token++;
+
+    const atual = get().sound;
+    if (atual) {
+      try {
+        atual.pause();
+        atual.release();
+        atual.remove();
+      } catch {}
+    }
+
+    if (typeof navigator !== 'undefined' && 'mediaSession' in navigator) {
+      navigator.mediaSession.metadata = null;
+      navigator.mediaSession.setActionHandler('play', null);
+      navigator.mediaSession.setActionHandler('pause', null);
+      navigator.mediaSession.setActionHandler('previoustrack', null);
+      navigator.mediaSession.setActionHandler('nexttrack', null);
+    }
+
+    set({
+      sound: null,
+      musicaAtual: null,
+      fila: [],
+      estaTocando: false,
+      posicaoMs: 0,
+      duracaoMs: 0,
+    });
+  },
 }));

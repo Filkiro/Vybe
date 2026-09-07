@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { cancelAnimation } from "react-native-reanimated";
-import { View, Text, TextInput, Switch, ScrollView, Image, useWindowDimensions, StyleSheet } from "react-native";
+import { View, Text, TextInput, Switch, ScrollView, Image, useWindowDimensions, StyleSheet, Modal } from "react-native";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
-import { Camera, LogOut, BarChart3, Music, LifeBuoy } from "lucide-react-native";
+import { Camera, LogOut, BarChart3, Music, LifeBuoy, Trash2, AlertTriangle } from "lucide-react-native";
 import { BlurView } from "expo-blur";
 import { supabase, PerfilMusico, PerfilOrganizador } from "../../lib/supabase";
 import { useAuthStore, ehContaComum } from "../../store/authStore";
@@ -29,6 +29,9 @@ export default function Perfil() {
   const paddingBottom = usePlayerAwarePadding(140);
 
   async function handleLogout() {
+    // Para a música e limpa o player ANTES de deslogar — senão uma música
+    // que já estava carregada continua tocável mesmo sem usuário logado.
+    usePlayerStore.getState().resetar();
     await supabase.auth.signOut();
     router.replace("/(tabs)/home");
   }
@@ -533,6 +536,108 @@ function CampoTexto({ label, value, onChangeText, multiline }: { label: string; 
   );
 }
 
+/**
+ * Modal de confirmação de exclusão de conta.
+ * Só apaga de fato quando o usuário confirma explicitamente — é uma ação
+ * irreversível, então não tem "excluir direto", sempre passa por aqui.
+ */
+function ModalConfirmarExclusao({
+  visivel,
+  onCancelar,
+  onConfirmar,
+  excluindo,
+}: {
+  visivel: boolean;
+  onCancelar: () => void;
+  onConfirmar: () => void;
+  excluindo: boolean;
+}) {
+  return (
+    <Modal visible={visivel} transparent animationType="fade" onRequestClose={onCancelar}>
+      <View className="flex-1 bg-black/60 items-center justify-center px-6">
+        <View className="bg-card rounded-3xl p-6 w-full">
+          <View className="w-14 h-14 rounded-full bg-red-500/10 items-center justify-center self-center mb-4">
+            <AlertTriangle color={colors.danger} size={28} />
+          </View>
+
+          <Text className="text-lg font-bold text-textDark text-center mb-2">
+            Excluir sua conta?
+          </Text>
+          <Text className="text-muted text-center mb-6">
+            Essa ação é permanente e não pode ser desfeita. Todos os seus dados,
+            músicas, álbuns, eventos e conversas serão apagados.
+          </Text>
+
+          <Pressable
+            onPress={onConfirmar}
+            disabled={excluindo}
+            className="bg-red-500 rounded-full py-3.5 items-center mb-3"
+          >
+            <Text className="text-white font-bold">
+              {excluindo ? "Excluindo..." : "Sim, excluir minha conta"}
+            </Text>
+          </Pressable>
+
+          <Pressable onPress={onCancelar} disabled={excluindo} className="py-3 items-center">
+            <Text className="text-textDark font-medium">Cancelar</Text>
+          </Pressable>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+/**
+ * Botão + modal de exclusão de conta, usado tanto no formulário do músico
+ * quanto no do organizador. Chama a função excluir_minha_conta() no Supabase
+ * (precisa existir no banco — ver instruções fornecidas separadamente),
+ * depois desloga e manda o usuário pra Home.
+ */
+function BotaoExcluirConta() {
+  const router = useRouter();
+  const [modalAberto, setModalAberto] = useState(false);
+  const [excluindo, setExcluindo] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
+
+  async function confirmarExclusao() {
+    setExcluindo(true);
+    setErro(null);
+    try {
+      const { error } = await supabase.rpc("excluir_minha_conta");
+      if (error) throw error;
+
+      setModalAberto(false);
+      usePlayerStore.getState().resetar();
+      await supabase.auth.signOut();
+      router.replace("/(tabs)/home");
+    } catch (e: any) {
+      setErro(e?.message ?? "Não foi possível excluir a conta. Tente novamente.");
+      setExcluindo(false);
+    }
+  }
+
+  return (
+    <View className="mt-8 pt-6 border-t border-border">
+      <Pressable
+        onPress={() => setModalAberto(true)}
+        className="flex-row items-center justify-center gap-2 py-3"
+      >
+        <Trash2 color={colors.danger} size={16} />
+        <Text className="text-red-500 font-medium">Excluir minha conta</Text>
+      </Pressable>
+
+      {erro && <Text className="text-red-500 text-xs text-center mt-1">{erro}</Text>}
+
+      <ModalConfirmarExclusao
+        visivel={modalAberto}
+        onCancelar={() => setModalAberto(false)}
+        onConfirmar={confirmarExclusao}
+        excluindo={excluindo}
+      />
+    </View>
+  );
+}
+
 function FormularioMusico({ usuarioId }: { usuarioId: string }) {
   const [perfil, setPerfil] = useState<PerfilMusico | null>(null);
   const [apelido, setApelido] = useState("");
@@ -592,6 +697,8 @@ function FormularioMusico({ usuarioId }: { usuarioId: string }) {
       <Pressable onPress={salvar} disabled={salvando} className="bg-primary rounded-full py-3 items-center mt-4">
         <Text className="text-white font-bold">{salvando ? "Salvando..." : "Salvar alterações"}</Text>
       </Pressable>
+
+      <BotaoExcluirConta />
     </View>
   );
 }
@@ -645,6 +752,8 @@ function FormularioOrganizador({ usuarioId }: { usuarioId: string }) {
       <Pressable onPress={salvar} disabled={salvando} className="bg-primary rounded-full py-3 items-center mt-4">
         <Text className="text-white font-bold">{salvando ? "Salvando..." : "Salvar alterações"}</Text>
       </Pressable>
+
+      <BotaoExcluirConta />
     </View>
   );
 }

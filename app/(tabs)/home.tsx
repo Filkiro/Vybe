@@ -8,6 +8,7 @@ import { usePlayerStore } from "../../store/playerStore";
 import { useRequireAuth } from "../../store/authPromptStore";
 import { usePlayerAwarePadding } from "../../hooks/usePlayerAwarePadding";
 import { useHomeStore } from "../../store/homeStore";
+import { useEhDesktop } from "../../hooks/useEhDesktop";
 import { LinearGradient } from "expo-linear-gradient";
 import { MapPin, Play, User as UserIcon, Calendar, Heart, X } from "lucide-react-native";
 import { AnimatedBackgroundBlobs } from "../../components/AnimatedBackgroundBlobs";
@@ -94,6 +95,7 @@ export default function Home() {
   const paddingBottom = usePlayerAwarePadding(120);
   const tocarMusica = usePlayerStore((s) => s.tocarMusica);
   const requireAuth = useRequireAuth();
+  const ehDesktop = useEhDesktop();
 
   // Cache global — só recarrega quando algo novo for publicado (invalidarHome)
   const precisaAtualizar = useHomeStore((s) => s.precisaAtualizar);
@@ -313,11 +315,16 @@ export default function Home() {
       let ativo = true;
       const iniciar = async () => {
         setCarregando(true);
-        await carregarDados();
-        if (ativo) {
-          jaCarregouNestaInstancia.current = true;
-          setCarregando(false);
-          marcarCarregado();
+        try {
+          await carregarDados();
+        } catch (erro) {
+          console.error("Erro ao carregar dados da Home:", erro);
+        } finally {
+          if (ativo) {
+            jaCarregouNestaInstancia.current = true;
+            setCarregando(false);
+            marcarCarregado();
+          }
         }
       };
       iniciar();
@@ -327,8 +334,13 @@ export default function Home() {
 
   async function aoAtualizar() {
     setAtualizando(true);
-    await carregarDados();
-    setAtualizando(false);
+    try {
+      await carregarDados();
+    } catch (erro) {
+      console.error("Erro ao atualizar a Home:", erro);
+    } finally {
+      setAtualizando(false);
+    }
   }
 
   const tipoUsuario = perfilLogado?.tipo ?? "musico";
@@ -422,7 +434,11 @@ export default function Home() {
           <Text className="text-xl font-bold text-textDark mb-4">Descubra Artistas</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingRight: 20 }}>
             {albuns.map((album) => (
-              <Pressable key={album.id} onPress={() => router.push(`/album/${album.id}`)} className="w-36">
+              <Pressable
+                key={album.id}
+                onPress={() => requireAuth(() => router.push(`/album/${album.id}`))}
+                className="w-36"
+              >
                 <View className="bg-card rounded-2xl p-3 border border-border">
                   {album.capa_url ? (
                     <Image source={{ uri: album.capa_url }} className="w-full aspect-square rounded-xl mb-3" />
@@ -487,7 +503,11 @@ export default function Home() {
                     { id: item.id, nome: item.nome, autorApelido: item.autor_apelido, arquivoUrl: (item as MusicaComAutor).arquivo_url, capaUrl: item.capa_url },
                     fila
                   );
-                  router.push("/tocando");
+                  // No desktop o player já toca na sidebar persistente —
+                  // só navega pra tela cheia no mobile.
+                  if (!ehDesktop) {
+                    router.push("/tocando");
+                  }
                 });
               }}
               style={{ borderRadius: 20, overflow: "hidden", marginRight:20, marginLeft:20}}
