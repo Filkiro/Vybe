@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { View, StyleSheet, DimensionValue } from "react-native";
+import { View, StyleSheet, DimensionValue, Platform } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -7,6 +7,7 @@ import Animated, {
   withTiming,
   withSequence,
   Easing,
+  ReduceMotion,
 } from "react-native-reanimated";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
@@ -15,8 +16,8 @@ interface AnimatedBackgroundBlobsProps {
   height?: DimensionValue;
 }
 
-export function AnimatedBackgroundBlobs({ height = 480 }: AnimatedBackgroundBlobsProps) {
-  // Shared values para movimentos, tamanhos e opacidades orgânicas (estilo YouTube Music)
+export function AnimatedBackgroundBlobs({ height = 520 }: AnimatedBackgroundBlobsProps) {
+  // Shared values com movimentos mais fluidos e orgânicos
   const blob1X = useSharedValue(0);
   const blob1Y = useSharedValue(0);
   const blob1Scale = useSharedValue(1);
@@ -34,108 +35,135 @@ export function AnimatedBackgroundBlobs({ height = 480 }: AnimatedBackgroundBlob
   const blob4Scale = useSharedValue(1);
 
   useEffect(() => {
-    // Blob 1: Azul Elétrico (#3B82F6) - Topo Esquerda / Centro
+    // Curva Easing suave para animações contínuas estilo fluido
+    const easingConfig = Easing.bezier(0.42, 0, 0.58, 1);
+
+    // Blob 1: Azul Cyan Neon (#00F0FF) - Canto Superior Esquerdo
     blob1X.value = withRepeat(
       withSequence(
-        withTiming(60, { duration: 7000, easing: Easing.inOut(Easing.quad) }),
-        withTiming(-40, { duration: 8000, easing: Easing.inOut(Easing.quad) })
+        withTiming(70, { duration: 9000, easing: easingConfig }),
+        withTiming(-50, { duration: 11000, easing: easingConfig })
       ),
       -1,
-      true
+      true,
+      undefined,
+      ReduceMotion.Never
     );
     blob1Y.value = withRepeat(
       withSequence(
-        withTiming(70, { duration: 9000, easing: Easing.inOut(Easing.quad) }),
-        withTiming(-30, { duration: 7500, easing: Easing.inOut(Easing.quad) })
+        withTiming(80, { duration: 10000, easing: easingConfig }),
+        withTiming(-40, { duration: 8500, easing: easingConfig })
       ),
       -1,
-      true
+      true,
+      undefined,
+      ReduceMotion.Never
     );
     blob1Scale.value = withRepeat(
       withSequence(
-        withTiming(1.3, { duration: 6000, easing: Easing.inOut(Easing.quad) }),
-        withTiming(0.85, { duration: 6500, easing: Easing.inOut(Easing.quad) })
+        withTiming(1.35, { duration: 7500, easing: easingConfig }),
+        withTiming(0.85, { duration: 8000, easing: easingConfig })
       ),
       -1,
-      true
+      true,
+      undefined,
+      ReduceMotion.Never
     );
 
-    // Blob 2: Índigo / Violeta (#6366F1) - Topo Direita
+    // Blob 2: Violeta / Púrpura Royal (#8B5CF6) - Topo Direita
     blob2X.value = withRepeat(
       withSequence(
-        withTiming(-70, { duration: 8500, easing: Easing.inOut(Easing.quad) }),
-        withTiming(30, { duration: 7000, easing: Easing.inOut(Easing.quad) })
+        withTiming(-80, { duration: 10000, easing: easingConfig }),
+        withTiming(40, { duration: 9000, easing: easingConfig })
       ),
       -1,
-      true
+      true,
+      undefined,
+      ReduceMotion.Never
     );
     blob2Y.value = withRepeat(
       withSequence(
-        withTiming(50, { duration: 7500, easing: Easing.inOut(Easing.quad) }),
-        withTiming(-50, { duration: 9500, easing: Easing.inOut(Easing.quad) })
+        withTiming(60, { duration: 8500, easing: easingConfig }),
+        withTiming(-60, { duration: 11500, easing: easingConfig })
       ),
       -1,
-      true
+      true,
+      undefined,
+      ReduceMotion.Never
     );
     blob2Scale.value = withRepeat(
       withSequence(
-        withTiming(1.25, { duration: 7000, easing: Easing.inOut(Easing.quad) }),
-        withTiming(0.9, { duration: 8000, easing: Easing.inOut(Easing.quad) })
+        withTiming(1.3, { duration: 8000, easing: easingConfig }),
+        withTiming(0.9, { duration: 9500, easing: easingConfig })
       ),
       -1,
-      true
+      true,
+      undefined,
+      ReduceMotion.Never
     );
 
-    // Blob 3: Ciano Neon (#06B6D4) - Centro / Direita
+    // Blob 3: Azul Ultramarine (#3B82F6) - Centro / Baixo Direita
     blob3X.value = withRepeat(
       withSequence(
-        withTiming(50, { duration: 9500, easing: Easing.inOut(Easing.quad) }),
-        withTiming(-60, { duration: 8000, easing: Easing.inOut(Easing.quad) })
+        withTiming(60, { duration: 11000, easing: easingConfig }),
+        withTiming(-70, { duration: 9500, easing: easingConfig })
       ),
       -1,
-      true
+      true,
+      undefined,
+      ReduceMotion.Never
     );
     blob3Y.value = withRepeat(
       withSequence(
-        withTiming(-60, { duration: 6500, easing: Easing.inOut(Easing.quad) }),
-        withTiming(80, { duration: 8500, easing: Easing.inOut(Easing.quad) })
+        withTiming(-70, { duration: 8000, easing: easingConfig }),
+        withTiming(90, { duration: 10500, easing: easingConfig })
       ),
       -1,
-      true
+      true,
+      undefined,
+      ReduceMotion.Never
     );
     blob3Scale.value = withRepeat(
       withSequence(
-        withTiming(1.35, { duration: 8000, easing: Easing.inOut(Easing.quad) }),
-        withTiming(0.8, { duration: 7000, easing: Easing.inOut(Easing.quad) })
+        withTiming(1.4, { duration: 9000, easing: easingConfig }),
+        withTiming(0.8, { duration: 8500, easing: easingConfig })
       ),
       -1,
-      true
+      true,
+      undefined,
+      ReduceMotion.Never
     );
 
-    // Blob 4: Púrpura Ambient (#8B5CF6) - Meio / Baixo
+    // Blob 4: Magenta Deep Glow (#EC4899) - Centro / Esquerda
     blob4X.value = withRepeat(
       withSequence(
-        withTiming(-50, { duration: 8000, easing: Easing.inOut(Easing.quad) }),
-        withTiming(60, { duration: 10000, easing: Easing.inOut(Easing.quad) })
+        withTiming(-60, { duration: 9500, easing: easingConfig }),
+        withTiming(70, { duration: 12000, easing: easingConfig })
       ),
       -1,
-      true
+      true,
+      undefined,
+      ReduceMotion.Never
     );
     blob4Y.value = withRepeat(
       withSequence(
-        withTiming(-40, { duration: 9000, easing: Easing.inOut(Easing.quad) }),
-        withTiming(60, { duration: 7000, easing: Easing.inOut(Easing.quad) })
+        withTiming(-50, { duration: 10500, easing: easingConfig }),
+        withTiming(70, { duration: 8000, easing: easingConfig })
       ),
       -1,
-      true
+      true,
+      undefined,
+      ReduceMotion.Never
     );
     blob4Scale.value = withRepeat(
       withSequence(
-        withTiming(1.2, { duration: 6500, easing: Easing.inOut(Easing.quad) }),
-        withTiming(0.85, { duration: 8500, easing: Easing.inOut(Easing.quad) })
+        withTiming(1.25, { duration: 7500, easing: easingConfig }),
+        withTiming(0.85, { duration: 9000, easing: easingConfig })
       ),
       -1,
-      true
+      true,
+      undefined,
+      ReduceMotion.Never
     );
   }, []);
 
@@ -173,80 +201,106 @@ export function AnimatedBackgroundBlobs({ height = 480 }: AnimatedBackgroundBlob
 
   return (
     <View style={[styles.wrapper, { height }]} pointerEvents="none">
-      {/* Container de Blobs Animadas */}
+      {/* Container das Blobs */}
       <View style={styles.container}>
-        {/* Blob 1: Azul Elétrico */}
+        {/* Blob 1: Cyan Neon */}
         <Animated.View
           style={[
             styles.blob,
             {
-              top: -80,
-              left: -60,
-              width: 340,
-              height: 340,
-              borderRadius: 170,
-              backgroundColor: "rgba(59, 130, 246, 0.75)",
+              top: -100,
+              left: -80,
+              width: 360,
+              height: 360,
+              borderRadius: 180,
+              backgroundColor: "rgba(6, 182, 212, 0.65)",
+              shadowColor: "#06B6D4",
+              shadowOffset: { width: 0, height: 0 },
+              shadowOpacity: 0.8,
+              shadowRadius: 40,
             },
             animatedStyle1,
           ]}
         />
 
-        {/* Blob 2: Índigo */}
+        {/* Blob 2: Violeta Royal */}
         <Animated.View
           style={[
             styles.blob,
             {
-              top: -40,
-              right: -70,
-              width: 320,
-              height: 320,
-              borderRadius: 160,
-              backgroundColor: "rgba(99, 102, 241, 0.65)",
+              top: -60,
+              right: -90,
+              width: 380,
+              height: 380,
+              borderRadius: 190,
+              backgroundColor: "rgba(139, 92, 246, 0.6)",
+              shadowColor: "#8B5CF6",
+              shadowOffset: { width: 0, height: 0 },
+              shadowOpacity: 0.8,
+              shadowRadius: 50,
             },
             animatedStyle2,
           ]}
         />
 
-        {/* Blob 3: Ciano Neon */}
+        {/* Blob 3: Azul Ultramarine */}
         <Animated.View
           style={[
             styles.blob,
             {
-              top: 140,
-              right: -50,
-              width: 290,
-              height: 290,
-              borderRadius: 145,
-              backgroundColor: "rgba(6, 182, 212, 0.55)",
+              top: 160,
+              right: -40,
+              width: 320,
+              height: 320,
+              borderRadius: 160,
+              backgroundColor: "rgba(59, 130, 246, 0.55)",
+              shadowColor: "#3B82F6",
+              shadowOffset: { width: 0, height: 0 },
+              shadowOpacity: 0.7,
+              shadowRadius: 45,
             },
             animatedStyle3,
           ]}
         />
 
-        {/* Blob 4: Púrpura Ambient */}
+        {/* Blob 4: Magenta Ambient Glow */}
         <Animated.View
           style={[
             styles.blob,
             {
-              top: 220,
-              left: -80,
-              width: 350,
-              height: 350,
-              borderRadius: 175,
-              backgroundColor: "rgba(139, 92, 246, 0.5)",
+              top: 200,
+              left: -90,
+              width: 340,
+              height: 340,
+              borderRadius: 170,
+              backgroundColor: "rgba(236, 72, 153, 0.35)",
+              shadowColor: "#EC4899",
+              shadowOffset: { width: 0, height: 0 },
+              shadowOpacity: 0.6,
+              shadowRadius: 50,
             },
             animatedStyle4,
           ]}
         />
       </View>
 
-      {/* Camada de Blur estilo Glassmorphism YouTube Music */}
-      <BlurView intensity={75} tint="dark" style={StyleSheet.absoluteFillObject} />
+      {/* Camada de Blur estilo Glassmorphism */}
+      <BlurView
+        intensity={Platform.OS === "ios" ? 90 : 70}
+        tint="dark"
+        style={StyleSheet.absoluteFillObject}
+      />
 
-      {/* Gradiente que suaviza a transição para a cor sólida #0B101E na borda inferior */}
+      {/* Transição ultra-suave com gradiente de 5 stops para o fundo sólido #0B101E */}
       <LinearGradient
-        colors={["rgba(11, 16, 30, 0.1)", "rgba(11, 16, 30, 0.5)", "#0B101E"]}
-        locations={[0, 0.5, 1]}
+        colors={[
+          "rgba(11, 16, 30, 0.05)",
+          "rgba(11, 16, 30, 0.25)",
+          "rgba(11, 16, 30, 0.65)",
+          "rgba(11, 16, 30, 0.92)",
+          "#0B101E",
+        ]}
+        locations={[0, 0.35, 0.65, 0.88, 1]}
         style={StyleSheet.absoluteFillObject}
       />
     </View>
@@ -260,6 +314,11 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     overflow: "hidden",
+    zIndex: -1,
+    backfaceVisibility: "hidden",
+    ...(Platform.OS === "web" && {
+      transform: "translateZ(0)",
+    }),
   },
   container: {
     ...StyleSheet.absoluteFillObject,
