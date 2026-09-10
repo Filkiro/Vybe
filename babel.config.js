@@ -17,5 +17,9 @@ module.exports = function (api) {
       ],
       "nativewind/babel",
     ],
+    plugins: [
+      // Precisa ser sempre o último plugin da lista (Reanimated v4).
+      "react-native-worklets/plugin",
+    ],
   };
 };
