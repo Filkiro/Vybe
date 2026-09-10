@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { View, Text, Pressable, Image } from "react-native";
-import { router } from "expo-router";
 import { Heart } from "lucide-react-native";
 import { supabase } from "../lib/supabase";
 import { useAuthStore } from "../store/authStore";
 import { useRequireAuth } from "../store/authPromptStore";
+import { useAbrirPerfil } from "../store/perfilModalStore";
 import { colors, rotulosTipoConta } from "../constants/theme";
 
 export type PublicacaoFeedItem = {
@@ -28,6 +28,7 @@ export type PublicacaoFeedItem = {
 export function PublicacaoCard({ item }: { item: PublicacaoFeedItem }) {
   const usuarioLogado = useAuthStore((s) => s.usuario);
   const requireAuth = useRequireAuth();
+  const abrirPerfil = useAbrirPerfil();
   const [curtido, setCurtido] = useState(item.curtido_por_mim);
   const [totalCurtidas, setTotalCurtidas] = useState(item.total_curtidas);
   const [enviando, setEnviando] = useState(false);
@@ -69,7 +70,7 @@ export function PublicacaoCard({ item }: { item: PublicacaoFeedItem }) {
   return (
     <View className="bg-card rounded-2xl mb-4 overflow-hidden border border-border">
       <Pressable
-        onPress={() => router.push(`/usuario/${item.usuario_id}`)}
+        onPress={() => abrirPerfil(item.usuario_id)}
         className="flex-row items-center px-3 pt-3 pb-2"
       >
         {item.foto_perfil_url ? (

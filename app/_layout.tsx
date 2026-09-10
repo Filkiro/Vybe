@@ -7,6 +7,7 @@ import "../global.css";
 import { useAuthStore, ehBanido } from "../store/authStore";
 import { ContaBanidaOverlay } from "../components/ContaBanidaOverlay";
 import { AuthPromptModal } from "../components/AuthPromptModal";
+import { PerfilArtistaModal } from "../components/PerfilArtistaModal";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { UnreadMessagesListener } from "../components/UnreadMessagesListener";
 
@@ -72,6 +73,7 @@ return (
       <>
         <Stack screenOptions={{ headerShown: false }} />
         <AuthPromptModal />
+        <PerfilArtistaModal />
         <ConfirmModal />
         <UnreadMessagesListener />
       </>

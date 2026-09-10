@@ -1,9 +1,31 @@
 import { useEffect, useState } from "react";
-import { cancelAnimation } from "react-native-reanimated";
-import { View, Text, TextInput, Switch, ScrollView, Image, useWindowDimensions, StyleSheet, Modal } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  Switch,
+  ScrollView,
+  Image,
+  useWindowDimensions,
+  StyleSheet,
+  Modal,
+  Pressable,
+} from "react-native";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
-import { Camera, LogOut, BarChart3, Music, LifeBuoy, Trash2, AlertTriangle } from "lucide-react-native";
+import {
+  Camera,
+  LogOut,
+  BarChart3,
+  Music,
+  LifeBuoy,
+  Trash2,
+  AlertTriangle,
+  ChevronRight,
+  ShieldCheck,
+  UserCheck,
+  Sparkles,
+} from "lucide-react-native";
 import { BlurView } from "expo-blur";
 import { supabase, PerfilMusico, PerfilOrganizador } from "../../lib/supabase";
 import { useAuthStore, ehContaComum } from "../../store/authStore";
@@ -12,15 +34,6 @@ import { usePlayerStore } from "../../store/playerStore";
 import { AppLogo } from "../../components/AppLogo";
 import { colors, rotulosTipoConta } from "../../constants/theme";
 import { usePlayerAwarePadding } from "../../hooks/usePlayerAwarePadding";
-import { Pressable } from "react-native";
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withTiming,
-  withSequence,
-  Easing,
-} from "react-native-reanimated";
 
 export default function Perfil() {
   const usuario = useAuthStore((s) => s.usuario);
@@ -29,8 +42,6 @@ export default function Perfil() {
   const paddingBottom = usePlayerAwarePadding(140);
 
   async function handleLogout() {
-    // Para a música e limpa o player ANTES de deslogar — senão uma música
-    // que já estava carregada continua tocável mesmo sem usuário logado.
     usePlayerStore.getState().resetar();
     await supabase.auth.signOut();
     router.replace("/(tabs)/home");
@@ -40,23 +51,23 @@ export default function Perfil() {
     return (
       <View className="flex-1 bg-[#0B101E] items-center justify-center px-8">
         <AppLogo />
-        <Text className="text-lg font-bold text-textDark text-center mt-4 mb-2">
-          Você ainda não tem conta
+        <Text className="text-xl font-bold text-textDark text-center mt-6 mb-2">
+          Sua jornada musical começa aqui
         </Text>
-        <Text className="text-muted text-center mb-6">
-          Entre ou cadastre-se para ver seu perfil, sua biblioteca e conversar com outras pessoas.
+        <Text className="text-muted text-center mb-8 leading-relaxed">
+          Entre ou crie uma conta para acessar seu perfil, gerenciar sua biblioteca e conectar-se.
         </Text>
         <Pressable
           onPress={() => router.push("/(auth)/entrar?aba=cadastro")}
-          className="bg-primary rounded-full py-4 items-center w-full mb-3"
+          className="bg-primary rounded-2xl py-4 items-center w-full mb-3 shadow-lg shadow-primary/20"
         >
-          <Text className="text-white font-bold">Cadastrar</Text>
+          <Text className="text-white font-bold text-base">Criar conta</Text>
         </Pressable>
         <Pressable
           onPress={() => router.push("/(auth)/entrar?aba=login")}
-          className="border border-border rounded-full py-4 items-center w-full"
+          className="bg-card border border-border rounded-2xl py-4 items-center w-full"
         >
-          <Text className="text-textDark font-medium">Já tenho conta — Entrar</Text>
+          <Text className="text-textDark font-semibold">Já tenho conta — Entrar</Text>
         </Pressable>
       </View>
     );
@@ -66,129 +77,152 @@ export default function Perfil() {
 
   return (
     <View className="flex-1 bg-[#0B101E]">
-      <ScrollView className="flex-1 bg-transparent" contentContainerStyle={{ paddingBottom }} stickyHeaderIndices={temBiblioteca ? [1] : undefined} showsVerticalScrollIndicator={false}>
-      <CabecalhoPerfil usuario={usuario} onLogout={handleLogout} />
+      <ScrollView
+        className="flex-1 bg-transparent"
+        contentContainerStyle={{ paddingBottom }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Banner + Hero do Perfil */}
+        <CabecalhoPerfil usuario={usuario} />
 
-      {temBiblioteca ? (
-        <>
-          <View className="bg-transparent px-4 pt-4 pb-2 flex-row gap-2">
-            <SegmentoAba label="Biblioteca" ativa={aba === "biblioteca"} onPress={() => setAba("biblioteca")} />
-            <SegmentoAba label="Dados" ativa={aba === "dados"} onPress={() => setAba("dados")} />
-          </View>
+        {/* ÁREA DE CONTEÚDO PRINCIPAL */}
+        {temBiblioteca ? (
+          <View className="px-4 mt-2">
+            {/* Seletor de Abas Estilo Segmented Control */}
+            <View className="bg-card/80 border border-border p-1.5 rounded-2xl flex-row mb-6">
+              <Pressable
+                onPress={() => setAba("biblioteca")}
+                className={`flex-1 py-3 rounded-xl items-center justify-center transition-all ${
+                  aba === "biblioteca" ? "bg-primary shadow-md" : "bg-transparent"
+                }`}
+              >
+                <Text
+                  className={`font-bold text-xs ${
+                    aba === "biblioteca" ? "text-white" : "text-muted"
+                  }`}
+                >
+                  Sua Biblioteca
+                </Text>
+              </Pressable>
 
-          {aba === "biblioteca" ? (
-            <BibliotecaPropria tipoConta={usuario.tipo_conta} usuarioId={usuario.id} />
-          ) : (
-            <View className="px-4 mt-2">
-              {usuario.tipo_conta === "musico" ? (
-                <FormularioMusico usuarioId={usuario.id} />
-              ) : (
-                <FormularioOrganizador usuarioId={usuario.id} />
-              )}
+              <Pressable
+                onPress={() => setAba("dados")}
+                className={`flex-1 py-3 rounded-xl items-center justify-center transition-all ${
+                  aba === "dados" ? "bg-primary shadow-md" : "bg-transparent"
+                }`}
+              >
+                <Text
+                  className={`font-bold text-xs ${
+                    aba === "dados" ? "text-white" : "text-muted"
+                  }`}
+                >
+                  Dados Pessoais
+                </Text>
+              </Pressable>
             </View>
-          )}
-        </>
-      ) : (
-        <View className="px-4 mt-4">
-          <Text className="text-textDark">
-            Conta de {rotulosTipoConta[usuario.tipo_conta]} — use as abas de{" "}
-            {usuario.tipo_conta === "adm" ? "Painel" : "Moderação"} para gerenciar a plataforma.
+
+            {/* Conteúdo da Aba */}
+            {aba === "biblioteca" ? (
+              <BibliotecaPropria tipoConta={usuario.tipo_conta} usuarioId={usuario.id} />
+            ) : (
+              <View>
+                {usuario.tipo_conta === "musico" ? (
+                  <FormularioMusico usuarioId={usuario.id} />
+                ) : (
+                  <FormularioOrganizador usuarioId={usuario.id} />
+                )}
+              </View>
+            )}
+          </View>
+        ) : (
+          /* Card Especial para ADM / Moderador */
+          <View className="px-4 mt-4">
+            <View className="bg-card border border-border/80 rounded-3xl p-6 items-center text-center">
+              <View className="w-12 h-12 rounded-2xl bg-primary/10 items-center justify-center mb-3">
+                <ShieldCheck color={colors.primary} size={26} />
+              </View>
+              <Text className="text-base font-bold text-textDark mb-1">
+                Painel Administrativo
+              </Text>
+              <Text className="text-muted text-xs text-center leading-relaxed">
+                Conta de <Text className="font-semibold text-textDark">{rotulosTipoConta[usuario.tipo_conta]}</Text>. Utilize as abas dedicadas de{" "}
+                <Text className="text-primary font-semibold">
+                  {usuario.tipo_conta === "adm" ? "Painel" : "Moderação"}
+                </Text>{" "}
+                para gerenciar os recursos da plataforma.
+              </Text>
+            </View>
+          </View>
+        )}
+
+        {/* SEÇÃO DE AÇÕES E ATALHOS */}
+        <View className="px-4 mt-6">
+          <Text className="text-muted text-[11px] font-bold uppercase tracking-wider mb-3 px-1">
+            Navegação Rápida
           </Text>
+          <View className="bg-card border border-border/60 rounded-3xl overflow-hidden shadow-sm">
+            {usuario.tipo_conta === "musico" && (
+              <ItemMenu
+                icone={<BarChart3 color={colors.primary} size={18} />}
+                titulo="Dashboard de Desempenho"
+                subtitulo="Estatísticas e métricas do seu perfil"
+                onPress={() => router.push("/dashboard")}
+              />
+            )}
+            <ItemMenu
+              icone={<Music color={colors.primary} size={18} />}
+              titulo="Minhas Publicações"
+              subtitulo="Gerencie lançamentos e faixas"
+              onPress={() => router.push("/minhas-publicacoes")}
+            />
+            <ItemMenu
+              icone={<LifeBuoy color={colors.primary} size={18} />}
+              titulo="Central de Suporte"
+              subtitulo="Ajuda e termos da plataforma"
+              onPress={() => router.push("/suporte")}
+              ultimo
+            />
+          </View>
         </View>
-      )}
+
+        {/* BOTÃO DE SAIR */}
+        <View className="px-4 mt-6">
+          <Pressable
+            onPress={handleLogout}
+            className="bg-red-500/10 border border-red-500/20 rounded-2xl py-4 flex-row items-center justify-center gap-2.5 active:bg-red-500/20"
+          >
+            <LogOut color={colors.danger} size={18} />
+            <Text className="text-red-500 font-bold text-sm">Encerrar Sessão</Text>
+          </Pressable>
+        </View>
       </ScrollView>
     </View>
   );
 }
 
-function HeaderBlueGlow() {
-  const blobX = useSharedValue(0);
-  const blobScale = useSharedValue(1);
-
-  useEffect(() => {
-    blobX.value = withRepeat(
-      withSequence(
-        withTiming(40, { duration: 5000, easing: Easing.inOut(Easing.quad) }),
-        withTiming(-40, { duration: 6000, easing: Easing.inOut(Easing.quad) })
-      ),
-      -1,
-      true
-    );
-    blobScale.value = withRepeat(
-      withSequence(
-        withTiming(1.3, { duration: 4500, easing: Easing.inOut(Easing.quad) }),
-        withTiming(0.9, { duration: 5500, easing: Easing.inOut(Easing.quad) })
-      ),
-      -1,
-      true
-    );
-
-    // 👇 essencial: mata o worklet antes do componente sumir
-    return () => {
-      cancelAnimation(blobX);
-      cancelAnimation(blobScale);
-    };
-  }, []);
-
-  const animatedStyle1 = useAnimatedStyle(() => ({
-    transform: [{ translateX: blobX.value }, { scale: blobScale.value }],
-  }));
-
-  const animatedStyle2 = useAnimatedStyle(() => ({
-    transform: [{ translateX: -blobX.value }, { scale: blobScale.value }],
-  }));
-
-  return (
-    <View style={{ height: 110, overflow: "hidden" }} className="rounded-b-[32px]">
-      <View style={{ ...StyleSheet.absoluteFillObject, backgroundColor: "#1d4fd841" }} />
-      <Animated.View
-        style={[
-          {
-            position: "absolute",
-            top: -50,
-            left: -30,
-            width: 240,
-            height: 180,
-            borderRadius: 120,
-            backgroundColor: "rgba(59, 130, 246, 0.85)",
-          },
-          animatedStyle1,
-        ]}
-      />
-      <Animated.View
-        style={[
-          {
-            position: "absolute",
-            top: -30,
-            right: -40,
-            width: 220,
-            height: 170,
-            borderRadius: 110,
-          },
-          animatedStyle2,
-        ]}
-      />
-      <BlurView intensity={45} tint="dark" style={StyleSheet.absoluteFillObject} />
-    </View>
-  );
-}
-
-function CabecalhoPerfil({ usuario, onLogout }: { usuario: any; onLogout: () => void }) {
+function CabecalhoPerfil({ usuario }: { usuario: any }) {
   const [fotoUrl, setFotoUrl] = useState<string | null>(null);
+  const [bannerUrl, setBannerUrl] = useState<string | null>(null);
   const [enviandoFoto, setEnviandoFoto] = useState(false);
-  const router = useRouter();
+  const [enviandoBanner, setEnviandoBanner] = useState(false);
   const ehMusico = usuario.tipo_conta === "musico";
+  const ehOrganizador = usuario.tipo_conta === "organizador";
+  // Só músico e organizador têm linha própria em perfil_musico /
+  // perfil_organizador — adm e moderador não têm o que editar aqui.
+  const tabelaPerfil = ehMusico ? "perfil_musico" : ehOrganizador ? "perfil_organizador" : null;
 
   useEffect(() => {
-    if (ehMusico) {
-      supabase
-        .from("perfil_musico")
-        .select("foto_url")
-        .eq("usuario_id", usuario.id)
-        .single()
-        .then(({ data }) => setFotoUrl(data?.foto_url ?? null));
-    }
-  }, [usuario.id, ehMusico]);
+    if (!tabelaPerfil) return;
+    supabase
+      .from(tabelaPerfil)
+      .select(ehMusico ? "foto_url, banner_url" : "banner_url")
+      .eq("usuario_id", usuario.id)
+      .single()
+      .then(({ data }) => {
+        if (ehMusico) setFotoUrl((data as any)?.foto_url ?? null);
+        setBannerUrl((data as any)?.banner_url ?? null);
+      });
+  }, [usuario.id, tabelaPerfil]);
 
   async function trocarFoto() {
     const permissao = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -210,102 +244,171 @@ function CabecalhoPerfil({ usuario, onLogout }: { usuario: any; onLogout: () => 
         nomeArquivo: `${usuario.id}.jpg`,
         contentType: "image/jpeg",
       });
-      await supabase.from("perfil_musico").update({ foto_url: url }).eq("usuario_id", usuario.id);
+
+      const { error } = await supabase
+        .from("perfil_musico")
+        .update({ foto_url: url })
+        .eq("usuario_id", usuario.id);
+
+      if (error) throw error;
       setFotoUrl(url);
+    } catch (e) {
+      console.error("Erro ao atualizar foto de perfil:", e);
     } finally {
       setEnviandoFoto(false);
     }
   }
 
-  return (
-    <View>
-      {/* Barra do topo com glow azul animado estilo YouTube Music */}
-      <HeaderBlueGlow />
+  async function trocarBanner() {
+    if (!tabelaPerfil) return;
+    const permissao = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permissao.granted) return;
 
-      <View className="items-center" style={{ marginTop: -48 }}>
+    const resultado = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [16, 9],
+      quality: 0.8,
+    });
+    if (resultado.canceled || !resultado.assets[0]) return;
+
+    setEnviandoBanner(true);
+    try {
+      const url = await enviarArquivoParaStorage({
+        bucket: "banner_perfil",
+        uri: resultado.assets[0].uri,
+        nomeArquivo: `${usuario.id}.jpg`,
+        contentType: "image/jpeg",
+      });
+
+      const { error } = await supabase.from(tabelaPerfil).update({ banner_url: url }).eq("usuario_id", usuario.id);
+
+      if (error) throw error;
+      setBannerUrl(url);
+    } catch (e) {
+      console.error("Erro ao atualizar banner de perfil:", e);
+    } finally {
+      setEnviandoBanner(false);
+    }
+  }
+
+  return (
+    <View className="mb-4 relative">
+      {/* Banner: se o usuário já definiu um, ele vira o fundo aqui —
+          o mesmo banner que aparece no modal de prévia e no perfil
+          público dele. Sem banner, cai no gradiente com blur de antes.
+          O overflow-hidden fica só nessa camada de fundo — o botão vive
+          fora dela, como irmão, pra nada (BlurView incluso) poder
+          interceptar o toque nele. */}
+      <View pointerEvents="none" className="h-36 w-full overflow-hidden bg-surface">
+        {bannerUrl ? (
+          <Image source={{ uri: bannerUrl }} className="w-full h-full" resizeMode="cover" />
+        ) : (
+          <>
+            <View className="absolute -top-10 -left-10 w-48 h-48 rounded-full bg-primary/25 blur-2xl" />
+            <View className="absolute top-0 right-0 w-56 h-56 rounded-full bg-blue-600/15 blur-3xl" />
+            <BlurView intensity={30} tint="dark" style={StyleSheet.absoluteFillObject} />
+          </>
+        )}
+
+        {bannerUrl && <View className="absolute inset-0 bg-black/25" />}
+      </View>
+
+      {tabelaPerfil && (
+        <Pressable
+          onPress={trocarBanner}
+          disabled={enviandoBanner}
+          hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
+          style={{ position: "absolute", top: 96, right: 12, zIndex: 20, elevation: 20 }}
+          className="bg-black/60 rounded-full p-2 border border-white/20 flex-row items-center gap-1.5 px-3 active:bg-black/80"
+        >
+          <Camera color="white" size={14} />
+          <Text className="text-white text-[11px] font-semibold">
+            {enviandoBanner ? "Enviando..." : bannerUrl ? "Trocar banner" : "Adicionar banner"}
+          </Text>
+        </Pressable>
+      )}
+
+      {/* Foto de Perfil (Voltou à lógica estável anterior) */}
+      <View className="items-center -mt-14 px-4">
         <Pressable onPress={ehMusico ? trocarFoto : undefined} disabled={!ehMusico || enviandoFoto}>
           <View
-            className="rounded-full items-center justify-center bg-surface"
-            style={{ width: 96, height: 96, borderWidth: 4, borderColor: colors.background }}
+            className="rounded-full items-center justify-center bg-surface relative shadow-2xl"
+            style={{ width: 108, height: 108, borderWidth: 4, borderColor: "#0B101E" }}
           >
             {fotoUrl ? (
-              <Image source={{ uri: fotoUrl }} style={{ width: 88, height: 88, borderRadius: 44 }} />
+              <Image source={{ uri: fotoUrl }} style={{ width: 100, height: 100, borderRadius: 50 }} />
             ) : (
-              <Text className="text-3xl font-bold text-muted">{usuario.nome.charAt(0).toUpperCase()}</Text>
+              <View className="w-full h-full rounded-full bg-surface items-center justify-center">
+                <Text className="text-4xl font-extrabold text-muted">
+                  {usuario.nome.charAt(0).toUpperCase()}
+                </Text>
+              </View>
+            )}
+
+            {ehMusico && (
+              <View className="absolute bottom-0 right-0 bg-primary rounded-full p-2 border-2 border-[#0B101E] shadow-md">
+                <Camera color="white" size={14} />
+              </View>
             )}
           </View>
-
-          {ehMusico && (
-            <View
-              className="absolute bottom-0 right-0 bg-primary rounded-full items-center justify-center"
-              style={{ width: 30, height: 30, borderWidth: 2, borderColor: colors.background }}
-            >
-              <Camera color="white" size={14} />
-            </View>
-          )}
         </Pressable>
 
-        <Text className="text-xl font-bold text-textDark mt-3">{usuario.nome}</Text>
-        <View className="bg-surface rounded-full px-3 py-1 mt-1">
-          <Text className="text-xs font-medium text-muted">
+        <Text className="text-2xl font-black text-textDark mt-3 tracking-tight text-center">
+          {usuario.nome}
+        </Text>
+
+        <View className="flex-row items-center gap-1.5 bg-card border border-border/80 px-3 py-1 rounded-full mt-2">
+          {usuario.tipo_conta === "musico" && <Sparkles size={12} color={colors.primary} />}
+          {usuario.tipo_conta === "organizador" && <UserCheck size={12} color={colors.primary} />}
+          {(usuario.tipo_conta === "adm" || usuario.tipo_conta === "moderador") && (
+            <ShieldCheck size={12} color={colors.primary} />
+          )}
+          <Text className="text-xs font-semibold text-muted capitalize">
             {rotulosTipoConta[usuario.tipo_conta]}
-            {enviandoFoto ? " · enviando foto..." : ""}
+            {enviandoFoto ? " · Enviando foto..." : ""}
           </Text>
         </View>
-
-        {/* Links de navegação adaptativos distribuídos por toda a largura */}
-        <View className="w-full mt-5 px-4 flex-row flex-wrap justify-between gap-2.5">
-          {ehMusico && (
-            <Pressable 
-              onPress={() => router.push("/dashboard")} 
-              className="bg-card border border-border rounded-2xl py-3 px-4 flex-row items-center gap-2.5 active:opacity-70 flex-1 min-w-[140px] justify-center"
-            >
-              <View className="w-8 h-8 rounded-full bg-surface items-center justify-center">
-                <BarChart3 color={colors.primary} size={16} />
-              </View>
-              <Text className="text-textDark font-semibold text-xs">Dashboard</Text>
-            </Pressable>
-          )}
-
-          <Pressable 
-            onPress={() => router.push("/minhas-publicacoes")} 
-            className="bg-card border border-border rounded-2xl py-3 px-4 flex-row items-center gap-2.5 active:opacity-70 flex-1 min-w-[140px] justify-center"
-          >
-            <View className="w-8 h-8 rounded-full bg-surface items-center justify-center">
-              <Music color={colors.primary} size={16} />
-            </View>
-            <Text className="text-textDark font-semibold text-xs">Publicações</Text>
-          </Pressable>
-
-          <Pressable 
-            onPress={() => router.push("/suporte")} 
-            className="bg-card border border-border rounded-2xl py-3 px-4 flex-row items-center gap-2.5 active:opacity-70 flex-1 min-w-[140px] justify-center"
-          >
-            <View className="w-8 h-8 rounded-full bg-surface items-center justify-center">
-              <LifeBuoy color={colors.primary} size={16} />
-            </View>
-            <Text className="text-textDark font-semibold text-xs">Suporte</Text>
-          </Pressable>
-        </View>
-
-        <Pressable onPress={onLogout} className="flex-row items-center mt-6 px-4 py-2">
-          <LogOut color={colors.danger} size={16} />
-          <Text className="text-red-500 text-sm ml-2 font-medium">Sair da conta</Text>
-        </Pressable>
       </View>
     </View>
   );
 }
 
-function SegmentoAba({ label, ativa, onPress }: { label: string; ativa: boolean; onPress: () => void }) {
+function ItemMenu({
+  icone,
+  titulo,
+  subtitulo,
+  onPress,
+  ultimo = false,
+}: {
+  icone: React.ReactNode;
+  titulo: string;
+  subtitulo: string;
+  onPress: () => void;
+  ultimo?: boolean;
+}) {
   return (
-    <Pressable onPress={onPress} className={`flex-1 py-2.5 rounded-full items-center ${ativa ? "bg-primary" : "bg-surface"}`}>
-      <Text className={`font-medium ${ativa ? "text-white" : "text-muted"}`}>{label}</Text>
+    <Pressable
+      onPress={onPress}
+      className={`flex-row items-center justify-between p-4 active:bg-surface/60 ${
+        !ultimo ? "border-b border-border/50" : ""
+      }`}
+    >
+      <View className="flex-row items-center gap-3.5 flex-1">
+        <View className="w-10 h-10 rounded-2xl bg-surface items-center justify-center border border-border/40">
+          {icone}
+        </View>
+        <View className="flex-1 pr-2">
+          <Text className="text-textDark font-bold text-sm">{titulo}</Text>
+          <Text className="text-muted text-[11px] mt-0.5">{subtitulo}</Text>
+        </View>
+      </View>
+      <ChevronRight color={colors.muted} size={18} />
     </Pressable>
   );
 }
 
-const LARGURA_IDEAL_CARD = 170;
+const LARGURA_IDEAL_CARD = 160;
 const MAX_COLUNAS = 6;
 const LIMITE_PREVIA = 6;
 
@@ -321,9 +424,9 @@ function BibliotecaMusico({ usuarioId }: { usuarioId: string }) {
   const router = useRouter();
   const { width } = useWindowDimensions();
 
-  const PADDING_HORIZONTAL = 16;
+  const PADDING_HORIZONTAL = 0;
   const GAP = 12;
-  const larguraUtil = width - PADDING_HORIZONTAL * 2;
+  const larguraUtil = width - 32;
   const numColunas = Math.min(MAX_COLUNAS, Math.max(2, Math.floor(larguraUtil / LARGURA_IDEAL_CARD)));
   const larguraCard = (larguraUtil - GAP * (numColunas - 1)) / numColunas;
 
@@ -345,15 +448,15 @@ function BibliotecaMusico({ usuarioId }: { usuarioId: string }) {
   }, [usuarioId]);
 
   return (
-    <View style={{ paddingHorizontal: PADDING_HORIZONTAL, paddingTop: 8 }}>
+    <View style={{ paddingHorizontal: PADDING_HORIZONTAL }}>
       <SecaoBiblioteca
-        titulo="Músicas"
+        titulo="Minhas Músicas"
         itens={musicas}
         larguraCard={larguraCard}
         gap={GAP}
         limite={LIMITE_PREVIA}
         verTudoHref="/biblioteca/musicas"
-        vazio='Você ainda não publicou nenhuma música. Toque em "Criar" pra começar.'
+        vazio='Você ainda não publicou nenhuma música. Toque em "Criar" para começar.'
         renderItem={(item) => (
           <Pressable
             key={item.id}
@@ -372,17 +475,19 @@ function BibliotecaMusico({ usuarioId }: { usuarioId: string }) {
               router.push("/tocando");
             }}
             style={{ width: larguraCard }}
-            className="bg-card rounded-2xl p-3"
+            className="bg-card border border-border/80 rounded-2xl p-2.5 active:scale-95"
           >
             {item.capa_url ? (
-              <Image source={{ uri: item.capa_url }} className="w-full aspect-square rounded-xl mb-2" />
+              <Image source={{ uri: item.capa_url }} className="w-full aspect-square rounded-xl mb-2.5" />
             ) : (
-              <View className="w-full aspect-square rounded-xl bg-surface mb-2" />
+              <View className="w-full aspect-square rounded-xl bg-surface mb-2.5 items-center justify-center">
+                <Music color={colors.muted} size={24} />
+              </View>
             )}
-            <Text numberOfLines={1} className="font-bold text-textDark">
+            <Text numberOfLines={1} className="font-bold text-textDark text-xs">
               {item.nome}
             </Text>
-            <Text numberOfLines={1} className="text-muted text-xs capitalize">
+            <Text numberOfLines={1} className="text-muted text-[10px] uppercase font-semibold mt-0.5">
               {item.status}
             </Text>
           </Pressable>
@@ -390,26 +495,28 @@ function BibliotecaMusico({ usuarioId }: { usuarioId: string }) {
       />
 
       <SecaoBiblioteca
-        titulo="Álbuns"
+        titulo="Meus Álbuns"
         itens={albuns}
         larguraCard={larguraCard}
         gap={GAP}
         limite={LIMITE_PREVIA}
         verTudoHref="/biblioteca/albuns"
-        vazio="Você ainda não criou nenhum álbum. Toque em “Criar” pra começar."
+        vazio="Você ainda não criou nenhum álbum. Toque em “Criar” para começar."
         renderItem={(item) => (
           <Pressable
             key={item.id}
             onPress={() => router.push(`/album/${item.id}`)}
             style={{ width: larguraCard }}
-            className="bg-card rounded-2xl p-3"
+            className="bg-card border border-border/80 rounded-2xl p-2.5 active:scale-95"
           >
             {item.capa_url ? (
-              <Image source={{ uri: item.capa_url }} className="w-full aspect-square rounded-xl mb-2" />
+              <Image source={{ uri: item.capa_url }} className="w-full aspect-square rounded-xl mb-2.5" />
             ) : (
-              <View className="w-full aspect-square rounded-xl bg-surface mb-2" />
+              <View className="w-full aspect-square rounded-xl bg-surface mb-2.5 items-center justify-center">
+                <Music color={colors.muted} size={24} />
+              </View>
             )}
-            <Text numberOfLines={1} className="font-bold text-textDark">
+            <Text numberOfLines={1} className="font-bold text-textDark text-xs">
               {item.nome}
             </Text>
           </Pressable>
@@ -445,16 +552,18 @@ function SecaoBiblioteca({
   return (
     <View className="mb-6">
       <View className="flex-row items-center justify-between mb-3">
-        <Text className="text-lg font-bold text-textDark">{titulo}</Text>
+        <Text className="text-sm font-bold text-textDark tracking-wide">{titulo}</Text>
         {itens.length > 0 && (
-          <Pressable onPress={() => router.push(verTudoHref as any)} hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}>
-            <Text className="text-primary text-sm font-medium">Gerenciar</Text>
+          <Pressable onPress={() => router.push(verTudoHref as any)} hitSlop={8}>
+            <Text className="text-primary text-xs font-bold">Gerenciar Tudo</Text>
           </Pressable>
         )}
       </View>
 
       {itens.length === 0 ? (
-        <Text className="text-muted text-center py-4">{vazio}</Text>
+        <View className="bg-card/40 border border-border/50 rounded-2xl p-4 items-center">
+          <Text className="text-muted text-center text-xs">{vazio}</Text>
+        </View>
       ) : (
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap }}>
           {visiveis.map((item) => renderItem(item))}
@@ -463,13 +572,13 @@ function SecaoBiblioteca({
             <Pressable
               onPress={() => router.push(verTudoHref as any)}
               style={{ width: larguraCard }}
-              className="bg-card rounded-2xl p-3"
+              className="bg-card border border-border/80 rounded-2xl p-2.5 items-center justify-center"
             >
               <View className="w-full aspect-square rounded-xl bg-surface items-center justify-center mb-2">
-                <Text className="text-primary text-xl font-bold">+{excedente}</Text>
+                <Text className="text-primary text-xl font-black">+{excedente}</Text>
               </View>
-              <Text numberOfLines={1} className="font-bold text-primary">
-                Ver tudo
+              <Text numberOfLines={1} className="font-bold text-primary text-xs">
+                Ver todos
               </Text>
             </Pressable>
           )}
@@ -493,28 +602,33 @@ function BibliotecaOrganizador({ usuarioId }: { usuarioId: string }) {
   }, [usuarioId]);
 
   return (
-    <View className="px-4 pt-2">
+    <View className="pt-1">
       {eventos.length === 0 && (
-        <Text className="text-muted text-center mt-8">Você ainda não criou nenhum evento. Toque em "Criar" pra começar.</Text>
+        <View className="bg-card/40 border border-border/50 rounded-2xl p-6 items-center">
+          <Text className="text-muted text-center text-xs">
+            Você ainda não criou nenhum evento. Toque em "Criar" para começar.
+          </Text>
+        </View>
       )}
       {eventos.map((item) => (
-        <View key={item.id} className="bg-card rounded-2xl p-4 mb-3 flex-row items-center justify-between">
+        <View
+          key={item.id}
+          className="bg-card border border-border/80 rounded-2xl p-4 mb-3 flex-row items-center justify-between shadow-sm"
+        >
           <View className="flex-1 pr-3">
-            <Text className="font-bold text-textDark">{item.nome}</Text>
-            <Text className="text-muted text-sm mt-1">
+            <Text className="font-bold text-textDark text-sm">{item.nome}</Text>
+            <Text className="text-muted text-xs mt-1">
               {item.data} · {item.localizacao ?? "Local a definir"}
             </Text>
-            <Text className="text-primary text-xs mt-1 capitalize">{item.status}</Text>
+            <View className="self-start bg-primary/10 px-2 py-0.5 rounded-md mt-2">
+              <Text className="text-primary text-[10px] font-bold capitalize">{item.status}</Text>
+            </View>
           </View>
-          {/* Só o organizador dono do evento vê esse botão — é ele quem
-              criou o evento, então é ele quem pode alterar tudo (o link
-              cai em app/evento/editar/[id].tsx, que confere de novo se
-              quem abriu é realmente o dono antes de deixar editar). */}
           <Pressable
             onPress={() => router.push(`/evento/editar/${item.id}`)}
-            className="bg-primary/10 rounded-full px-3 py-2"
+            className="bg-primary/10 border border-primary/20 rounded-xl px-3.5 py-2 active:bg-primary/20"
           >
-            <Text className="text-primary text-sm font-medium">Gerenciar</Text>
+            <Text className="text-primary text-xs font-bold">Gerenciar</Text>
           </Pressable>
         </View>
       ))}
@@ -522,25 +636,34 @@ function BibliotecaOrganizador({ usuarioId }: { usuarioId: string }) {
   );
 }
 
-function CampoTexto({ label, value, onChangeText, multiline }: { label: string; value: string; onChangeText: (v: string) => void; multiline?: boolean }) {
+/* Campos de Formulário Modernos em Cards Clean */
+function CampoTexto({
+  label,
+  value,
+  onChangeText,
+  multiline,
+}: {
+  label: string;
+  value: string;
+  onChangeText: (v: string) => void;
+  multiline?: boolean;
+}) {
   return (
-    <View className="mt-4">
-      <Text className="text-xs text-muted mb-1">{label}</Text>
+    <View className="bg-card border border-border/70 rounded-2xl p-3.5 mb-3">
+      <Text className="text-[11px] font-bold text-muted uppercase tracking-wider mb-1">
+        {label}
+      </Text>
       <TextInput
         value={value}
         onChangeText={onChangeText}
         multiline={multiline}
-        className="border border-border rounded-2xl px-4 py-3 text-textDark bg-card"
+        className="text-textDark font-medium text-sm p-0"
+        placeholderTextColor={colors.muted}
       />
     </View>
   );
 }
 
-/**
- * Modal de confirmação de exclusão de conta.
- * Só apaga de fato quando o usuário confirma explicitamente — é uma ação
- * irreversível, então não tem "excluir direto", sempre passa por aqui.
- */
 function ModalConfirmarExclusao({
   visivel,
   onCancelar,
@@ -554,32 +677,31 @@ function ModalConfirmarExclusao({
 }) {
   return (
     <Modal visible={visivel} transparent animationType="fade" onRequestClose={onCancelar}>
-      <View className="flex-1 bg-black/60 items-center justify-center px-6">
-        <View className="bg-card rounded-3xl p-6 w-full">
-          <View className="w-14 h-14 rounded-full bg-red-500/10 items-center justify-center self-center mb-4">
-            <AlertTriangle color={colors.danger} size={28} />
+      <View className="flex-1 bg-black/75 items-center justify-center px-6">
+        <View className="bg-card rounded-3xl p-6 w-full border border-border shadow-2xl">
+          <View className="w-12 h-12 rounded-2xl bg-red-500/10 items-center justify-center self-center mb-4">
+            <AlertTriangle color={colors.danger} size={24} />
           </View>
 
           <Text className="text-lg font-bold text-textDark text-center mb-2">
             Excluir sua conta?
           </Text>
-          <Text className="text-muted text-center mb-6">
-            Essa ação é permanente e não pode ser desfeita. Todos os seus dados,
-            músicas, álbuns, eventos e conversas serão apagados.
+          <Text className="text-muted text-xs text-center mb-6 leading-relaxed">
+            Essa ação é permanente e não pode ser desfeita. Todos os seus dados, músicas, álbuns, eventos e conversas serão apagados.
           </Text>
 
           <Pressable
             onPress={onConfirmar}
             disabled={excluindo}
-            className="bg-red-500 rounded-full py-3.5 items-center mb-3"
+            className="bg-red-500 rounded-2xl py-3.5 items-center mb-2 shadow-lg shadow-red-500/20"
           >
-            <Text className="text-white font-bold">
+            <Text className="text-white font-bold text-xs">
               {excluindo ? "Excluindo..." : "Sim, excluir minha conta"}
             </Text>
           </Pressable>
 
-          <Pressable onPress={onCancelar} disabled={excluindo} className="py-3 items-center">
-            <Text className="text-textDark font-medium">Cancelar</Text>
+          <Pressable onPress={onCancelar} disabled={excluindo} className="py-2.5 items-center">
+            <Text className="text-textDark font-semibold text-xs">Cancelar</Text>
           </Pressable>
         </View>
       </View>
@@ -587,12 +709,6 @@ function ModalConfirmarExclusao({
   );
 }
 
-/**
- * Botão + modal de exclusão de conta, usado tanto no formulário do músico
- * quanto no do organizador. Chama a função excluir_minha_conta() no Supabase
- * (precisa existir no banco — ver instruções fornecidas separadamente),
- * depois desloga e manda o usuário pra Home.
- */
 function BotaoExcluirConta() {
   const router = useRouter();
   const [modalAberto, setModalAberto] = useState(false);
@@ -617,13 +733,13 @@ function BotaoExcluirConta() {
   }
 
   return (
-    <View className="mt-8 pt-6 border-t border-border">
+    <View className="mt-6 pt-4 border-t border-border/50">
       <Pressable
         onPress={() => setModalAberto(true)}
-        className="flex-row items-center justify-center gap-2 py-3"
+        className="flex-row items-center justify-center gap-2 py-2"
       >
-        <Trash2 color={colors.danger} size={16} />
-        <Text className="text-red-500 font-medium">Excluir minha conta</Text>
+        <Trash2 color={colors.danger} size={15} />
+        <Text className="text-red-500 font-bold text-xs">Excluir minha conta</Text>
       </Pressable>
 
       {erro && <Text className="text-red-500 text-xs text-center mt-1">{erro}</Text>}
@@ -677,25 +793,38 @@ function FormularioMusico({ usuarioId }: { usuarioId: string }) {
     setSalvo(true);
   }
 
-  if (!perfil) return <Text className="text-muted">Carregando...</Text>;
+  if (!perfil) return <Text className="text-muted text-xs">Carregando dados...</Text>;
 
   return (
     <View>
-      <CampoTexto label="Apelido" value={apelido} onChangeText={setApelido} />
-      <CampoTexto label="Gênero musical" value={generoMusical} onChangeText={setGeneroMusical} />
-      <CampoTexto label="Localização" value={localizacao} onChangeText={setLocalizacao} />
-      <CampoTexto label="Descrição" value={descricao} onChangeText={setDescricao} multiline />
-      <CampoTexto label="Contato externo" value={contatoExterno} onChangeText={setContatoExterno} />
+      <CampoTexto label="Apelido / Nome Artístico" value={apelido} onChangeText={setApelido} />
+      <CampoTexto label="Gênero Musical Principal" value={generoMusical} onChangeText={setGeneroMusical} />
+      <CampoTexto label="Localização Atual" value={localizacao} onChangeText={setLocalizacao} />
+      <CampoTexto label="Bio / Descrição do Artista" value={descricao} onChangeText={setDescricao} multiline />
+      <CampoTexto label="Contato Externo (Social / E-mail)" value={contatoExterno} onChangeText={setContatoExterno} />
 
-      <View className="flex-row items-center justify-between mt-4 bg-card rounded-2xl px-4 py-3">
-        <Text className="text-textDark">Disponível para shows</Text>
-        <Switch value={disponivel} onValueChange={setDisponivel} />
+      <View className="flex-row items-center justify-between my-2 bg-card border border-border/70 rounded-2xl p-4">
+        <View className="pr-2 flex-1">
+          <Text className="text-xs font-bold text-textDark">Disponível para shows</Text>
+          <Text className="text-[10px] text-muted mt-0.5">Exibe status ativo no seu perfil público</Text>
+        </View>
+        <Switch
+          value={disponivel}
+          onValueChange={setDisponivel}
+          trackColor={{ false: "#1E293B", true: colors.primary }}
+        />
       </View>
 
-      {salvo && <Text className="text-green-600 text-center mt-3">Salvo!</Text>}
+      {salvo && <Text className="text-green-500 text-xs font-bold text-center my-2">Alterações salvas com sucesso!</Text>}
 
-      <Pressable onPress={salvar} disabled={salvando} className="bg-primary rounded-full py-3 items-center mt-4">
-        <Text className="text-white font-bold">{salvando ? "Salvando..." : "Salvar alterações"}</Text>
+      <Pressable
+        onPress={salvar}
+        disabled={salvando}
+        className="bg-primary rounded-2xl py-4 items-center mt-3 shadow-lg shadow-primary/20 active:opacity-90"
+      >
+        <Text className="text-white font-bold text-sm">
+          {salvando ? "Salvando alterações..." : "Salvar Alterações"}
+        </Text>
       </Pressable>
 
       <BotaoExcluirConta />
@@ -738,19 +867,25 @@ function FormularioOrganizador({ usuarioId }: { usuarioId: string }) {
     setSalvo(true);
   }
 
-  if (!perfil) return <Text className="text-muted">Carregando...</Text>;
+  if (!perfil) return <Text className="text-muted text-xs">Carregando dados...</Text>;
 
   return (
     <View>
-      <CampoTexto label="Nicho de trabalho" value={nichoTrabalho} onChangeText={setNichoTrabalho} />
-      <CampoTexto label="Localização" value={localizacao} onChangeText={setLocalizacao} />
-      <CampoTexto label="Descrição" value={descricao} onChangeText={setDescricao} multiline />
-      <CampoTexto label="Contato" value={contato} onChangeText={setContato} />
+      <CampoTexto label="Nicho de Trabalho / Eventos" value={nichoTrabalho} onChangeText={setNichoTrabalho} />
+      <CampoTexto label="Localização / Região de Atuação" value={localizacao} onChangeText={setLocalizacao} />
+      <CampoTexto label="Descrição do Organizador" value={descricao} onChangeText={setDescricao} multiline />
+      <CampoTexto label="Contato Principal" value={contato} onChangeText={setContato} />
 
-      {salvo && <Text className="text-green-600 text-center mt-3">Salvo!</Text>}
+      {salvo && <Text className="text-green-500 text-xs font-bold text-center my-2">Alterações salvas com sucesso!</Text>}
 
-      <Pressable onPress={salvar} disabled={salvando} className="bg-primary rounded-full py-3 items-center mt-4">
-        <Text className="text-white font-bold">{salvando ? "Salvando..." : "Salvar alterações"}</Text>
+      <Pressable
+        onPress={salvar}
+        disabled={salvando}
+        className="bg-primary rounded-2xl py-4 items-center mt-3 shadow-lg shadow-primary/20 active:opacity-90"
+      >
+        <Text className="text-white font-bold text-sm">
+          {salvando ? "Salvando alterações..." : "Salvar Alterações"}
+        </Text>
       </Pressable>
 
       <BotaoExcluirConta />

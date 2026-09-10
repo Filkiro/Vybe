@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { View, Text, Pressable, Image, ScrollView, Share, TextInput, useWindowDimensions } from "react-native";
+import { View, Text, Pressable, Image, ImageBackground, ScrollView, Share, TextInput, useWindowDimensions } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ChevronLeft, Flag, Share2 } from "lucide-react-native";
 import { supabase, Usuario } from "../../lib/supabase";
@@ -139,7 +139,21 @@ export default function PerfilPublico() {
 
   return (
     <ScrollView className="flex-1 bg-background" contentContainerStyle={{ paddingBottom: 60 }}>
-      <View style={{ height: 120, backgroundColor: colors.primary }} className="rounded-b-[32px]" />
+      {/* Banner definido pelo próprio usuário no perfil dele — o
+          mesmo que aparece no modal de prévia. Sem banner, cai na
+          cor sólida de antes. */}
+      {dadosPerfil?.banner_url ? (
+        <ImageBackground
+          source={{ uri: dadosPerfil.banner_url }}
+          style={{ height: 160 }}
+          className="w-full rounded-b-[32px] overflow-hidden"
+          resizeMode="cover"
+        >
+          <View className="flex-1 bg-black/25" />
+        </ImageBackground>
+      ) : (
+        <View style={{ height: 120, backgroundColor: colors.primary }} className="rounded-b-[32px]" />
+      )}
 
       <Pressable
         onPress={() => router.back()}

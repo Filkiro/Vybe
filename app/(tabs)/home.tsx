@@ -6,6 +6,7 @@ import { router } from "expo-router";
 import { supabase } from "../../lib/supabase";
 import { usePlayerStore } from "../../store/playerStore";
 import { useRequireAuth } from "../../store/authPromptStore";
+import { useAbrirPerfil } from "../../store/perfilModalStore";
 import { usePlayerAwarePadding } from "../../hooks/usePlayerAwarePadding";
 import { useHomeStore } from "../../store/homeStore";
 import { useEhDesktop } from "../../hooks/useEhDesktop";
@@ -95,6 +96,7 @@ export default function Home() {
   const paddingBottom = usePlayerAwarePadding(120);
   const tocarMusica = usePlayerStore((s) => s.tocarMusica);
   const requireAuth = useRequireAuth();
+  const abrirPerfil = useAbrirPerfil();
   const ehDesktop = useEhDesktop();
 
   // Cache global — só recarrega quando algo novo for publicado (invalidarHome)
@@ -393,7 +395,7 @@ export default function Home() {
             artistasDestaque.map((artista) => (
               <Pressable
                 key={artista.id}
-                onPress={() => router.push(`/usuario/${artista.id}`)}
+                onPress={() => abrirPerfil(artista.id)}
                 className="w-72 h-48 rounded-3xl overflow-hidden relative border border-border"
               >
                 <ImageBackground

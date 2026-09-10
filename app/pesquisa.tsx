@@ -5,6 +5,7 @@ import { ChevronLeft } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "../lib/supabase";
 import { colors } from "../constants/theme";
+import { useAbrirPerfil } from "../store/perfilModalStore";
 
 type Aba = "musicas" | "albuns" | "perfis";
 type ModoPerfil = "nome" | "genero";
@@ -20,6 +21,7 @@ function obterIniciais(titulo: string) {
 
 export default function Pesquisa() {
   const insets = useSafeAreaInsets();
+  const abrirPerfil = useAbrirPerfil();
   const [aba, setAba] = useState<Aba>("perfis");
   const [modoPerfil, setModoPerfil] = useState<ModoPerfil>("nome");
   const [busca, setBusca] = useState("");
@@ -120,9 +122,9 @@ export default function Pesquisa() {
   }
 
   function abrir(item: any) {
-    if (item.tipo === "musico" || item.tipo === "organizador") router.push(`/usuario/${item.usuario_id}`);
+    if (item.tipo === "musico" || item.tipo === "organizador") abrirPerfil(item.usuario_id);
     else if (item.tipo === "album") router.push(`/album/${item.id}`);
-    else if (item.tipo === "musica") router.push(`/usuario/${item.usuario_id}`);
+    else if (item.tipo === "musica") abrirPerfil(item.usuario_id);
   }
 
   return (

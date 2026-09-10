@@ -69,6 +69,7 @@ export type PerfilMusico = {
   usuario_id: string;
   apelido: string | null;
   foto_url: string | null;
+  banner_url: string | null;
   contato_externo: string | null;
   descricao: string | null;
   genero_musical: string | null;
@@ -83,6 +84,7 @@ export type PerfilOrganizador = {
   descricao: string | null;
   contato: string | null;
   nicho_trabalho: string | null;
+  banner_url: string | null;
 };
 
 // Espelha a tabela "denuncia" — usada nas telas de Moderação e no
