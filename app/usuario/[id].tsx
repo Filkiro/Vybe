@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { View, Text, Pressable, Image, ImageBackground, ScrollView, Share, TextInput, useWindowDimensions } from "react-native";
+import { View, Text, Pressable, Image, StyleSheet, ScrollView, Share, TextInput, useWindowDimensions } from "react-native";
+import { BlurView } from "expo-blur";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ChevronLeft, Flag, Share2 } from "lucide-react-native";
 import { supabase, Usuario } from "../../lib/supabase";
@@ -24,6 +25,7 @@ export default function PerfilPublico() {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [dadosPerfil, setDadosPerfil] = useState<any>(null);
   const [musicas, setMusicas] = useState<any[]>([]);
+  const [albuns, setAlbuns] = useState<any[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [contatando, setContatando] = useState(false);
   const [denunciaAberta, setDenunciaAberta] = useState(false);
@@ -41,7 +43,7 @@ export default function PerfilPublico() {
     setUsuario(dadosUsuario ?? null);
 
     if (dadosUsuario?.tipo_conta === "musico") {
-      const [{ data: perfil }, { data: minhasMusicas }] = await Promise.all([
+      const [{ data: perfil }, { data: minhasMusicas }, { data: meusAlbuns }] = await Promise.all([
         supabase.from("perfil_musico").select("*").eq("usuario_id", id).single(),
         supabase
           .from("musica")
@@ -49,9 +51,16 @@ export default function PerfilPublico() {
           .eq("usuario_id", id)
           .eq("status", "ativo")
           .order("data_lancamento", { ascending: false }),
+        supabase
+          .from("album")
+          .select("id, nome, capa_url")
+          .eq("usuario_id", id)
+          .eq("status", "ativo")
+          .order("criado_em", { ascending: false }),
       ]);
       setDadosPerfil(perfil ?? null);
       setMusicas(minhasMusicas ?? []);
+      setAlbuns(meusAlbuns ?? []);
     } else if (dadosUsuario?.tipo_conta === "organizador") {
       const { data: perfil } = await supabase.from("perfil_organizador").select("*").eq("usuario_id", id).single();
       setDadosPerfil(perfil ?? null);
@@ -91,7 +100,7 @@ export default function PerfilPublico() {
     }
 
     setContatando(false);
-    router.push(`/chat/${conversaId}?contatoNome=${encodeURIComponent(usuario.nome)}`);
+    router.push(`/chat/${conversaId}?contatoNome=${encodeURIComponent(usuario.nome)}&contatoFotoUrl=${dadosPerfil?.foto_url ? encodeURIComponent(dadosPerfil.foto_url) : ""}`);
   }
 
   async function compartilharPerfil() {
@@ -142,51 +151,64 @@ export default function PerfilPublico() {
       {/* Banner definido pelo próprio usuário no perfil dele — o
           mesmo que aparece no modal de prévia. Sem banner, cai na
           cor sólida de antes. */}
-      {dadosPerfil?.banner_url ? (
-        <ImageBackground
-          source={{ uri: dadosPerfil.banner_url }}
-          style={{ height: 160 }}
-          className="w-full rounded-b-[32px] overflow-hidden"
-          resizeMode="cover"
+      <View className="mb-4 relative">
+        <View pointerEvents="none" className="h-36 w-full overflow-hidden bg-surface">
+          {dadosPerfil?.banner_url ? (
+            <Image source={{ uri: dadosPerfil.banner_url }} className="w-full h-full" resizeMode="cover" />
+          ) : (
+            <>
+              <View className="absolute -top-10 -left-10 w-48 h-48 rounded-full bg-primary/25 blur-2xl" />
+              <View className="absolute top-0 right-0 w-56 h-56 rounded-full bg-blue-600/15 blur-3xl" />
+              <BlurView intensity={30} tint="dark" style={StyleSheet.absoluteFillObject} />
+            </>
+          )}
+          {dadosPerfil?.banner_url && <View className="absolute inset-0 bg-black/25" />}
+        </View>
+
+        <Pressable
+          onPress={() => router.back()}
+          hitSlop={{ top: 16, right: 16, bottom: 16, left: 16 }}
+          className="absolute top-14 left-4 bg-black/50 border border-white/20 rounded-full p-2 z-10"
         >
-          <View className="flex-1 bg-black/25" />
-        </ImageBackground>
-      ) : (
-        <View style={{ height: 120, backgroundColor: colors.primary }} className="rounded-b-[32px]" />
-      )}
+          <ChevronLeft color="white" size={22} />
+        </Pressable>
 
-      <Pressable
-        onPress={() => router.back()}
-        hitSlop={{ top: 16, right: 16, bottom: 16, left: 16 }}
-        className="absolute top-14 left-4 bg-card/90 rounded-full p-2"
-      >
-        <ChevronLeft color={colors.textDark} size={22} />
-      </Pressable>
+        <Pressable onPress={compartilharPerfil} className="absolute top-14 right-4 bg-black/50 border border-white/20 rounded-full p-2 z-10">
+          <Share2 color="white" size={18} />
+        </Pressable>
 
-      <Pressable onPress={compartilharPerfil} className="absolute top-14 right-4 bg-card/90 rounded-full p-2">
-        <Share2 color={colors.textDark} size={18} />
-      </Pressable>
-
-      <View className="items-center" style={{ marginTop: -48 }}>
-        {dadosPerfil?.foto_url ? (
-          <Image
-            source={{ uri: dadosPerfil.foto_url }}
-            style={{ width: 96, height: 96, borderRadius: 48, borderWidth: 4, borderColor: colors.background }}
-          />
-        ) : (
+        <View className="items-center -mt-14 px-4">
           <View
-            className="rounded-full items-center justify-center bg-surface"
-            style={{ width: 96, height: 96, borderWidth: 4, borderColor: colors.background }}
+            className="rounded-full items-center justify-center bg-surface relative shadow-2xl"
+            style={{ width: 108, height: 108, borderWidth: 4, borderColor: "#0B101E" }}
           >
-            <Text className="text-3xl font-bold text-primaryLight">{usuario.nome.charAt(0).toUpperCase()}</Text>
+            {dadosPerfil?.foto_url ? (
+              <Image source={{ uri: dadosPerfil.foto_url }} style={{ width: 100, height: 100, borderRadius: 50 }} />
+            ) : (
+              <View className="w-full h-full rounded-full bg-surface items-center justify-center">
+                <Text className="text-4xl font-extrabold text-muted">
+                  {usuario.nome.charAt(0).toUpperCase()}
+                </Text>
+              </View>
+            )}
           </View>
-        )}
+          <Text className="text-2xl font-black text-textDark mt-3 tracking-tight text-center">{usuario.nome}</Text>
+          {dadosPerfil?.apelido && <Text className="text-muted font-medium mt-1">@{dadosPerfil.apelido}</Text>}
+        </View>
+      </View>
 
-        <Text className="text-xl font-bold text-textDark mt-3">{usuario.nome}</Text>
-        {dadosPerfil?.apelido && <Text className="text-muted">@{dadosPerfil.apelido}</Text>}
-
-        <View className="bg-surface rounded-full px-3 py-1 mt-2">
-          <Text className="text-xs font-medium text-muted">{rotulosTipoConta[usuario.tipo_conta]}</Text>
+      <View className="items-center px-4">
+        <View className="flex-row items-center justify-center gap-2 mt-2">
+          <View className="bg-surface rounded-full px-3 py-1">
+            <Text className="text-xs font-medium text-muted">{rotulosTipoConta[usuario.tipo_conta]}</Text>
+          </View>
+          {usuario.tipo_conta === "musico" && dadosPerfil?.disponivel !== undefined && (
+            <View className={`rounded-full px-3 py-1 ${dadosPerfil.disponivel ? "bg-green-500/10" : "bg-red-500/10"}`}>
+              <Text className={`text-xs font-medium ${dadosPerfil.disponivel ? "text-green-500" : "text-red-500"}`}>
+                {dadosPerfil.disponivel ? "Disponível para contratar" : "Indisponível"}
+              </Text>
+            </View>
+          )}
         </View>
 
         {dadosPerfil?.descricao && (
@@ -203,7 +225,7 @@ export default function PerfilPublico() {
             ))}
         </View>
 
-        <View className="flex-row gap-3 mt-5 px-4 w-full">
+        <View className="flex-row gap-3 mt-5 w-full">
           <Pressable onPress={contatar} disabled={contatando} className="flex-1 bg-primary rounded-full py-3 items-center">
             <Text className="text-white font-bold">{contatando ? "Abrindo..." : "Contatar"}</Text>
           </Pressable>
@@ -215,7 +237,7 @@ export default function PerfilPublico() {
             <Text className="text-muted text-xs ml-1.5">Denunciar este perfil</Text>
           </Pressable>
         ) : (
-          <View className="bg-card border border-border rounded-2xl p-4 mx-4 mt-3 w-full">
+          <View className="bg-card border border-border rounded-2xl p-4 mt-3 w-full">
             <Text className="text-textDark font-medium mb-2">Por que você está denunciando?</Text>
             {["Conteúdo ofensivo", "Spam ou golpe", "Perfil falso", "Outro motivo"].map((motivo) => (
               <Pressable
@@ -294,14 +316,39 @@ export default function PerfilPublico() {
                     });
                   }}
                   style={{ width: larguraCard }}
-                  className="bg-card rounded-2xl p-3"
+                  className="bg-card border border-border/80 rounded-2xl p-2.5 active:scale-95 mb-2"
                 >
                   {item.capa_url ? (
-                    <Image source={{ uri: item.capa_url }} className="w-full aspect-square rounded-xl mb-2" />
+                    <Image source={{ uri: item.capa_url }} className="w-full aspect-square rounded-xl mb-2.5" />
                   ) : (
-                    <View className="w-full aspect-square rounded-xl bg-surface mb-2" />
+                    <View className="w-full aspect-square rounded-xl bg-surface mb-2.5 items-center justify-center" />
                   )}
-                  <Text numberOfLines={1} className="font-bold text-textDark">
+                  <Text numberOfLines={1} className="font-bold text-textDark text-xs">
+                    {item.nome}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          )}
+
+          <Text className="text-lg font-bold text-textDark mb-3 mt-6">Álbuns</Text>
+          {albuns.length === 0 ? (
+            <Text className="text-muted text-center mt-4">Nenhum álbum publicado ainda.</Text>
+          ) : (
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: GAP }}>
+              {albuns.map((item) => (
+                <Pressable
+                  key={item.id}
+                  onPress={() => router.push(`/album/${item.id}`)}
+                  style={{ width: larguraCard }}
+                  className="bg-card border border-border/80 rounded-2xl p-2.5 active:scale-95 mb-2"
+                >
+                  {item.capa_url ? (
+                    <Image source={{ uri: item.capa_url }} className="w-full aspect-square rounded-xl mb-2.5" />
+                  ) : (
+                    <View className="w-full aspect-square rounded-xl bg-surface mb-2.5 items-center justify-center" />
+                  )}
+                  <Text numberOfLines={1} className="font-bold text-textDark text-xs">
                     {item.nome}
                   </Text>
                 </Pressable>

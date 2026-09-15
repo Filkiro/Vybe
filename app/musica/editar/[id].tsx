@@ -10,6 +10,7 @@ import { excluirMusica } from "../../../lib/biblioteca";
 import { confirmar } from "../../../lib/alertas";
 import { useAuthStore } from "../../../store/authStore";
 import { colors } from "../../../constants/theme";
+import { maskDate, parseDateToDB, parseDateFromDB } from "../../../lib/dateMask";
 
 function CampoTexto(props: React.ComponentProps<typeof TextInput>) {
   return (
@@ -58,7 +59,7 @@ export default function EditarMusica() {
           setNome(data.nome ?? "");
           setDescricao(data.descricao ?? "");
           setGenero(data.genero ?? "");
-          setDataLancamento(data.data_lancamento ?? "");
+          setDataLancamento(data.data_lancamento ? parseDateFromDB(data.data_lancamento) : "");
           setCapaUri(data.capa_url ?? null);
         }
         setCarregando(false);
@@ -109,7 +110,7 @@ export default function EditarMusica() {
         nome,
         descricao: descricao || null,
         genero: genero || null,
-        data_lancamento: dataLancamento || null,
+        data_lancamento: dataLancamento ? parseDateToDB(dataLancamento) : null,
       };
 
       // Só reenvia a capa se o usuário escolheu uma nova — evita
@@ -215,10 +216,12 @@ export default function EditarMusica() {
       <CampoTexto placeholder="Nome da música" value={nome} onChangeText={setNome} />
       <CampoTexto placeholder="Descrição" value={descricao} onChangeText={setDescricao} multiline />
       <CampoTexto placeholder="Gênero" value={genero} onChangeText={setGenero} />
-      <CampoTexto
-        placeholder="Data de lançamento (AAAA-MM-DD)"
-        value={dataLancamento}
-        onChangeText={setDataLancamento}
+      <Text className="text-white text-xs font-semibold mb-2 ml-1">Data de Lançamento</Text>
+      <CampoTexto 
+        placeholder="DD/MM/AAAA" 
+        value={dataLancamento} 
+        onChangeText={(txt) => setDataLancamento(maskDate(txt))} 
+        keyboardType="numeric"
       />
 
       <Pressable onPress={trocarArquivo} className="border border-border rounded-2xl py-4 items-center mb-4">

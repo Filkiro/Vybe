@@ -24,10 +24,16 @@ type PlayerState = {
   proxima: () => Promise<void>;
   anterior: () => Promise<void>;
   alternarRepetir: () => void;
+  volume: number;
+  isMuted: boolean;
+  setVolume: (v: number) => void;
+  toggleMute: () => void;
   resetar: () => void;
 };
 
 let token = 0;
+
+let audioModeSet = false;
 
 async function carregarESocar(
   musica: Musica,
@@ -48,20 +54,27 @@ async function carregarESocar(
   if (meuToken !== token) return;
 
   // Garante que a sessão de áudio permita execução em segundo plano (Mobile)
-await setAudioModeAsync({
-    playsInSilentMode: true,
-  });
+  if (!audioModeSet) {
+    await setAudioModeAsync({
+      playsInSilentMode: true,
+    });
+    audioModeSet = true;
+  }
 
   const player = createAudioPlayer({ uri: musica.arquivoUrl });
+  player.volume = get().isMuted ? 0 : get().volume;
 
   player.addListener("playbackStatusUpdate", (status: AudioStatus) => {
     if (!status.isLoaded) return;
     if (meuToken !== token) return;
 
+    const state = get();
+    const aindaBuffering = state.estaTocando && !status.playing && status.currentTime === 0;
+    
     set({
       posicaoMs: status.currentTime * 1000,
       duracaoMs: (status.duration ?? 0) * 1000,
-      estaTocando: status.playing,
+      estaTocando: aindaBuffering ? true : status.playing,
     });
 
     if (status.didJustFinish) {
@@ -150,14 +163,27 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
 
   alternarRepetir: () => set((s) => ({ repetir: !s.repetir })),
 
-  // Para e libera o áudio atual e limpa o estado do player.
-  // Usado no logout: sem isso, uma música que já estava carregada
-  // continua tocando/pausável mesmo sem usuário autenticado.
-  resetar: () => {
-    // Invalida qualquer callback de carregamento em andamento (evita que
-    // um carregarESocar() que já estava em voo "reviva" o player depois).
-    token++;
+  volume: 1,
+  isMuted: false,
 
+  setVolume: (v) => {
+    set({ volume: v, isMuted: v === 0 });
+    const atual = get().sound;
+    if (atual) atual.volume = v;
+  },
+
+  toggleMute: () => {
+    const { isMuted, volume, sound } = get();
+    const newMuted = !isMuted;
+    set({ isMuted: newMuted });
+    if (sound) {
+      sound.volume = newMuted ? 0 : volume;
+    }
+  },
+
+  // Para e libera o áudio atual e limpa o estado do player.
+  resetar: () => {
+    token++;
     const atual = get().sound;
     if (atual) {
       try {

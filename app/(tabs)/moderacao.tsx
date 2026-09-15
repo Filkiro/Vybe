@@ -17,6 +17,7 @@ import { supabase } from "../../lib/supabase";
 import { useAuthStore } from "../../store/authStore";
 import { colors } from "../../constants/theme";
 import { usePlayerAwarePadding } from "../../hooks/usePlayerAwarePadding";
+import { maskDate, parseDateToDB } from "../../lib/dateMask";
 
 type DenunciaCompleta = {
   id: string;
@@ -65,12 +66,14 @@ export default function ModeracaoScreen() {
   setErroBloqueio(null);
   setProcessando(denuncia.id);
 
+  const parsedData = parseDateToDB(dataFimBloqueio);
+
   await supabase.from("restricao").insert({
     usuario_id: denuncia.alvo_id,
     moderador_id: usuario?.id,
     tipo: "bloqueio",
     motivo: denuncia.motivo,
-    data_fim: dataFimBloqueio,
+    data_fim: parsedData,
   });
   await supabase.from("usuario").update({ status: "bloqueado" }).eq("id", denuncia.alvo_id);
   await supabase
@@ -348,10 +351,11 @@ export default function ModeracaoScreen() {
                 <View className="mt-3 bg-background border border-border rounded-xl p-3">
                   <Text className="text-textDark text-sm font-semibold mb-2">Bloquear até quando?</Text>
                   <TextInput
-                    placeholder="AAAA-MM-DD"
+                    placeholder="DD/MM/AAAA"
                     placeholderTextColor="#9CA3AF"
                     value={dataFimBloqueio}
-                    onChangeText={setDataFimBloqueio}
+                    onChangeText={(t) => setDataFimBloqueio(maskDate(t))}
+                    keyboardType="numeric"
                     className="border border-border rounded-xl bg-card px-3 py-2 text-textDark mb-2"
                   />
                   {erroBloqueio && <Text className="text-red-500 text-xs mb-2">{erroBloqueio}</Text>}

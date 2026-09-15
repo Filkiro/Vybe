@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { View, Text, Pressable, Image } from "react-native";
-import { Heart } from "lucide-react-native";
+import { View, Text, Pressable, Image, TextInput, ActivityIndicator, Modal } from "react-native";
+import { Heart, MoreVertical, Flag } from "lucide-react-native";
 import { supabase } from "../lib/supabase";
 import { useAuthStore } from "../store/authStore";
 import { useRequireAuth } from "../store/authPromptStore";
@@ -33,13 +33,18 @@ export function PublicacaoCard({ item }: { item: PublicacaoFeedItem }) {
   const [totalCurtidas, setTotalCurtidas] = useState(item.total_curtidas);
   const [enviando, setEnviando] = useState(false);
 
+  const [mostrarOpcoes, setMostrarOpcoes] = useState(false);
+  const [denunciaAberta, setDenunciaAberta] = useState(false);
+  const [motivoEscolhido, setMotivoEscolhido] = useState<string | null>(null);
+  const [descricaoDenuncia, setDescricaoDenuncia] = useState("");
+  const [erroDenuncia, setErroDenuncia] = useState<string | null>(null);
+  const [enviandoDenuncia, setEnviandoDenuncia] = useState(false);
+
   async function alternarCurtida() {
     requireAuth(async () => {
       if (enviando || !usuarioLogado) return;
       setEnviando(true);
 
-      // Atualização otimista: a UI responde na hora, e desfaz se a
-      // chamada ao Supabase falhar.
       const novoEstado = !curtido;
       setCurtido(novoEstado);
       setTotalCurtidas((atual) => atual + (novoEstado ? 1 : -1));
@@ -67,48 +72,157 @@ export function PublicacaoCard({ item }: { item: PublicacaoFeedItem }) {
     });
   }
 
+  async function enviarDenuncia() {
+    requireAuth(async () => {
+      if (!motivoEscolhido) {
+        setErroDenuncia("Escolha um motivo.");
+        return;
+      }
+      if (motivoEscolhido === "Outro motivo" && !descricaoDenuncia.trim()) {
+        setErroDenuncia("Descreva o motivo da denúncia.");
+        return;
+      }
+
+      setErroDenuncia(null);
+      setEnviandoDenuncia(true);
+
+      const { error } = await supabase
+        .from("denuncia")
+        .insert({
+          denunciante_id: usuarioLogado!.id,
+          tipo_alvo: "publicacao",
+          alvo_id: item.id,
+          motivo: motivoEscolhido,
+          descricao: motivoEscolhido === "Outro motivo" ? descricaoDenuncia.trim() : null
+        });
+
+      setEnviandoDenuncia(false);
+      
+      if (!error) {
+        setDenunciaAberta(false);
+        setMotivoEscolhido(null);
+        setDescricaoDenuncia("");
+        alert("Denúncia enviada com sucesso. A moderação vai analisar.");
+      } else {
+        setErroDenuncia(error.message);
+      }
+    });
+  }
+
   return (
-    <View className="bg-card rounded-2xl mb-4 overflow-hidden border border-border">
-      <Pressable
-        onPress={() => abrirPerfil(item.usuario_id)}
-        className="flex-row items-center px-3 pt-3 pb-2"
-      >
-        {item.foto_perfil_url ? (
-          <Image source={{ uri: item.foto_perfil_url }} className="w-10 h-10 rounded-full mr-3" />
-        ) : (
-          <View className="w-10 h-10 rounded-full bg-surface mr-3" />
-        )}
-        <View className="flex-1">
-          <Text className="font-bold text-textDark">{item.apelido ?? item.usuario?.nome ?? "Usuário"}</Text>
-          <Text className="text-muted text-xs">
-            {item.usuario ? rotulosTipoConta[item.usuario.tipo_conta] ?? item.usuario.tipo_conta : ""}
-          </Text>
+    <View className="bg-[#121829] rounded-3xl mb-4 overflow-hidden border border-white/5 shadow-xl shadow-black/20">
+      <View className="flex-row items-center px-4 pt-4 pb-3">
+        <Pressable onPress={() => abrirPerfil(item.usuario_id)} className="flex-row items-center flex-1">
+          {item.foto_perfil_url ? (
+            <Image source={{ uri: item.foto_perfil_url }} className="w-10 h-10 rounded-full mr-3 border border-white/10" />
+          ) : (
+            <View className="w-10 h-10 rounded-full bg-[#1A2235] mr-3 border border-white/10" />
+          )}
+          <View className="flex-1">
+            <Text className="font-bold text-white">{item.apelido ?? item.usuario?.nome ?? "Usuário"}</Text>
+            <Text className="text-gray-400 text-xs">
+              {item.usuario ? rotulosTipoConta[item.usuario.tipo_conta] ?? item.usuario.tipo_conta : ""}
+            </Text>
+          </View>
+        </Pressable>
+
+        <View>
+          <Pressable onPress={() => setMostrarOpcoes(true)} className="w-8 h-8 items-center justify-center rounded-full active:bg-white/5">
+            <MoreVertical size={20} color="#94A3B8" />
+          </Pressable>
+
+          <Modal transparent visible={mostrarOpcoes} animationType="fade" onRequestClose={() => setMostrarOpcoes(false)}>
+            <Pressable className="flex-1 bg-black/50 justify-center items-center" onPress={() => setMostrarOpcoes(false)}>
+              <Pressable className="w-64 bg-[#1A2235] border border-white/10 rounded-2xl overflow-hidden shadow-2xl" onPress={(e) => e.stopPropagation()}>
+                <Pressable 
+                  onPress={() => {
+                    setMostrarOpcoes(false);
+                    setDenunciaAberta(true);
+                  }} 
+                  className="flex-row items-center px-5 py-4 active:bg-white/5"
+                >
+                  <Flag size={18} color={colors.danger} />
+                  <Text className="text-red-500 font-bold text-base ml-3">Denunciar publicação</Text>
+                </Pressable>
+              </Pressable>
+            </Pressable>
+          </Modal>
         </View>
-      </Pressable>
+      </View>
 
       {item.descricao && (
-        <Text className="text-textDark px-3 pb-2">{item.descricao}</Text>
+        <Text className="text-gray-200 px-4 pb-3 leading-tight">{item.descricao}</Text>
       )}
 
       {item.evento && (
-        <View className="mx-3 mb-2 bg-surface rounded-xl px-3 py-2">
-          <Text className="text-primary font-bold">{item.evento.nome}</Text>
-          <Text className="text-muted text-xs mt-0.5">
+        <View className="mx-4 mb-3 bg-[#1A2235] rounded-xl px-3 py-2.5 border border-white/5">
+          <Text className="text-primary font-bold text-sm">{item.evento.nome}</Text>
+          <Text className="text-gray-400 text-xs mt-0.5">
             {item.evento.data} {item.evento.localizacao ? `· ${item.evento.localizacao}` : ""}
           </Text>
         </View>
       )}
 
       {item.foto_url && (
-        <Image source={{ uri: item.foto_url }} className="w-full" style={{ aspectRatio: 1 }} resizeMode="cover" />
+        <Image source={{ uri: item.foto_url }} className="w-full bg-[#0B101E]" style={{ aspectRatio: 1 }} resizeMode="cover" />
       )}
 
-      <View className="flex-row items-center px-3 py-3">
-        <Pressable onPress={alternarCurtida} disabled={enviando} className="flex-row items-center gap-2">
-          <Heart size={22} color={curtido ? colors.danger : colors.muted} fill={curtido ? colors.danger : "transparent"} />
-          <Text className="text-muted text-sm">{totalCurtidas}</Text>
+      <View className="flex-row items-center px-4 py-3 border-t border-white/5 bg-[#121829]">
+        <Pressable onPress={alternarCurtida} disabled={enviando} className="flex-row items-center gap-2 active:opacity-70">
+          <Heart size={22} color={curtido ? colors.danger : "#64748B"} fill={curtido ? colors.danger : "transparent"} />
+          <Text className={curtido ? "text-red-500 font-semibold" : "text-gray-400 font-medium"}>{totalCurtidas}</Text>
         </Pressable>
       </View>
+
+      {/* Área de Denúncia Expandida */}
+      {denunciaAberta && (
+        <View className="p-4 bg-[#1A2235] border-t border-white/5">
+          <Text className="text-white font-bold mb-3">Por que está denunciando esta postagem?</Text>
+          {["Conteúdo ofensivo", "Spam ou golpe", "Mídia inapropriada", "Outro motivo"].map((motivo) => (
+            <Pressable
+              key={motivo}
+              onPress={() => setMotivoEscolhido(motivo)}
+              className="py-2.5 border-b border-white/5 flex-row items-center"
+            >
+              <View className={`w-4 h-4 rounded-full border mr-3 items-center justify-center ${motivoEscolhido === motivo ? "border-primary" : "border-gray-500"}`}>
+                {motivoEscolhido === motivo && <View className="w-2 h-2 rounded-full bg-primary" />}
+              </View>
+              <Text className={motivoEscolhido === motivo ? "text-primary font-bold" : "text-gray-300"}>
+                {motivo}
+              </Text>
+            </Pressable>
+          ))}
+
+          {motivoEscolhido === "Outro motivo" && (
+            <TextInput
+              placeholder="Descreva o motivo da denúncia..."
+              placeholderTextColor="#64748B"
+              value={descricaoDenuncia}
+              onChangeText={setDescricaoDenuncia}
+              multiline
+              className="bg-[#0B101E] text-white border border-white/10 rounded-xl px-3 py-2 mt-3 min-h-[80px]"
+              style={{ textAlignVertical: "top" }}
+            />
+          )}
+
+          {erroDenuncia && (
+            <Text className="text-red-500 text-sm mt-2">{erroDenuncia}</Text>
+          )}
+
+          <View className="flex-row gap-3 mt-4">
+            <Pressable onPress={() => { setDenunciaAberta(false); setErroDenuncia(null); }} className="flex-1 py-2.5 items-center rounded-xl border border-white/10">
+              <Text className="text-gray-300 font-medium">Cancelar</Text>
+            </Pressable>
+            <Pressable onPress={enviarDenuncia} disabled={enviandoDenuncia} className="flex-1 py-2.5 items-center rounded-xl bg-red-600">
+              {enviandoDenuncia ? (
+                <ActivityIndicator color="#fff" size="small" />
+              ) : (
+                <Text className="text-white font-bold">Enviar</Text>
+              )}
+            </Pressable>
+          </View>
+        </View>
+      )}
     </View>
   );
 }

@@ -1,13 +1,15 @@
-import { useCallback, useState } from "react";
-import { View, Text, Pressable, Image, ScrollView, ActivityIndicator } from "react-native";
+import { useCallback, useState, useRef } from "react";
+import { View, Text, Pressable, Image, ScrollView, ActivityIndicator, ImageBackground, StyleSheet } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
-import { ChevronLeft, Plus, Check, Disc, Pencil } from "lucide-react-native";
+import { ChevronLeft, Plus, Check, Disc, Pencil, Play, Clock } from "lucide-react-native";
 import { supabase } from "../../lib/supabase";
 import { useAuthStore } from "../../store/authStore";
 import { usePlayerStore } from "../../store/playerStore";
 import { useRequireAuth } from "../../store/authPromptStore";
 import { colors } from "../../constants/theme";
+import { LinearGradient } from "expo-linear-gradient";
+import { BlurView } from "expo-blur";
 
 type FaixaAlbum = {
   id: string;
@@ -16,11 +18,6 @@ type FaixaAlbum = {
   arquivo_url: string;
 };
 
-// Tela pública de um álbum — qualquer pessoa (logada ou não) pode
-// abrir e ver as faixas; tocar uma faixa exige conta (ver
-// requireAuth). Se quem está vendo é o dono do álbum, aparece
-// também a seção "Adicionar músicas", que deixa incluir mais
-// faixas depois de já ter criado o álbum.
 export default function AlbumDetalhe() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -38,10 +35,11 @@ export default function AlbumDetalhe() {
   const [adicionando, setAdicionando] = useState(false);
 
   const souDono = !!usuarioLogado && !!album && usuarioLogado.id === album.usuario_id;
+  const jaCarregouUmaVez = useRef(false);
 
-  const carregar = useCallback(async () => {
+  const carregar = useCallback(async (mostrarCarregando = true) => {
     if (!id) return;
-    setCarregando(true);
+    if (mostrarCarregando) setCarregando(true);
 
     const { data: dadosAlbum } = await supabase.from("album").select("*").eq("id", id).single();
     setAlbum(dadosAlbum ?? null);
@@ -62,8 +60,6 @@ export default function AlbumDetalhe() {
         .filter((m: any) => m && m.status === "ativo");
       setFaixas(listaFaixas);
 
-      // Só busca "músicas de fora" quando quem está vendo é o dono —
-      // ninguém mais precisa dessa lista.
       if (usuarioLogado?.id === dadosAlbum.usuario_id) {
         const idsNoAlbum = listaFaixas.map((m) => m.id);
         let query = supabase
@@ -86,7 +82,8 @@ export default function AlbumDetalhe() {
 
   useFocusEffect(
     useCallback(() => {
-      carregar();
+      carregar(!jaCarregouUmaVez.current);
+      jaCarregouUmaVez.current = true;
     }, [carregar])
   );
 
@@ -132,158 +129,174 @@ export default function AlbumDetalhe() {
 
   if (carregando || !album) {
     return (
-      <View className="flex-1 bg-background items-center justify-center">
-        <Text className="text-muted">Carregando álbum...</Text>
+      <View className="flex-1 bg-[#0B101E] items-center justify-center">
+        <ActivityIndicator color={colors.primary} size="large" />
       </View>
     );
   }
 
   return (
-    <ScrollView className="flex-1 bg-background" contentContainerStyle={{ paddingBottom: 140 }}>
-      <View style={{ height: 120, backgroundColor: colors.primary }} className="rounded-b-[32px]" />
-
-      <Pressable
-        onPress={() => router.back()}
-        hitSlop={{ top: 16, right: 16, bottom: 16, left: 16 }}
-        className="absolute top-14 left-4 bg-card/90 rounded-full p-2"
-      >
-        <ChevronLeft color={colors.textDark} size={22} />
-      </Pressable>
-
-      {souDono && (
-        <Pressable
-          onPress={() => router.push(`/album/editar/${album.id}`)}
-          hitSlop={{ top: 16, right: 16, bottom: 16, left: 16 }}
-          className="absolute top-14 right-4 bg-card/90 rounded-full p-2"
-        >
-          <Pencil color={colors.textDark} size={20} />
-        </Pressable>
+    <View className="flex-1 bg-[#0B101E]">
+      {/* Background Blur */}
+      {album.capa_url && (
+        <View style={StyleSheet.absoluteFill}>
+          <Image source={{ uri: album.capa_url }} style={[StyleSheet.absoluteFill, { opacity: 0.3 }]} blurRadius={70} />
+          <LinearGradient colors={["transparent", "#0B101E", "#0B101E"]} style={StyleSheet.absoluteFill} locations={[0, 0.4, 1]} />
+        </View>
       )}
 
-      <View className="items-center px-6" style={{ marginTop: -48 }}>
-        {album.capa_url ? (
-          <Image
-            source={{ uri: album.capa_url }}
-            style={{ width: 128, height: 128, borderRadius: 24, borderWidth: 4, borderColor: colors.background }}
-          />
-        ) : (
-          <View
-            className="rounded-3xl items-center justify-center bg-surface"
-            style={{ width: 128, height: 128, borderWidth: 4, borderColor: colors.background }}
-          >
-            <Disc color={colors.muted} size={40} />
+      {/* Header Fixo */}
+      <View className="flex-row items-center justify-between px-4 pt-14 pb-2 z-50 w-full max-w-[1200px] self-center">
+        <Pressable onPress={() => router.back()} className="w-10 h-10 rounded-full bg-white/10 items-center justify-center backdrop-blur-md">
+          <ChevronLeft color="white" size={24} />
+        </Pressable>
+        {souDono && (
+          <Pressable onPress={() => router.push(`/album/editar/${album.id}`)} className="w-10 h-10 rounded-full bg-white/10 items-center justify-center backdrop-blur-md">
+            <Pencil color="white" size={20} />
+          </Pressable>
+        )}
+      </View>
+
+      <ScrollView contentContainerStyle={{ paddingBottom: 140 }} showsVerticalScrollIndicator={false} className="w-full max-w-[1200px] self-center">
+        {/* Capa e Info do Álbum */}
+        <View className="items-center px-6 pt-6 pb-8">
+          <View className="shadow-2xl shadow-black/50 rounded-2xl mb-6">
+            {album.capa_url ? (
+              <Image source={{ uri: album.capa_url }} style={{ width: 220, height: 220, borderRadius: 24 }} />
+            ) : (
+              <View style={{ width: 220, height: 220, borderRadius: 24 }} className="bg-[#1A2235] items-center justify-center border border-white/5">
+                <Disc color={colors.muted} size={64} />
+              </View>
+            )}
+          </View>
+          <Text className="text-3xl font-extrabold text-white text-center mb-2">{album.nome}</Text>
+          <View className="flex-row items-center gap-2 mb-4">
+            <View className="w-6 h-6 rounded-full bg-primary/20 items-center justify-center border border-primary/30">
+              <Text className="text-primary text-[10px] font-bold">BY</Text>
+            </View>
+            <Text className="text-gray-300 font-medium">{autorNome ?? "Autor desconhecido"}</Text>
+          </View>
+          <View className="bg-white/5 rounded-full px-4 py-1.5 flex-row items-center gap-2 border border-white/10">
+            <Clock size={14} color="#94A3B8" />
+            <Text className="text-muted text-xs font-semibold uppercase tracking-wider">{faixas.length} {faixas.length === 1 ? "FAIXA" : "FAIXAS"}</Text>
+          </View>
+        </View>
+
+        {/* Play Button Flutuante (Opcional visual) */}
+        {faixas.length > 0 && (
+          <View className="flex-row justify-center mb-10">
+            <Pressable onPress={() => tocarFaixa(faixas[0])} className="bg-primary flex-row items-center justify-center rounded-full px-8 py-3.5 shadow-lg shadow-primary/30 active:scale-95 transition-transform">
+              <Play fill="white" color="white" size={20} style={{ marginLeft: 4 }} />
+              <Text className="text-white font-bold ml-2 text-base">Tocar Álbum</Text>
+            </Pressable>
           </View>
         )}
 
-        <Text className="text-xl font-bold text-textDark mt-3 text-center">{album.nome}</Text>
-        {autorNome && <Text className="text-muted mt-1">@{autorNome}</Text>}
-        <Text className="text-muted text-xs mt-1">
-          {faixas.length} {faixas.length === 1 ? "música" : "músicas"}
-        </Text>
-      </View>
-
-      <View className="px-4 mt-6">
-        {faixas.length === 0 ? (
-          <Text className="text-muted text-center mt-4">Este álbum ainda não tem músicas.</Text>
-        ) : (
-          faixas.map((item) => (
-            <Pressable
-              key={item.id}
-              onPress={() => tocarFaixa(item)}
-              className="flex-row items-center bg-card rounded-2xl p-3 mb-2"
-            >
-              {item.capa_url ? (
-                <Image source={{ uri: item.capa_url }} style={{ width: 48, height: 48 }} className="rounded-xl mr-3" />
-              ) : (
-                <View style={{ width: 48, height: 48 }} className="rounded-xl bg-surface mr-3" />
-              )}
-              <Text numberOfLines={1} className="text-textDark font-medium flex-1">
-                {item.nome}
-              </Text>
-            </Pressable>
-          ))
-        )}
-      </View>
-
-      {souDono && (
-        <View className="px-4 mt-6">
-          {!mostrarAdicionar ? (
-            <Pressable
-              onPress={() => setMostrarAdicionar(true)}
-              className="flex-row items-center justify-center border border-dashed border-border rounded-2xl py-4"
-            >
-              <Plus color={colors.primary} size={18} />
-              <Text className="text-primary font-medium ml-2">Adicionar músicas ao álbum</Text>
-            </Pressable>
-          ) : (
-            <View className="bg-card border border-border rounded-2xl p-4">
-              <Text className="text-textDark font-bold mb-3">Suas músicas fora deste álbum</Text>
-
-              {minhasForaDoAlbum.length === 0 ? (
-                <Text className="text-muted text-center py-4">
-                  Todas as suas músicas já estão neste álbum, ou você ainda não publicou nenhuma outra.
-                </Text>
-              ) : (
-                minhasForaDoAlbum.map((item) => {
-                  const marcada = selecionadas.has(item.id);
-                  return (
-                    <Pressable
-                      key={item.id}
-                      onPress={() => alternarSelecao(item.id)}
-                      className="flex-row items-center py-2 border-b border-border"
-                    >
-                      {item.capa_url ? (
-                        <Image source={{ uri: item.capa_url }} style={{ width: 40, height: 40 }} className="rounded-lg mr-3" />
-                      ) : (
-                        <View style={{ width: 40, height: 40 }} className="rounded-lg bg-surface mr-3" />
-                      )}
-                      <Text numberOfLines={1} className="text-textDark flex-1">
-                        {item.nome}
-                      </Text>
-                      <View
-                        className="items-center justify-center rounded-md"
-                        style={{
-                          width: 22,
-                          height: 22,
-                          borderWidth: marcada ? 0 : 1,
-                          borderColor: colors.border,
-                          backgroundColor: marcada ? colors.primary : "transparent",
-                        }}
-                      >
-                        {marcada && <Check color="#fff" size={14} />}
-                      </View>
-                    </Pressable>
-                  );
-                })
-              )}
-
-              <View className="flex-row gap-2 mt-4">
-                <Pressable
-                  onPress={() => {
-                    setMostrarAdicionar(false);
-                    setSelecionadas(new Set());
-                  }}
-                  className="flex-1 border border-border rounded-full py-3 items-center"
-                >
-                  <Text className="text-muted font-medium">Cancelar</Text>
-                </Pressable>
-                <Pressable
-                  onPress={adicionarSelecionadas}
-                  disabled={selecionadas.size === 0 || adicionando}
-                  className="flex-1 bg-primary rounded-full py-3 items-center"
-                  style={{ opacity: selecionadas.size === 0 || adicionando ? 0.6 : 1 }}
-                >
-                  {adicionando ? (
-                    <ActivityIndicator color="#fff" />
-                  ) : (
-                    <Text className="text-white font-bold">Adicionar ({selecionadas.size})</Text>
-                  )}
-                </Pressable>
-              </View>
+        {/* Lista de Faixas */}
+        <View className="px-5">
+          {faixas.length === 0 ? (
+            <View className="items-center py-10 bg-white/5 rounded-3xl border border-white/10">
+              <Disc color="#64748B" size={48} className="mb-4 opacity-50" />
+              <Text className="text-gray-300 font-medium">Nenhuma faixa neste álbum ainda.</Text>
             </View>
+          ) : (
+            faixas.map((item, index) => (
+              <Pressable
+                key={item.id}
+                onPress={() => tocarFaixa(item)}
+                className="flex-row items-center p-3 mb-2 bg-[#121829] border border-white/5 rounded-2xl active:opacity-70 transition-opacity"
+              >
+                <Text className="text-muted font-bold text-sm w-6 text-center mr-2">{index + 1}</Text>
+                {item.capa_url ? (
+                  <Image source={{ uri: item.capa_url }} style={{ width: 44, height: 44 }} className="rounded-xl mr-3 bg-[#1A2235]" />
+                ) : (
+                  <View style={{ width: 44, height: 44 }} className="rounded-xl bg-[#1A2235] mr-3 items-center justify-center border border-white/5">
+                    <Disc color="#64748B" size={16} />
+                  </View>
+                )}
+                <View className="flex-1 justify-center">
+                  <Text numberOfLines={1} className="text-white font-bold text-sm mb-0.5">{item.nome}</Text>
+                  <Text numberOfLines={1} className="text-gray-400 text-xs">{autorNome ?? "Autor desconhecido"}</Text>
+                </View>
+                <View className="w-8 h-8 items-center justify-center rounded-full bg-white/5 border border-white/10 ml-2">
+                  <Play color="#94A3B8" fill="#94A3B8" size={12} style={{ marginLeft: 2 }} />
+                </View>
+              </Pressable>
+            ))
           )}
         </View>
-      )}
-    </ScrollView>
+
+        {/* Área de Gerenciamento do Dono */}
+        {souDono && (
+          <View className="px-5 mt-10">
+            {!mostrarAdicionar ? (
+              <Pressable
+                onPress={() => setMostrarAdicionar(true)}
+                className="flex-row items-center justify-center bg-white/5 border border-dashed border-white/20 rounded-3xl py-5 active:bg-white/10 transition-colors"
+              >
+                <View className="w-10 h-10 rounded-full bg-primary/20 items-center justify-center mr-3">
+                  <Plus color={colors.primary} size={20} />
+                </View>
+                <Text className="text-gray-300 font-bold text-sm">Adicionar músicas ao álbum</Text>
+              </Pressable>
+            ) : (
+              <View className="bg-[#1A2235] border border-white/10 rounded-3xl p-5 shadow-2xl">
+                <Text className="text-white font-extrabold text-lg mb-1">Músicas Disponíveis</Text>
+                <Text className="text-gray-400 text-xs mb-5">Selecione suas músicas soltas para incluir.</Text>
+
+                {minhasForaDoAlbum.length === 0 ? (
+                  <View className="py-6 items-center">
+                    <Text className="text-muted text-center text-sm">Nenhuma música fora do álbum disponível.</Text>
+                  </View>
+                ) : (
+                  minhasForaDoAlbum.map((item) => {
+                    const marcada = selecionadas.has(item.id);
+                    return (
+                      <Pressable
+                        key={item.id}
+                        onPress={() => alternarSelecao(item.id)}
+                        className={`flex-row items-center p-3 mb-2 rounded-2xl border transition-all ${marcada ? "bg-primary/10 border-primary/30" : "bg-black/20 border-white/5"}`}
+                      >
+                        {item.capa_url ? (
+                          <Image source={{ uri: item.capa_url }} style={{ width: 44, height: 44 }} className="rounded-xl mr-3" />
+                        ) : (
+                          <View style={{ width: 44, height: 44 }} className="rounded-xl bg-surface mr-3 border border-white/5" />
+                        )}
+                        <Text numberOfLines={1} className={`flex-1 font-bold ${marcada ? "text-primary" : "text-gray-300"}`}>
+                          {item.nome}
+                        </Text>
+                        <View className={`w-6 h-6 items-center justify-center rounded-full border ${marcada ? "bg-primary border-primary" : "bg-transparent border-white/20"}`}>
+                          {marcada && <Check color="#fff" size={14} />}
+                        </View>
+                      </Pressable>
+                    );
+                  })
+                )}
+
+                <View className="flex-row gap-3 mt-6">
+                  <Pressable onPress={() => { setMostrarAdicionar(false); setSelecionadas(new Set()); }} className="flex-1 border border-white/10 bg-white/5 rounded-full py-3.5 items-center">
+                    <Text className="text-gray-300 font-bold">Cancelar</Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={adicionarSelecionadas}
+                    disabled={selecionadas.size === 0 || adicionando}
+                    className={`flex-1 rounded-full py-3.5 items-center flex-row justify-center ${selecionadas.size === 0 ? "bg-white/10" : "bg-primary shadow-lg shadow-primary/30"}`}
+                  >
+                    {adicionando ? (
+                      <ActivityIndicator color="#fff" size="small" />
+                    ) : (
+                      <>
+                        <Plus color={selecionadas.size === 0 ? "#64748B" : "#fff"} size={16} />
+                        <Text className={`font-bold ml-1 ${selecionadas.size === 0 ? "text-[#64748B]" : "text-white"}`}>Incluir ({selecionadas.size})</Text>
+                      </>
+                    )}
+                  </Pressable>
+                </View>
+              </View>
+            )}
+          </View>
+        )}
+      </ScrollView>
+    </View>
   );
 }

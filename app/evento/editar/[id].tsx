@@ -7,14 +7,10 @@ import { excluirEvento } from "../../../lib/biblioteca";
 import { confirmar } from "../../../lib/alertas";
 import { useAuthStore } from "../../../store/authStore";
 import { colors } from "../../../constants/theme";
+import { maskDate, parseDateToDB, parseDateFromDB } from "../../../lib/dateMask";
 
 const STATUS_OPCOES = ["aberto", "encerrado", "cancelado"] as const;
 
-// Gerenciar evento: só quem organizou o evento (organizador_id ===
-// usuário logado) chega a ver o formulário — pra qualquer outra
-// pessoa que tente abrir esse link, a tela mostra "sem permissão"
-// (e o Supabase, via RLS em evento_update_dono_ou_moderador, também
-// bloqueiaria a alteração mesmo que alguém forçasse a chamada).
 export default function GerenciarEvento() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -47,7 +43,7 @@ export default function GerenciarEvento() {
         setEvento(dadosEvento ?? null);
         if (dadosEvento) {
           setNome(dadosEvento.nome ?? "");
-          setData(dadosEvento.data ?? "");
+          setData(dadosEvento.data ? parseDateFromDB(dadosEvento.data) : "");
           setHorario(dadosEvento.horario ?? "");
           setLocalizacao(dadosEvento.localizacao ?? "");
           setGeneroMusical(dadosEvento.genero_musical ?? "");
@@ -58,7 +54,7 @@ export default function GerenciarEvento() {
       });
   }, [id]);
 
-  const souDono = !!usuario && !!evento && usuario.id === evento.organizador_id;
+
 
   function voltar() {
     if (router.canGoBack()) router.back();
@@ -80,7 +76,7 @@ export default function GerenciarEvento() {
         .from("evento")
         .update({
           nome,
-          data,
+          data: data ? parseDateToDB(data) : null,
           horario: horario || null,
           localizacao: localizacao || null,
           genero_musical: generoMusical || null,
@@ -128,6 +124,10 @@ export default function GerenciarEvento() {
     );
   }
 
+
+
+  const souDono = !!usuario && !!evento && usuario.id === evento.organizador_id;
+  
   if (!evento || !souDono) {
     return (
       <View className="flex-1 bg-background items-center justify-center px-8">
@@ -157,10 +157,11 @@ export default function GerenciarEvento() {
         className="border border-border rounded-2xl px-4 py-3 mb-4 text-textDark"
       />
       <TextInput
-        placeholder="Data (AAAA-MM-DD)"
+        placeholder="DD/MM/AAAA"
         placeholderTextColor="#9CA3AF"
         value={data}
-        onChangeText={setData}
+        onChangeText={(txt) => setData(maskDate(txt))}
+        keyboardType="numeric"
         className="border border-border rounded-2xl px-4 py-3 mb-4 text-textDark"
       />
       <TextInput

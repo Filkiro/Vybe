@@ -203,24 +203,28 @@ export default function Perfil() {
 function CabecalhoPerfil({ usuario }: { usuario: any }) {
   const [fotoUrl, setFotoUrl] = useState<string | null>(null);
   const [bannerUrl, setBannerUrl] = useState<string | null>(null);
+  const [apelido, setApelido] = useState<string | null>(null);
+  const [disponivel, setDisponivel] = useState<boolean | null>(null);
   const [enviandoFoto, setEnviandoFoto] = useState(false);
   const [enviandoBanner, setEnviandoBanner] = useState(false);
   const ehMusico = usuario.tipo_conta === "musico";
   const ehOrganizador = usuario.tipo_conta === "organizador";
-  // Só músico e organizador têm linha própria em perfil_musico /
-  // perfil_organizador — adm e moderador não têm o que editar aqui.
   const tabelaPerfil = ehMusico ? "perfil_musico" : ehOrganizador ? "perfil_organizador" : null;
 
   useEffect(() => {
     if (!tabelaPerfil) return;
     supabase
       .from(tabelaPerfil)
-      .select(ehMusico ? "foto_url, banner_url" : "banner_url")
+      .select(ehMusico ? "foto_url, banner_url, apelido, disponivel" : "banner_url, apelido")
       .eq("usuario_id", usuario.id)
       .single()
       .then(({ data }) => {
-        if (ehMusico) setFotoUrl((data as any)?.foto_url ?? null);
+        if (ehMusico) {
+          setFotoUrl((data as any)?.foto_url ?? null);
+          setDisponivel((data as any)?.disponivel ?? null);
+        }
         setBannerUrl((data as any)?.banner_url ?? null);
+        setApelido((data as any)?.apelido ?? null);
       });
   }, [usuario.id, tabelaPerfil]);
 
@@ -357,17 +361,28 @@ function CabecalhoPerfil({ usuario }: { usuario: any }) {
         <Text className="text-2xl font-black text-textDark mt-3 tracking-tight text-center">
           {usuario.nome}
         </Text>
+        {apelido && <Text className="text-muted font-medium mt-1">@{apelido}</Text>}
 
-        <View className="flex-row items-center gap-1.5 bg-card border border-border/80 px-3 py-1 rounded-full mt-2">
-          {usuario.tipo_conta === "musico" && <Sparkles size={12} color={colors.primary} />}
-          {usuario.tipo_conta === "organizador" && <UserCheck size={12} color={colors.primary} />}
-          {(usuario.tipo_conta === "adm" || usuario.tipo_conta === "moderador") && (
-            <ShieldCheck size={12} color={colors.primary} />
+        <View className="flex-row items-center justify-center gap-2 mt-2">
+          <View className="flex-row items-center gap-1.5 bg-card border border-border/80 px-3 py-1 rounded-full">
+            {usuario.tipo_conta === "musico" && <Sparkles size={12} color={colors.primary} />}
+            {usuario.tipo_conta === "organizador" && <UserCheck size={12} color={colors.primary} />}
+            {(usuario.tipo_conta === "adm" || usuario.tipo_conta === "moderador") && (
+              <ShieldCheck size={12} color={colors.primary} />
+            )}
+            <Text className="text-xs font-semibold text-muted capitalize">
+              {rotulosTipoConta[usuario.tipo_conta]}
+              {enviandoFoto ? " · Enviando foto..." : ""}
+            </Text>
+          </View>
+
+          {usuario.tipo_conta === "musico" && disponivel !== null && (
+            <View className={`rounded-full px-3 py-1 ${disponivel ? "bg-green-500/10" : "bg-red-500/10"}`}>
+              <Text className={`text-xs font-medium ${disponivel ? "text-green-500" : "text-red-500"}`}>
+                {disponivel ? "Disponível para contratar" : "Indisponível"}
+              </Text>
+            </View>
           )}
-          <Text className="text-xs font-semibold text-muted capitalize">
-            {rotulosTipoConta[usuario.tipo_conta]}
-            {enviandoFoto ? " · Enviando foto..." : ""}
-          </Text>
         </View>
       </View>
     </View>

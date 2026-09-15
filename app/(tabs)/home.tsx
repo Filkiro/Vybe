@@ -13,6 +13,7 @@ import { useEhDesktop } from "../../hooks/useEhDesktop";
 import { LinearGradient } from "expo-linear-gradient";
 import { MapPin, Play, User as UserIcon, Calendar, Heart, X } from "lucide-react-native";
 import { AnimatedBackgroundBlobs } from "../../components/AnimatedBackgroundBlobs";
+import { parseDateFromDB } from "../../lib/dateMask";
 
 type MusicaComAutor = {
   id: string;
@@ -167,7 +168,7 @@ export default function Home() {
       id: e.id,
       titulo: e.nome,
       local: e.localizacao,
-      data: e.data,
+      data: e.data ? parseDateFromDB(e.data) : "",
       imagem_url: null,
     }));
 
@@ -244,7 +245,7 @@ export default function Home() {
       setEventoSelecionado({
         id: data.id,
         nome: data.nome,
-        data: data.data,
+        data: data.data ? parseDateFromDB(data.data) : "",
         horario: data.horario,
         localizacao: data.localizacao,
         genero_musical: data.genero_musical,
@@ -353,7 +354,7 @@ export default function Home() {
       <AnimatedBackgroundBlobs height={500} />
 
       {/* CARD HERO — eventos futuros (músico) ou artistas em destaque por curtidas (organizador) */}
-      <View className="px-5 pt-6">
+      <View className="px-5 pt-6 w-full max-w-[1200px] self-center">
         <Text className="text-xl font-bold text-textDark mb-4">
           {tipoUsuario === "musico" ? "Eventos em aberto" : "Artistas em Destaque"}
         </Text>
@@ -365,7 +366,8 @@ export default function Home() {
                 <Pressable
                   key={ev.id}
                   onPress={() => abrirEvento(ev.id)}
-                  className="w-72 h-48 rounded-3xl overflow-hidden relative border border-border"
+                  style={{ transform: [{ translateZ: 0 }] as any }}
+                  className="w-64 h-80 rounded-3xl overflow-hidden relative border border-white/10 bg-[#121829] active:opacity-80"
                 >
                   <ImageBackground
                     source={{ uri: ev.imagem_url ?? "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?q=80&w=500&auto=format&fit=crop" }}
@@ -432,14 +434,15 @@ export default function Home() {
       
       {/* SEÇÃO DE ÁLBUNS (Artista > Álbum) */}
       {albuns.length > 0 && (
-        <View className="mt-8 pl-5">
-          <Text className="text-xl font-bold text-textDark mb-4">Descubra Artistas</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingRight: 20 }}>
+        <View className="mt-8 px-5 w-full max-w-[1200px] self-center">
+          <Text className="text-xl font-bold text-textDark mb-4">Descubra Álbuns</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12 }}>
             {albuns.map((album) => (
               <Pressable
                 key={album.id}
                 onPress={() => requireAuth(() => router.push(`/album/${album.id}`))}
-                className="w-36"
+                className="w-36 active:opacity-80"
+                style={{ transform: [{ translateZ: 0 }] as any }}
               >
                 <View className="bg-card rounded-2xl p-3 border border-border">
                   {album.capa_url ? (
@@ -464,9 +467,11 @@ export default function Home() {
       )}
 
       {/* CABEÇALHO DA LISTA PRINCIPAL — o título muda com o chip escolhido */}
-      <Text className="text-xl font-bold px-5 pt-8 pb-0 text-textDark">
-        {tipoUsuario === "musico" ? "Lançamentos" : "Músicas em Alta"}
-      </Text>
+      <View className="px-5 pt-8 pb-2 w-full max-w-[1200px] self-center">
+        <Text className="text-xl font-bold text-textDark">
+          {tipoUsuario === "musico" ? "Lançamentos" : "Músicas em Alta"}
+        </Text>
+      </View>
     </View>
   );
 
@@ -491,30 +496,31 @@ export default function Home() {
           }
           ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
           renderItem={({ item }) => (
-            <Pressable
-              onPress={() => {
-                requireAuth(() => {
-                  const fila = musicas.map((m) => ({
-                    id: m.id,
-                    nome: m.nome,
-                    autorApelido: m.autor_apelido,
-                    arquivoUrl: m.arquivo_url,
-                    capaUrl: m.capa_url,
-                  }));
-                  tocarMusica(
-                    { id: item.id, nome: item.nome, autorApelido: item.autor_apelido, arquivoUrl: (item as MusicaComAutor).arquivo_url, capaUrl: item.capa_url },
-                    fila
-                  );
-                  // No desktop o player já toca na sidebar persistente —
-                  // só navega pra tela cheia no mobile.
-                  if (!ehDesktop) {
-                    router.push("/tocando");
-                  }
-                });
-              }}
-              style={{ borderRadius: 20, overflow: "hidden", marginRight:20, marginLeft:20}}
-              className="active:opacity-80"
-            >
+            <View className="w-full max-w-[1200px] self-center px-5">
+              <Pressable
+                onPress={() => {
+                  requireAuth(() => {
+                    const fila = musicas.map((m) => ({
+                      id: m.id,
+                      nome: m.nome,
+                      autorApelido: m.autor_apelido,
+                      arquivoUrl: m.arquivo_url,
+                      capaUrl: m.capa_url,
+                    }));
+                    tocarMusica(
+                      { id: item.id, nome: item.nome, autorApelido: item.autor_apelido, arquivoUrl: (item as MusicaComAutor).arquivo_url, capaUrl: item.capa_url },
+                      fila
+                    );
+                    // No desktop o player já toca na sidebar persistente —
+                    // só navega pra tela cheia no mobile.
+                    if (!ehDesktop) {
+                      router.push("/tocando");
+                    }
+                  });
+                }}
+                style={{ borderRadius: 20, overflow: "hidden" }}
+                className="active:opacity-80"
+              >
               <BlurView intensity={40} tint="dark" style={StyleSheet.absoluteFillObject} />
               <View
                 style={{
@@ -545,6 +551,7 @@ export default function Home() {
                 </View>
               </View>
             </Pressable>
+            </View>
           )}
         />
       )}

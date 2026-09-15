@@ -9,13 +9,14 @@ import {
   Pressable,
   ScrollView,
 } from "react-native";
-import { Search, Sparkles, Disc, Calendar, Music } from "lucide-react-native";
+import { Search, Sparkles, Disc, Calendar, Music, Compass, Flame } from "lucide-react-native";
 import { router } from "expo-router";
 import { useAuthStore } from "../../store/authStore";
 import { supabase } from "../../lib/supabase";
 import { usePlayerAwarePadding } from "../../hooks/usePlayerAwarePadding";
 import { PublicacaoCard, PublicacaoFeedItem } from "../../components/PublicacaoCard";
 import { colors } from "../../constants/theme";
+import { LinearGradient } from "expo-linear-gradient";
 
 const FILTROS_CENA = ["Tudo", "Lançamentos", "Eventos", "Em Alta"];
 
@@ -104,6 +105,7 @@ export default function Explorar() {
 
   return (
     <View className="flex-1 bg-[#0B101E]">
+
       {carregando ? (
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color={colors.primary} />
@@ -123,83 +125,26 @@ export default function Explorar() {
             />
           }
           ListHeaderComponent={
-            <View className="pt-4 w-full max-w-[600px] self-center">
-
-              {/* Carrossel Destaques (Spotlight) */}
-              {destaques.length > 0 && (
-                <View className="mb-6">
-                  <View className="px-5 mb-3 flex-row items-center justify-between">
-                    <Text className="text-white font-bold text-xs uppercase tracking-wider opacity-70">
-                      Em Destaque
-                    </Text>
-                    <Sparkles size={14} color={colors.primary} />
-                  </View>
-
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={{ paddingHorizontal: 20 }}
-                  >
-                    {destaques.map((item) => {
-                      const ehEvento = !!item.evento_id;
-                      return (
-                        <Pressable
-                          key={`spotlight-${item.id}`}
-                          className="w-40 h-52 rounded-3xl bg-[#121829] mr-3.5 overflow-hidden relative border border-border/50 active:scale-95 transition-all"
-                        >
-                          <Image
-                            source={{ uri: item.foto_url! }}
-                            className="w-full h-full"
-                            resizeMode="cover"
-                          />
-
-                          <View className="absolute top-2.5 left-2.5 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full flex-row items-center">
-                            {ehEvento ? (
-                              <>
-                                <Calendar size={10} color="#38BDF8" />
-                                <Text className="text-[9px] font-bold text-sky-400 ml-1">Show</Text>
-                              </>
-                            ) : (
-                              <>
-                                <Disc size={10} color={colors.primary} />
-                                <Text className="text-[9px] font-bold text-primary ml-1">Som</Text>
-                              </>
-                            )}
-                          </View>
-
-                          <View className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-[#0B101E] via-[#0B101E]/80 to-transparent">
-                            <Text numberOfLines={1} className="text-white font-bold text-xs">
-                              {item.apelido ?? item.usuario?.nome}
-                            </Text>
-                            <Text numberOfLines={1} className="text-muted text-[10px] mt-0.5">
-                              {ehEvento ? item.evento?.nome : item.descricao || "Novo lançamento"}
-                            </Text>
-                          </View>
-                        </Pressable>
-                      );
-                    })}
-                  </ScrollView>
-                </View>
-              )}
-
+            <View className="w-full max-w-[600px] self-center pt-10">
               {/* Filtros em Pílula (Pill Tabs) */}
-              <View className="px-5 mb-5 flex-row items-center justify-between">
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-1">
+              <View className="px-6 mb-6">
+                <Text className="text-white font-extrabold text-lg tracking-wide mb-4">Feed da Cena</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10 }}>
                   {FILTROS_CENA.map((f) => {
                     const ativo = filtroAtivo === f;
                     return (
                       <Pressable
                         key={f}
                         onPress={() => setFiltroAtivo(f)}
-                        className={`mr-2 px-4 py-2 rounded-full border transition-all ${
+                        className={`px-5 py-2.5 rounded-2xl border transition-all ${
                           ativo
-                            ? "bg-primary border-primary shadow-sm shadow-primary/40"
-                            : "bg-[#121829] border-border/60"
+                            ? "bg-primary border-primary shadow-lg shadow-primary/30"
+                            : "bg-[#1A2235] border-white/5 hover:bg-[#222B45]"
                         }`}
                       >
                         <Text
-                          className={`text-xs font-bold ${
-                            ativo ? "text-white" : "text-muted"
+                          className={`text-sm font-bold ${
+                            ativo ? "text-white" : "text-gray-400"
                           }`}
                         >
                           {f}
@@ -212,22 +157,22 @@ export default function Explorar() {
             </View>
           }
           ListEmptyComponent={
-            <View className="w-full max-w-[600px] self-center px-4">
-              <View className="bg-[#121829] border border-border/60 rounded-3xl p-8 items-center justify-center my-4">
-                <View className="w-12 h-12 rounded-full bg-primary/10 items-center justify-center mb-3">
-                  <Music size={22} color={colors.primary} />
+            <View className="w-full max-w-[600px] self-center px-6">
+              <View className="bg-[#1A2235] border border-white/5 rounded-[32px] p-10 items-center justify-center my-4">
+                <View className="w-16 h-16 rounded-full bg-white/5 items-center justify-center mb-4 border border-white/10">
+                  <Music size={28} color={colors.primary} />
                 </View>
-                <Text className="text-white font-bold text-center text-sm mb-1">
-                  Nenhum resultado nesta categoria
+                <Text className="text-white font-bold text-center text-lg mb-2">
+                  Nenhum resultado
                 </Text>
-                <Text className="text-muted text-center text-xs">
-                  Mude o filtro ou publique novos conteúdos na aba Criar.
+                <Text className="text-gray-400 text-center text-sm px-4">
+                  Mude o filtro ou publique novos conteúdos na aba Criar para movimentar a cena.
                 </Text>
               </View>
             </View>
           }
           renderItem={({ item }) => (
-            <View className="w-full max-w-[600px] self-center px-4 mb-4">
+            <View className="w-full max-w-[600px] self-center px-4 mb-5">
               <PublicacaoCard item={item} />
             </View>
           )}

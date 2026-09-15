@@ -1,18 +1,38 @@
 import { useState } from "react";
-import { View, Text, TextInput, Pressable, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  ActivityIndicator,
+} from "react-native";
+import { BlurView } from "expo-blur";
 import { router, useLocalSearchParams } from "expo-router";
-import { X, Mail, Lock, User, AtSign, Sparkles, Eye, EyeOff } from "lucide-react-native";
+import {
+  X,
+  Mail,
+  Lock,
+  User,
+  AtSign,
+  Eye,
+  EyeOff,
+  Music2,
+  CalendarCheck2,
+  Sparkles,
+  ArrowRight,
+} from "lucide-react-native";
 import { useAuthStore } from "../../store/authStore";
 import { AppLogo } from "../../components/AppLogo";
+import { AnimatedBackgroundBlobs } from "../../components/AnimatedBackgroundBlobs";
 import { colors } from "../../constants/theme";
-import Animated from 'react-native-reanimated';
-
-// Correção: Criado fora dos componentes para manter a estabilidade da árvore do React
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export default function AuthScreen() {
   const { aba: abaParam } = useLocalSearchParams<{ aba?: string }>();
-  const [aba, setAba] = useState<"cadastro" | "login">(abaParam === "login" ? "login" : "cadastro");
+  const [aba, setAba] = useState<"cadastro" | "login">(
+    abaParam === "login" ? "login" : "cadastro"
+  );
 
   function fechar() {
     if (router.canGoBack()) {
@@ -23,97 +43,157 @@ export default function AuthScreen() {
   }
 
   return (
-    <ScrollView 
-      className="flex-1 bg-[#0B101E]"
-      contentContainerStyle={{ flexGrow: 1, alignItems: 'center' }}
-      showsVerticalScrollIndicator={false}
-    >
-      <View className="flex-1 w-full max-w-md relative">
-        <View className="w-full px-6 pt-12 pb-2 flex-row justify-end z-20">
-          <AnimatedPressable
-            onPress={fechar}
-            hitSlop={{ top: 16, right: 16, bottom: 16, left: 16 }}
-            className="w-10 h-10 bg-white/5 border border-white/10 rounded-full items-center justify-center"
-          >
-            <X color={colors.textDark} size={20} />
-          </AnimatedPressable>
-        </View>
+    <View style={{ flex: 1, backgroundColor: "#070B14" }}>
+      {/* BACKGROUND OCUPANDO A TELA INTEIRA SEM CORTAR */}
+      <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
+        <AnimatedBackgroundBlobs height="100%" />
+      </View>
 
-        <View className="items-center justify-center w-full px-6 pb-8">
-          <AppLogo tamanho="grande" />
-          
-          <Text className="text-white text-3xl font-bold mt-6 tracking-wide text-center">
-            {aba === "cadastro" ? "Comece no Vybe" : "Bem-vindo de volta"}
-          </Text>
-          
-          <Text className="text-muted text-base mt-2 text-center max-w-sm">
-            A plataforma definitiva para conectar músicos, organizadores e o público.
-          </Text>
-        </View>
-
-        <View className="flex-1 bg-[#121827] rounded-t-[40px] px-8 pt-8 border-t border-white/5 shadow-2xl">
-          <View className="flex-row mb-8 justify-start">
-            <AbaBotao label="Criar Conta" ativa={aba === "cadastro"} onPress={() => setAba("cadastro")} />
-            <AbaBotao label="Entrar" ativa={aba === "login"} onPress={() => setAba("login")} />
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{
+          flexGrow: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          paddingVertical: 48,
+          paddingHorizontal: 20,
+        }}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View className="w-full max-w-[460px] relative">
+          {/* BOTÃO FECHAR */}
+          <View className="w-full pb-4 flex-row justify-end">
+            <Pressable
+              onPress={fechar}
+              hitSlop={12}
+              className="w-11 h-11 rounded-full bg-white/5 border border-white/10 items-center justify-center active:scale-95 transition-all"
+            >
+              <X color="#94A3B8" size={20} />
+            </Pressable>
           </View>
 
-          {aba === "cadastro" ? <FormCadastro /> : <FormLogin />}
+          {/* HERO HEADER */}
+          <View className="items-center justify-center pt-2 pb-6">
+            <AppLogo tamanho="grande" />
+
+            <Text className="text-white text-3xl font-black mt-5 tracking-tight text-center">
+              {aba === "cadastro" ? "Crie o seu perfil" : "Bem-vindo de volta"}
+            </Text>
+
+            <Text className="text-muted text-sm font-medium mt-2 text-center max-w-sm leading-relaxed">
+              {aba === "cadastro"
+                ? "Conecte sua arte a organizadores e fãs da cena independente."
+                : "Acesse sua conta para gerenciar shows, faixas e conversas."}
+            </Text>
+
+            {/* SELETOR FLUTUANTE (PILL TABS) */}
+            <View className="w-full mt-7 p-1.5 rounded-2xl bg-white/[0.04] border border-white/10 flex-row overflow-hidden">
+              <Pressable
+                onPress={() => setAba("cadastro")}
+                className={`flex-1 py-3 rounded-xl items-center justify-center transition-all ${
+                  aba === "cadastro"
+                    ? "bg-primary shadow-lg shadow-primary/30"
+                    : "bg-transparent"
+                }`}
+              >
+                <Text
+                  className={`text-sm font-bold ${
+                    aba === "cadastro" ? "text-white" : "text-gray-400"
+                  }`}
+                >
+                  Criar Conta
+                </Text>
+              </Pressable>
+
+              <Pressable
+                onPress={() => setAba("login")}
+                className={`flex-1 py-3 rounded-xl items-center justify-center transition-all ${
+                  aba === "login"
+                    ? "bg-primary shadow-lg shadow-primary/30"
+                    : "bg-transparent"
+                }`}
+              >
+                <Text
+                  className={`text-sm font-bold ${
+                    aba === "login" ? "text-white" : "text-gray-400"
+                  }`}
+                >
+                  Entrar
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+
+          {/* CARD DO FORMULÁRIO */}
+          <View className="w-full rounded-3xl overflow-hidden border border-white/10 bg-[#0F172A]/75 shadow-2xl p-7">
+            <BlurView intensity={50} tint="dark" style={StyleSheet.absoluteFillObject} />
+
+            {aba === "cadastro" ? <FormCadastro /> : <FormLogin />}
+          </View>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
-function AbaBotao({ label, ativa, onPress }: { label: string; ativa: boolean; onPress: () => void }) {
-  return (
-    <Pressable onPress={onPress} className="mr-8 items-center">
-      <Text className={`text-xl ${ativa ? "font-bold text-textDark" : "font-medium text-muted"}`}>
-        {label}
-      </Text>
-      {ativa && (
-        <View className="h-1 bg-primary rounded-full mt-2 w-full" />
-      )}
-    </Pressable>
-  );
-}
-
-function Campo({ 
-  icone: Icon, 
-  isPassword, 
-  ...props 
+function Campo({
+  icone: Icon,
+  isPassword,
+  ...props
 }: React.ComponentProps<typeof TextInput> & { icone?: any; isPassword?: boolean }) {
   const [secureText, setSecureText] = useState(isPassword);
   const [focado, setFocado] = useState(false);
 
   return (
-    <View 
-      className={`flex-row items-center bg-white/5 rounded-2xl px-4 h-14 mb-4 border transition-all ${
-        focado 
-          ? "border-primary shadow-lg shadow-primary/30 bg-white/[0.08]" 
+    <View
+      style={{ height: 52, overflow: "hidden" }}
+      className={`flex-row items-center bg-white/5 rounded-2xl px-4 mb-4 border transition-all ${
+        focado
+          ? "border-primary bg-white/[0.08] shadow-sm shadow-primary/20"
           : "border-white/10"
       }`}
     >
-      {Icon && <Icon color={focado ? colors.primary : "#9CA3AF"} size={20} />}
+      {/* Ícone fixo da esquerda */}
+      {Icon && (
+        <View
+          style={{ width: 22, height: 22, flexShrink: 0 }}
+          className="items-center justify-center mr-2.5"
+        >
+          <Icon color={focado ? colors.primary : "#64748B"} size={19} />
+        </View>
+      )}
+
+      {/* Input com minWidth: 0 para anular o tamanho mínimo padrão do navegador */}
       <TextInput
-        placeholderTextColor="#6B7280"
-        className="flex-1 ml-3 text-xl text-textDark"
+        placeholderTextColor="#64748B"
+        className="flex-1 text-white font-medium text-base h-full"
         secureTextEntry={secureText}
         underlineColorAndroid="transparent"
         selectionColor={colors.primary}
         onFocus={() => setFocado(true)}
         onBlur={() => setFocado(false)}
-        style={{ 
-          outlineStyle: 'none',
-          caretColor: colors.primary,
+        style={{
+          outlineStyle: "none",
+          color: "#FFFFFF",
+          minWidth: 0,
+          width: "100%",
         } as any}
         {...props}
       />
+
+      {/* Ícone do olho travado na ponta direita dentro do container */}
       {isPassword && (
-        <Pressable onPress={() => setSecureText(!secureText)} hitSlop={8} className="p-1" >
+        <Pressable
+          onPress={() => setSecureText(!secureText)}
+          hitSlop={10}
+          style={{ width: 28, height: 28, flexShrink: 0 }}
+          className="items-center justify-center ml-2"
+        >
           {secureText ? (
-            <EyeOff color={focado ? colors.primary : "#9CA3AF"} size={20} />
+            <EyeOff color="#64748B" size={19} />
           ) : (
-            <Eye color={focado ? colors.primary : "#9CA3AF"} size={20}  />
+            <Eye color={colors.primary} size={19} />
           )}
         </Pressable>
       )}
@@ -136,11 +216,11 @@ function FormCadastro() {
     setErro(null);
 
     if (!nome || !email || !senha || (tipoConta === "musico" && !apelido)) {
-      setErro("Preencha todos os campos.");
+      setErro("Preencha todos os campos obrigatórios.");
       return;
     }
     if (senha.length < 6) {
-      setErro("A senha precisa ter pelo menos 6 caracteres.");
+      setErro("A senha precisa de no mínimo 6 caracteres.");
       return;
     }
     if (senha !== confirmarSenha) {
@@ -160,64 +240,132 @@ function FormCadastro() {
   }
 
   return (
-    <View className="pb-10">
-      <View className="flex-row mb-6 bg-white/5 rounded-2xl p-1 border border-white/5 w-full">
-        <AnimatedPressable
-          onPress={() => setTipoConta("musico")}
-          style={[
-            { flex: 1, borderRadius: 12, alignItems: 'center', justifyContent: 'center', paddingVertical: 12 },
-            tipoConta === "musico" && { backgroundColor: colors.primary }
-          ]}
-        >
-          <Text className={`font-medium text-center ${tipoConta === "musico" ? "text-white font-bold" : "text-muted"}`}>
-            Sou Músico
-          </Text>
-        </AnimatedPressable>
+    <View>
+      <Text className="text-white/60 text-xs font-bold uppercase tracking-wider mb-3">
+        Eu quero atuar como:
+      </Text>
 
-        <AnimatedPressable
-          onPress={() => setTipoConta("organizador")}
-          style={[
-            { flex: 1, borderRadius: 12, alignItems: 'center', justifyContent: 'center', paddingVertical: 12 },
-            tipoConta === "organizador" && { backgroundColor: colors.primary }
-          ]}
+      {/* SELEÇÃO DE PAPEL */}
+      <View className="flex-row gap-3 mb-5">
+        <Pressable
+          onPress={() => setTipoConta("musico")}
+          style={{ height: 74 }}
+          className={`flex-1 rounded-2xl border items-center justify-center transition-all ${
+            tipoConta === "musico"
+              ? "bg-primary/20 border-primary shadow-sm shadow-primary/30"
+              : "bg-white/5 border-white/10"
+          }`}
         >
-          <Text className={`font-medium text-center ${tipoConta === "organizador" ? "text-white font-bold" : "text-muted"}`}>
-            Sou Organizador
+          <Music2
+            size={24}
+            color={tipoConta === "musico" ? colors.primary : "#94A3B8"}
+            style={{ marginBottom: 4 }}
+          />
+          <Text
+            className={`text-xs font-bold ${
+              tipoConta === "musico" ? "text-white" : "text-gray-400"
+            }`}
+          >
+            Músico
           </Text>
-        </AnimatedPressable>
+        </Pressable>
+
+        <Pressable
+          onPress={() => setTipoConta("organizador")}
+          style={{ height: 74 }}
+          className={`flex-1 rounded-2xl border items-center justify-center transition-all ${
+            tipoConta === "organizador"
+              ? "bg-primary/20 border-primary shadow-sm shadow-primary/30"
+              : "bg-white/5 border-white/10"
+          }`}
+        >
+          <CalendarCheck2
+            size={24}
+            color={tipoConta === "organizador" ? colors.primary : "#94A3B8"}
+            style={{ marginBottom: 4 }}
+          />
+          <Text
+            className={`text-xs font-bold ${
+              tipoConta === "organizador" ? "text-white" : "text-gray-400"
+            }`}
+          >
+            Organizador
+          </Text>
+        </Pressable>
       </View>
 
       <Campo icone={User} placeholder="Nome completo" value={nome} onChangeText={setNome} />
-      
-      {tipoConta === "musico" && (
-        <Campo icone={AtSign} placeholder="Nome artístico / Apelido" value={apelido} onChangeText={setApelido} />
-      )}
-      
-      <Campo icone={Mail} placeholder="E-mail" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
-      <Campo icone={Lock} placeholder="Criar senha" value={senha} onChangeText={setSenha} isPassword />
-      <Campo icone={Lock} placeholder="Confirmar senha" value={confirmarSenha} onChangeText={setConfirmarSenha} isPassword />
 
-      {erro && <Text className="text-red-400 mb-4 text-center font-medium">{erro}</Text>}
+      {tipoConta === "musico" && (
+        <Campo
+          icone={AtSign}
+          placeholder="Nome artístico / Apelido"
+          value={apelido}
+          onChangeText={setApelido}
+        />
+      )}
+
+      <Campo
+        icone={Mail}
+        placeholder="Seu melhor e-mail"
+        value={email}
+        onChangeText={setEmail}
+        autoCapitalize="none"
+        keyboardType="email-address"
+      />
+      <Campo
+        icone={Lock}
+        placeholder="Criar senha segura"
+        value={senha}
+        onChangeText={setSenha}
+        isPassword
+      />
+      <Campo
+        icone={Lock}
+        placeholder="Confirmar senha"
+        value={confirmarSenha}
+        onChangeText={setConfirmarSenha}
+        isPassword
+      />
+
+      {erro && (
+        <View className="bg-red-500/10 border border-red-500/30 rounded-xl p-3.5 mb-4">
+          <Text className="text-red-400 text-xs font-medium text-center">{erro}</Text>
+        </View>
+      )}
 
       <Pressable
         onPress={handleCadastrar}
         disabled={carregando}
-        className="bg-primary rounded-2xl py-4 items-center mt-2 mb-6"
+        style={{ height: 52 }}
+        className="bg-primary rounded-2xl flex-row items-center justify-center mt-2 mb-4 active:scale-98 transition-transform"
       >
-        <Text className="text-white font-bold text-base tracking-wide">
-          {carregando ? "Criando conta..." : "Criar minha conta"}
-        </Text>
+        {carregando ? (
+          <ActivityIndicator size="small" color="#FFFFFF" />
+        ) : (
+          <>
+            <Text className="text-white font-bold text-base tracking-wide mr-2">
+              Concluir Cadastro
+            </Text>
+            <ArrowRight size={18} color="#FFFFFF" />
+          </>
+        )}
       </Pressable>
 
-      <View className="flex-row items-center mb-6">
+      <View className="flex-row items-center my-3">
         <View className="flex-1 h-[1px] bg-white/10" />
-        <Text className="text-muted px-4 text-sm font-medium">Ou continue com</Text>
+        <Text className="text-gray-500 px-3 text-xs font-semibold uppercase tracking-wider">
+          ou
+        </Text>
         <View className="flex-1 h-[1px] bg-white/10" />
       </View>
 
-      <Pressable className="bg-white/5 border border-white/10 rounded-2xl py-4 flex-row justify-center items-center">
-        <Sparkles color={colors.textDark} size={18} className="mr-3" />
-        <Text className="text-textDark font-medium text-base">Google</Text>
+      <Pressable
+        style={{ height: 50 }}
+        className="bg-white/5 border border-white/10 rounded-2xl flex-row justify-center items-center active:bg-white/10"
+      >
+        <Sparkles color="#94A3B8" size={18} style={{ marginRight: 8 }} />
+        <Text className="text-white font-semibold text-sm">Continuar com Google</Text>
       </Pressable>
     </View>
   );
@@ -233,7 +381,7 @@ function FormLogin() {
   async function handleEntrar() {
     setErro(null);
     if (!email || !senha) {
-      setErro("Preencha e-mail e senha.");
+      setErro("Preencha seu e-mail e senha.");
       return;
     }
 
@@ -249,24 +397,65 @@ function FormLogin() {
   }
 
   return (
-    <View className="pb-10">
-      <Campo icone={Mail} placeholder="Seu e-mail" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
-      <Campo icone={Lock} placeholder="Sua senha" value={senha} onChangeText={setSenha} isPassword />
+    <View>
+      <Campo
+        icone={Mail}
+        placeholder="Seu e-mail"
+        value={email}
+        onChangeText={setEmail}
+        autoCapitalize="none"
+        keyboardType="email-address"
+      />
+      <Campo
+        icone={Lock}
+        placeholder="Sua senha"
+        value={senha}
+        onChangeText={setSenha}
+        isPassword
+      />
 
-      {erro && <Text className="text-red-400 mb-4 text-center font-medium">{erro}</Text>}
+      {erro && (
+        <View className="bg-red-500/10 border border-red-500/30 rounded-xl p-3.5 mb-4">
+          <Text className="text-red-400 text-xs font-medium text-center">{erro}</Text>
+        </View>
+      )}
 
-      <Pressable className="self-end mb-8 mt-2">
-        <Text className="text-primaryLight text-sm font-medium">Esqueceu a senha?</Text>
+      <Pressable className="self-end mb-6 mt-1">
+        <Text className="text-primaryLight text-xs font-semibold">Esqueceu a senha?</Text>
       </Pressable>
 
       <Pressable
         onPress={handleEntrar}
         disabled={carregando}
-        className="bg-primary rounded-2xl py-4 items-center mb-6"
+        style={{ height: 52 }}
+        className="bg-primary rounded-2xl flex-row items-center justify-center mb-4 active:scale-98 transition-transform"
       >
-        <Text className="text-white font-bold text-base tracking-wide">
-          {carregando ? "Acessando..." : "Entrar no Vybe"}
+        {carregando ? (
+          <ActivityIndicator size="small" color="#FFFFFF" />
+        ) : (
+          <>
+            <Text className="text-white font-bold text-base tracking-wide mr-2">
+              Acessar Conta
+            </Text>
+            <ArrowRight size={18} color="#FFFFFF" />
+          </>
+        )}
+      </Pressable>
+
+      <View className="flex-row items-center my-3">
+        <View className="flex-1 h-[1px] bg-white/10" />
+        <Text className="text-gray-500 px-3 text-xs font-semibold uppercase tracking-wider">
+          ou
         </Text>
+        <View className="flex-1 h-[1px] bg-white/10" />
+      </View>
+
+      <Pressable
+        style={{ height: 50 }}
+        className="bg-white/5 border border-white/10 rounded-2xl flex-row justify-center items-center active:bg-white/10"
+      >
+        <Sparkles color="#94A3B8" size={18} style={{ marginRight: 8 }} />
+        <Text className="text-white font-semibold text-sm">Continuar com Google</Text>
       </Pressable>
     </View>
   );

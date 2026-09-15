@@ -17,6 +17,11 @@ import {
   Calendar,
   Sparkles,
   Upload,
+  X,
+  MapPin,
+  Users,
+  FileText,
+  Info,
 } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
@@ -26,6 +31,7 @@ import { useAuthStore, bloqueioAtivo } from "../../store/authStore";
 import { colors } from "../../constants/theme";
 import { useHomeStore } from "../../store/homeStore";
 import { usePlayerAwarePadding } from "../../hooks/usePlayerAwarePadding";
+import { maskDate, parseDateToDB } from "../../lib/dateMask";
 
 export default function Criar() {
   const usuario = useAuthStore((s) => s.usuario);
@@ -208,7 +214,7 @@ function FormMusica({ usuarioId }: { usuarioId: string }) {
         nome,
         descricao: descricao || null,
         genero: genero || null,
-        data_lancamento: dataLancamento || null,
+        data_lancamento: dataLancamento ? parseDateToDB(dataLancamento) : null,
         capa_url: capaUrl,
         arquivo_url: arquivoUrl,
       });
@@ -254,7 +260,13 @@ function FormMusica({ usuarioId }: { usuarioId: string }) {
       <CampoTexto label="Título" placeholder="Ex: Melodia da Noite" value={nome} onChangeText={setNome} />
       <CampoTexto label="Descrição" placeholder="Conte um pouco sobre essa faixa..." value={descricao} onChangeText={setDescricao} multiline numberOfLines={3} />
       <CampoTexto label="Gênero Musical" placeholder="Ex: Rock, MPB, Indie..." value={genero} onChangeText={setGenero} />
-      <CampoTexto label="Data de Lançamento" placeholder="AAAA-MM-DD" value={dataLancamento} onChangeText={setDataLancamento} />
+      <CampoTexto 
+        label="Data de Lançamento" 
+        placeholder="DD/MM/AAAA" 
+        value={dataLancamento} 
+        onChangeText={(txt) => setDataLancamento(maskDate(txt))} 
+        keyboardType="numeric"
+      />
 
       {/* Selecionar Áudio */}
       <View className="mb-6">
@@ -490,7 +502,7 @@ function FormEvento({ usuarioId }: { usuarioId: string }) {
     const { error } = await supabase.from("evento").insert({
       organizador_id: usuarioId,
       nome,
-      data,
+      data: data ? parseDateToDB(data) : null,
       horario: horario || null,
       localizacao: localizacao || null,
       genero_musical: generoMusical || null,
@@ -515,7 +527,13 @@ function FormEvento({ usuarioId }: { usuarioId: string }) {
       <Text className="text-2xl font-black text-white mb-5">Novo evento</Text>
 
       <CampoTexto label="Nome do Evento" placeholder="Ex: Festival de Verão" value={nome} onChangeText={setNome} />
-      <CampoTexto label="Data" placeholder="AAAA-MM-DD" value={data} onChangeText={setData} />
+      <CampoTexto 
+        label="Data" 
+        placeholder="DD/MM/AAAA" 
+        value={data} 
+        onChangeText={(txt) => setData(maskDate(txt))} 
+        keyboardType="numeric"
+      />
       <CampoTexto label="Horário" placeholder="HH:MM" value={horario} onChangeText={setHorario} />
       <CampoTexto label="Localização" placeholder="Ex: Av. Paulista, 1000 - SP" value={localizacao} onChangeText={setLocalizacao} />
       <CampoTexto label="Gênero Principal" placeholder="Ex: Indie / Rock" value={generoMusical} onChangeText={setGeneroMusical} />

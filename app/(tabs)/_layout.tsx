@@ -1,12 +1,15 @@
+import { useState } from "react";
 import { Tabs } from "expo-router";
 import { View, StyleSheet, Platform } from "react-native";
 import { Home, Compass, Plus, User, ShieldCheck, Settings, MessageCircle } from "lucide-react-native";
 import { BlurView } from "expo-blur";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MiniPlayer } from "../../components/MiniPlayer";
-import { PlayerSidebarDesktop } from "../../components/PlayerSidebarDesktop";
+import { PlayerBarDesktop } from "../../components/PlayerBarDesktop";
+import { SidebarNavDesktop } from "../../components/SidebarNavDesktop";
 import { AppHeader } from "../../components/AppHeader";
 import { AnimatedBackgroundBlobs } from "../../components/AnimatedBackgroundBlobs";
+import { SearchOverlay } from "../../components/SearchOverlay"; // <--- 1. Importação do Overlay
 import { useAuthStore, ehContaComum, ehModerador, ehAdministrador } from "../../store/authStore";
 import { useUnreadStore } from "../../store/unreadStore";
 import { useEhDesktop } from "../../hooks/useEhDesktop";
@@ -45,18 +48,21 @@ export default function TabsLayout() {
   const naoLidas = useUnreadStore((state) => state.naoLidas);
   const ehDesktop = useEhDesktop();
 
-  // Calcula margem inferior considerando safe areas (home indicator do iOS / gesture nav do Android)
+  // 2. Estado para controlar a visibilidade do SearchOverlay
+  const [pesquisaAberta, setPesquisaAberta] = useState(false);
+
+  // Calcula margem inferior considerando safe areas
   const bottomInset = Math.max(insets.bottom, 14);
 
   return (
     <View style={{ flex: 1, backgroundColor: "#0B101E" }}>
-      <AppHeader />
-
-      {/* Linha principal: conteúdo das tabs à esquerda + sidebar do player
-          fixa à direita no desktop. No mobile essa sidebar não existe —
-          o player mora na tela cheia de /tocando, acessada via MiniPlayer. */}
+      {/* Linha principal: sidebar de navegação (Desktop) + conteúdo das tabs */}
       <View style={{ flex: 1, flexDirection: "row" }}>
+        {ehDesktop && <SidebarNavDesktop />}
+
         <View style={{ flex: 1, backgroundColor: "transparent" }}>
+          {/* O Header foi movido para cá para que a Sidebar ocupe o lado esquerdo completo */}
+          <AppHeader onOpenSearch={() => setPesquisaAberta(true)} />
           <Tabs
             initialRouteName="home"
             safeAreaInsets={{ bottom: 0 }}
@@ -79,10 +85,6 @@ export default function TabsLayout() {
                   justifyContent: "center",
                   alignItems: "center",
                   padding: 0,
-                  paddingTop: 0,
-                  paddingBottom: 0,
-                  marginTop: 0,
-                  marginBottom: 0,
                   height: TAB_BAR_CAPSULE_HEIGHT,
                   borderWidth: 0,
                   // @ts-ignore
@@ -107,27 +109,29 @@ export default function TabsLayout() {
                     />
                   </View>
                 ),
-                tabBarStyle: {
-                  position: "absolute",
-                  left: 0,
-                  right: 0,
-                  bottom: bottomInset,
-                  width: "92%",
-                  maxWidth: 480,
-                  alignSelf: "center",
-                  marginHorizontal: "auto",
-                  height: TAB_BAR_CAPSULE_HEIGHT,
-                  borderRadius: TAB_BAR_CAPSULE_HEIGHT / 2,
-                  backgroundColor: "transparent",
-                  borderTopWidth: 0,
-                  elevation: 12,
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 10 },
-                  shadowOpacity: 0.5,
-                  shadowRadius: 20,
-                  paddingTop: 0,
-                  paddingBottom: 0,
-                },
+                tabBarStyle: ehDesktop
+                  ? { display: "none" }
+                  : {
+                      position: "absolute",
+                      left: 0,
+                      right: 0,
+                      bottom: bottomInset,
+                      width: "92%",
+                      maxWidth: 480,
+                      alignSelf: "center",
+                      marginHorizontal: "auto",
+                      height: TAB_BAR_CAPSULE_HEIGHT,
+                      borderRadius: TAB_BAR_CAPSULE_HEIGHT / 2,
+                      backgroundColor: "transparent",
+                      borderTopWidth: 0,
+                      elevation: 12,
+                      shadowColor: "#000",
+                      shadowOffset: { width: 0, height: 10 },
+                      shadowOpacity: 0.5,
+                      shadowRadius: 20,
+                      paddingTop: 0,
+                      paddingBottom: 0,
+                    },
               } as any
             }
           >
@@ -195,30 +199,14 @@ export default function TabsLayout() {
             />
           </Tabs>
 
-          {/* MiniPlayer flutuante — só existe no mobile. No desktop a
-              sidebar da direita já cumpre esse papel permanentemente. */}
-          {!ehDesktop && (
-            <View
-              style={{
-                position: "absolute",
-                left: 0,
-                right: 0,
-                bottom: TAB_BAR_CAPSULE_HEIGHT + bottomInset + 10,
-                width: "92%",
-                maxWidth: 480,
-                alignSelf: "center",
-                marginHorizontal: "auto",
-              }}
-              pointerEvents="box-none"
-            >
-              <MiniPlayer />
-            </View>
-          )}
         </View>
-
-        {/* Sidebar persistente do player — só no desktop */}
-        {ehDesktop && <PlayerSidebarDesktop />}
       </View>
+
+      {/* 3. O MODAL É INSERIDO AQUI — No final da árvore para sobrepor toda a interface */}
+      <SearchOverlay
+        visible={pesquisaAberta}
+        onClose={() => setPesquisaAberta(false)}
+      />
     </View>
   );
 }
