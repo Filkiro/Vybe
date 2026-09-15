@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { View, Text, Pressable, Image, useWindowDimensions, ScrollView } from "react-native";
 import { router } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
@@ -11,12 +11,19 @@ import {
   BotaoCurtir,
   PainelFila,
 } from "../components/player/PlayerVisuals";
+import { useCurtidaMusica } from "../hooks/useCurtidaMusica";
 
 export default function TocandoAgora() {
   const { width } = useWindowDimensions();
   const ehDesktop = width >= 768;
   const { musicaAtual } = usePlayerStore();
   const corDinamica = useCorDinamica();
+
+  useEffect(() => {
+    if (ehDesktop) {
+      router.back();
+    }
+  }, [ehDesktop]);
 
   if (!musicaAtual) {
     return (
@@ -29,12 +36,7 @@ export default function TocandoAgora() {
     );
   }
 
-  // No desktop, o player já vive permanentemente na sidebar da direita —
-  // essa tela deixa de fazer sentido como destino de navegação lá, então
-  // simplesmente volta pra tela anterior em vez de mostrar uma versão
-  // redundante em tela cheia.
   if (ehDesktop) {
-    router.back();
     return null;
   }
 

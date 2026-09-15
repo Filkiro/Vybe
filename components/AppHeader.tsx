@@ -61,8 +61,8 @@ export function AppHeader({ onOpenSearch }: AppHeaderProps) {
   }, [usuario?.id, usuario?.tipo_conta]);
 
   const abaAtual = segments[segments.length - 1];
-  const ehHome = abaAtual === "home" || !abaAtual;
-  const tituloPagina = titulosAbas[abaAtual];
+  const ehHome = abaAtual === "home" || abaAtual === "(tabs)" || abaAtual === "index" || !abaAtual;
+  const tituloPagina = abaAtual ? titulosAbas[abaAtual] : undefined;
 
   const nomeExibido = apelido ?? usuario?.nome ?? "Visitante";
   const rotuloPerfil =

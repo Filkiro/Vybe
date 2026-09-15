@@ -52,7 +52,7 @@ export function PerfilArtistaModal() {
     <Modal visible={!!usuarioId} transparent animationType="fade" onRequestClose={fechar}>
       <Pressable onPress={fechar} className="flex-1 bg-black/80 items-center justify-center px-4">
         <Pressable onPress={(e) => e.stopPropagation()} className="w-full items-center">
-          <View className="w-full max-w-[380px] bg-[#121829] border border-border/80 rounded-[28px] p-4 relative shadow-2xl">
+          <View className="w-full max-w-[380px] bg-[#121829] border border-border/80 rounded-[28px] p-4 relative ">
             
             {/* Botão de Fechar Modal */}
             <Pressable
@@ -102,7 +102,7 @@ export function PerfilArtistaModal() {
                   </View>
 
                   {/* Foto de Perfil sobreposta vazando a borda inferior da capa */}
-                  <View className="absolute -bottom-6 left-3 border-4 border-[#121829] rounded-full w-16 h-16 bg-surface items-center justify-center shadow-2xl z-20 overflow-hidden">
+                  <View className="absolute -bottom-6 left-3 border-4 border-[#121829] rounded-full w-16 h-16 bg-surface items-center justify-center  z-20 overflow-hidden">
                     {fotoUrl ? (
                       <Image source={{ uri: fotoUrl }} className="w-full h-full" />
                     ) : (
@@ -133,7 +133,7 @@ export function PerfilArtistaModal() {
                 {/* Botão de Navegar para Perfil Completo */}
                 <Pressable
                   onPress={verPerfilCompleto}
-                  className="bg-primary py-3.5 rounded-2xl items-center justify-center shadow-lg shadow-primary/25 active:opacity-90 mt-4"
+                  className="bg-primary py-3.5 rounded-2xl items-center justify-center   active:opacity-90 mt-4"
                 >
                   <Text className="text-white font-bold text-sm">Ver Perfil Completo</Text>
                 </Pressable>

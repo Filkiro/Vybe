@@ -138,7 +138,7 @@ export default function Explorar() {
                         onPress={() => setFiltroAtivo(f)}
                         className={`px-5 py-2.5 rounded-2xl border transition-all ${
                           ativo
-                            ? "bg-primary border-primary shadow-lg shadow-primary/30"
+                            ? "bg-primary border-primary  "
                             : "bg-[#1A2235] border-white/5 hover:bg-[#222B45]"
                         }`}
                       >

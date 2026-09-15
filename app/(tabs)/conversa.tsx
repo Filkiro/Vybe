@@ -273,7 +273,7 @@ export default function Conversa() {
                 </View>
 
                 {item.naoLidasContagem > 0 && (
-                  <View className="bg-primary rounded-full min-w-[24px] h-[24px] px-1.5 items-center justify-center shadow-sm mr-2">
+                  <View className="bg-primary rounded-full min-w-[24px] h-[24px] px-1.5 items-center justify-center  mr-2">
                     <Text className="text-white text-[11px] font-bold">
                       {item.naoLidasContagem > 9 ? "9+" : item.naoLidasContagem}
                     </Text>
@@ -298,7 +298,7 @@ export default function Conversa() {
       {/* Modal de Opções */}
       <Modal transparent visible={mostrarOpcoes} animationType="fade" onRequestClose={() => setMostrarOpcoes(false)}>
         <Pressable className="flex-1 bg-black/50 justify-center items-center" onPress={() => setMostrarOpcoes(false)}>
-          <Pressable className="w-64 bg-[#1A2235] border border-white/10 rounded-2xl overflow-hidden shadow-2xl" onPress={(e) => e.stopPropagation()}>
+          <Pressable className="w-64 bg-[#1A2235] border border-white/10 rounded-2xl overflow-hidden " onPress={(e) => e.stopPropagation()}>
             <Pressable 
               onPress={() => {
                 setMostrarOpcoes(false);

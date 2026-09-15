@@ -7,6 +7,7 @@ import {
   ScrollView,
   StyleSheet,
   ActivityIndicator,
+  Platform,
 } from "react-native";
 import { BlurView } from "expo-blur";
 import { router, useLocalSearchParams } from "expo-router";
@@ -67,7 +68,7 @@ export default function AuthScreen() {
             <Pressable
               onPress={fechar}
               hitSlop={12}
-              className="w-11 h-11 rounded-full bg-white/5 border border-white/10 items-center justify-center active:scale-95 transition-all"
+              className="w-11 h-11 rounded-full bg-white/5 border border-white/10 items-center justify-center active:scale-95 "
             >
               <X color="#94A3B8" size={20} />
             </Pressable>
@@ -91,9 +92,9 @@ export default function AuthScreen() {
             <View className="w-full mt-7 p-1.5 rounded-2xl bg-white/[0.04] border border-white/10 flex-row overflow-hidden">
               <Pressable
                 onPress={() => setAba("cadastro")}
-                className={`flex-1 py-3 rounded-xl items-center justify-center transition-all ${
+                className={`flex-1 py-3 rounded-xl items-center justify-center  ${
                   aba === "cadastro"
-                    ? "bg-primary shadow-lg shadow-primary/30"
+                    ? "bg-primary "
                     : "bg-transparent"
                 }`}
               >
@@ -108,9 +109,9 @@ export default function AuthScreen() {
 
               <Pressable
                 onPress={() => setAba("login")}
-                className={`flex-1 py-3 rounded-xl items-center justify-center transition-all ${
+                className={`flex-1 py-3 rounded-xl items-center justify-center  ${
                   aba === "login"
-                    ? "bg-primary shadow-lg shadow-primary/30"
+                    ? "bg-primary "
                     : "bg-transparent"
                 }`}
               >
@@ -126,8 +127,9 @@ export default function AuthScreen() {
           </View>
 
           {/* CARD DO FORMULÁRIO */}
-          <View className="w-full rounded-3xl overflow-hidden border border-white/10 bg-[#0F172A]/75 shadow-2xl p-7">
-            <BlurView intensity={50} tint="dark" style={StyleSheet.absoluteFillObject} />
+          <View className="w-full rounded-3xl overflow-hidden border border-white/10 p-7">
+            <BlurView intensity={Platform.OS === 'android' ? 30 : 50} tint="dark" experimentalBlurMethod="dimezisBlurView" style={StyleSheet.absoluteFillObject} />
+            <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(15, 23, 42, 0.75)' }]} pointerEvents="none" />
 
             {aba === "cadastro" ? <FormCadastro /> : <FormLogin />}
           </View>
@@ -148,9 +150,9 @@ function Campo({
   return (
     <View
       style={{ height: 52, overflow: "hidden" }}
-      className={`flex-row items-center bg-white/5 rounded-2xl px-4 mb-4 border transition-all ${
+      className={`flex-row items-center bg-white/5 rounded-2xl px-4 mb-4 border  ${
         focado
-          ? "border-primary bg-white/[0.08] shadow-sm shadow-primary/20"
+          ? "border-primary bg-white/[0.08] "
           : "border-white/10"
       }`}
     >
@@ -250,9 +252,9 @@ function FormCadastro() {
         <Pressable
           onPress={() => setTipoConta("musico")}
           style={{ height: 74 }}
-          className={`flex-1 rounded-2xl border items-center justify-center transition-all ${
+          className={`flex-1 rounded-2xl border items-center justify-center  ${
             tipoConta === "musico"
-              ? "bg-primary/20 border-primary shadow-sm shadow-primary/30"
+              ? "bg-primary/20 border-primary "
               : "bg-white/5 border-white/10"
           }`}
         >
@@ -273,9 +275,9 @@ function FormCadastro() {
         <Pressable
           onPress={() => setTipoConta("organizador")}
           style={{ height: 74 }}
-          className={`flex-1 rounded-2xl border items-center justify-center transition-all ${
+          className={`flex-1 rounded-2xl border items-center justify-center  ${
             tipoConta === "organizador"
-              ? "bg-primary/20 border-primary shadow-sm shadow-primary/30"
+              ? "bg-primary/20 border-primary "
               : "bg-white/5 border-white/10"
           }`}
         >
@@ -338,7 +340,7 @@ function FormCadastro() {
         onPress={handleCadastrar}
         disabled={carregando}
         style={{ height: 52 }}
-        className="bg-primary rounded-2xl flex-row items-center justify-center mt-2 mb-4 active:scale-98 transition-transform"
+        className="bg-primary rounded-2xl flex-row items-center justify-center mt-2 mb-4 active:scale-98 "
       >
         {carregando ? (
           <ActivityIndicator size="small" color="#FFFFFF" />
@@ -428,7 +430,7 @@ function FormLogin() {
         onPress={handleEntrar}
         disabled={carregando}
         style={{ height: 52 }}
-        className="bg-primary rounded-2xl flex-row items-center justify-center mb-4 active:scale-98 transition-transform"
+        className="bg-primary rounded-2xl flex-row items-center justify-center mb-4 active:scale-98 "
       >
         {carregando ? (
           <ActivityIndicator size="small" color="#FFFFFF" />

@@ -29,7 +29,7 @@ function GlobalPlayerWrapper() {
   const segmentos = useSegments();
 
   const bottomInset = Math.max(insets.bottom, 14);
-  const naTelaDeTabs = segmentos[0] === "(tabs)" && (segmentos.length as number) === 2;
+  const naTelaDeTabs = segmentos[0] === "(tabs)";
   const telaTocandoAberta = segmentos.includes("tocando");
   const telaChatAberta = segmentos.includes("chat");
 
@@ -49,13 +49,9 @@ function GlobalPlayerWrapper() {
     <View
       style={{
         position: "absolute",
-        left: 0,
-        right: 0,
+        left: 20,
+        right: 20,
         bottom: bottomPosition,
-        width: "92%",
-        maxWidth: 480,
-        alignSelf: "center",
-        marginHorizontal: "auto",
         zIndex: 9999,
       }}
       pointerEvents="box-none"

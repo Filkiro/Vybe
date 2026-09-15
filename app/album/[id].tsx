@@ -160,7 +160,7 @@ export default function AlbumDetalhe() {
       <ScrollView contentContainerStyle={{ paddingBottom: 140 }} showsVerticalScrollIndicator={false} className="w-full max-w-[1200px] self-center">
         {/* Capa e Info do Álbum */}
         <View className="items-center px-6 pt-6 pb-8">
-          <View className="shadow-2xl shadow-black/50 rounded-2xl mb-6">
+          <View className="  rounded-2xl mb-6">
             {album.capa_url ? (
               <Image source={{ uri: album.capa_url }} style={{ width: 220, height: 220, borderRadius: 24 }} />
             ) : (
@@ -185,7 +185,7 @@ export default function AlbumDetalhe() {
         {/* Play Button Flutuante (Opcional visual) */}
         {faixas.length > 0 && (
           <View className="flex-row justify-center mb-10">
-            <Pressable onPress={() => tocarFaixa(faixas[0])} className="bg-primary flex-row items-center justify-center rounded-full px-8 py-3.5 shadow-lg shadow-primary/30 active:scale-95 transition-transform">
+            <Pressable onPress={() => tocarFaixa(faixas[0])} className="bg-primary flex-row items-center justify-center rounded-full px-8 py-3.5   active:scale-95 transition-transform">
               <Play fill="white" color="white" size={20} style={{ marginLeft: 4 }} />
               <Text className="text-white font-bold ml-2 text-base">Tocar Álbum</Text>
             </Pressable>
@@ -240,7 +240,7 @@ export default function AlbumDetalhe() {
                 <Text className="text-gray-300 font-bold text-sm">Adicionar músicas ao álbum</Text>
               </Pressable>
             ) : (
-              <View className="bg-[#1A2235] border border-white/10 rounded-3xl p-5 shadow-2xl">
+              <View className="bg-[#1A2235] border border-white/10 rounded-3xl p-5 ">
                 <Text className="text-white font-extrabold text-lg mb-1">Músicas Disponíveis</Text>
                 <Text className="text-gray-400 text-xs mb-5">Selecione suas músicas soltas para incluir.</Text>
 
@@ -280,7 +280,7 @@ export default function AlbumDetalhe() {
                   <Pressable
                     onPress={adicionarSelecionadas}
                     disabled={selecionadas.size === 0 || adicionando}
-                    className={`flex-1 rounded-full py-3.5 items-center flex-row justify-center ${selecionadas.size === 0 ? "bg-white/10" : "bg-primary shadow-lg shadow-primary/30"}`}
+                    className={`flex-1 rounded-full py-3.5 items-center flex-row justify-center ${selecionadas.size === 0 ? "bg-white/10" : "bg-primary  "}`}
                   >
                     {adicionando ? (
                       <ActivityIndicator color="#fff" size="small" />

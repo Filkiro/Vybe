@@ -158,7 +158,7 @@
         style={{ flex: 1, backgroundColor: "#0B101E" }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <View className="flex-row items-center justify-between px-4 pt-14 pb-4 bg-card shadow-sm border-b border-white/5">
+        <View className="flex-row items-center justify-between px-4 pt-14 pb-4 bg-card  border-b border-white/5">
           <View className="flex-row items-center flex-1">
             <Pressable onPress={voltar} className="mr-3 p-1.5 active:opacity-60">
               <ChevronLeft color={colors.textDark} size={28} />
@@ -205,8 +205,8 @@
               <View
                 className={`max-w-[80%] px-4 py-3 ${
                   ehMinhaMensagem 
-                    ? "bg-primary self-end shadow-sm" 
-                    : "bg-[#1A2235] self-start shadow-sm border border-white/5"
+                    ? "bg-primary self-end " 
+                    : "bg-[#1A2235] self-start  border border-white/5"
                 }`}
                 style={[
                   { marginTop },
@@ -250,7 +250,7 @@
               onPress={enviar}
               disabled={enviando || !texto.trim()}
               className={`w-12 h-12 rounded-full items-center justify-center transition-all ${
-                !texto.trim() ? "bg-[#1A2235] border border-white/5" : "bg-primary shadow-sm"
+                !texto.trim() ? "bg-[#1A2235] border border-white/5" : "bg-primary "
               }`}
             >
               <Send color={!texto.trim() ? "#64748B" : "white"} size={20} style={{ marginLeft: !texto.trim() ? 0 : 2 }} />
@@ -264,7 +264,7 @@
         {/* Modal de Opções */}
         <Modal transparent visible={mostrarOpcoes} animationType="fade" onRequestClose={() => setMostrarOpcoes(false)}>
           <Pressable className="flex-1 bg-black/50 justify-center items-center" onPress={() => setMostrarOpcoes(false)}>
-            <Pressable className="w-64 bg-[#1A2235] border border-white/10 rounded-2xl overflow-hidden shadow-2xl" onPress={(e) => e.stopPropagation()}>
+            <Pressable className="w-64 bg-[#1A2235] border border-white/10 rounded-2xl overflow-hidden " onPress={(e) => e.stopPropagation()}>
               <Pressable 
                 onPress={() => {
                   setMostrarOpcoes(false);

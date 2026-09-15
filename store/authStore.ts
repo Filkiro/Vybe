@@ -129,24 +129,10 @@ export const useAuthStore = create<AuthState>((set) => ({
       if (perfilError) return { error: perfilError.message };
     }
 
-    // 4) IMPORTANTE: seta o usuário no store agora mesmo, aqui.
-    // Não dá pra confiar só no listener onAuthStateChange pra isso:
-    // o evento SIGNED_IN do signUp() dispara ANTES da linha "usuario"
-    // acima existir, então o listener buscava um perfil que ainda não
-    // tinha sido criado, recebia null e sobrescrevia o store com
-    // usuario: null. Resultado: o _layout.tsx via usuario null fora da
-    // aba (auth) e chutava o usuário de volta pra tela de login, mesmo
-    // com o cadastro tendo funcionado — por isso não ia pra home.
-    set({
-      usuario: {
-        id: data.user.id,
-        nome,
-        email,
-        tipo_conta: tipoConta,
-        status: "ativo",
-        criado_em: new Date().toISOString(),
-      },
-    });
+    // 4) Desloga o usuário imediatamente para forçar o login manual
+    // conforme o requisito: "Ao cadastrar tem que levar para o login".
+    await supabase.auth.signOut();
+    set({ usuario: null });
 
     return { error: null };
   },

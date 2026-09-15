@@ -283,7 +283,8 @@ export default function Pesquisa() {
                 style={{ borderRadius: 20, overflow: "hidden" }}
                 className="active:opacity-80"
               >
-                <BlurView intensity={30} tint="dark" style={StyleSheet.absoluteFillObject} />
+                {/* No Android, múltiplos BlurViews dentro de uma FlatList causam crash no scroll rápido. */}
+                <View style={[StyleSheet.absoluteFillObject, { backgroundColor: "rgba(15, 23, 42, 0.75)" }]} />
                 <View
                   style={{
                     ...StyleSheet.absoluteFillObject,

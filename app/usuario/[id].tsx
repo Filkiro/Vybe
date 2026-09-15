@@ -159,7 +159,7 @@ export default function PerfilPublico() {
             <>
               <View className="absolute -top-10 -left-10 w-48 h-48 rounded-full bg-primary/25 blur-2xl" />
               <View className="absolute top-0 right-0 w-56 h-56 rounded-full bg-blue-600/15 blur-3xl" />
-              <BlurView intensity={30} tint="dark" style={StyleSheet.absoluteFillObject} />
+              <BlurView intensity={30} tint="dark" experimentalBlurMethod="dimezisBlurView" style={StyleSheet.absoluteFillObject} />
             </>
           )}
           {dadosPerfil?.banner_url && <View className="absolute inset-0 bg-black/25" />}
@@ -179,7 +179,7 @@ export default function PerfilPublico() {
 
         <View className="items-center -mt-14 px-4">
           <View
-            className="rounded-full items-center justify-center bg-surface relative shadow-2xl"
+            className="rounded-full items-center justify-center bg-surface relative "
             style={{ width: 108, height: 108, borderWidth: 4, borderColor: "#0B101E" }}
           >
             {dadosPerfil?.foto_url ? (

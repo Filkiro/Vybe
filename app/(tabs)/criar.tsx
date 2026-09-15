@@ -142,7 +142,7 @@ function SegmentoAba({ label, ativa, onPress }: { label: string; ativa: boolean;
     <Pressable
       onPress={onPress}
       className={`flex-1 py-2.5 rounded-full items-center justify-center transition-all ${
-        ativa ? "bg-primary shadow-lg shadow-primary/30" : "bg-transparent"
+        ativa ? "bg-primary  " : "bg-transparent"
       }`}
     >
       <Text className={`font-bold text-xs ${ativa ? "text-white" : "text-muted"}`}>{label}</Text>
@@ -293,7 +293,7 @@ function FormMusica({ usuarioId }: { usuarioId: string }) {
       <Pressable
         onPress={publicar}
         disabled={enviando}
-        className="bg-primary rounded-2xl py-4 items-center shadow-lg shadow-primary/30 active:opacity-90"
+        className="bg-primary rounded-2xl py-4 items-center   active:opacity-90"
       >
         {enviando ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold text-sm">Publicar Música</Text>}
       </Pressable>
@@ -471,7 +471,7 @@ function FormAlbum({ usuarioId }: { usuarioId: string }) {
       <Pressable
         onPress={criarAlbum}
         disabled={enviando}
-        className="bg-primary rounded-2xl py-4 items-center shadow-lg shadow-primary/30 active:opacity-90"
+        className="bg-primary rounded-2xl py-4 items-center   active:opacity-90"
       >
         {enviando ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold text-sm">Criar Álbum</Text>}
       </Pressable>
@@ -549,7 +549,7 @@ function FormEvento({ usuarioId }: { usuarioId: string }) {
       <Pressable
         onPress={publicar}
         disabled={enviando}
-        className="bg-primary rounded-2xl py-4 items-center shadow-lg shadow-primary/30 active:opacity-90 mt-2"
+        className="bg-primary rounded-2xl py-4 items-center   active:opacity-90 mt-2"
       >
         {enviando ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold text-sm">Criar Evento</Text>}
       </Pressable>
@@ -679,7 +679,7 @@ function FormPublicacaoMusico({ usuarioId }: { usuarioId: string }) {
       <Pressable
         onPress={publicar}
         disabled={enviando}
-        className="bg-primary rounded-2xl py-4 items-center shadow-lg shadow-primary/30 active:opacity-90"
+        className="bg-primary rounded-2xl py-4 items-center   active:opacity-90"
       >
         {enviando ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold text-sm">Publicar no Feed</Text>}
       </Pressable>
@@ -808,7 +808,7 @@ function FormPublicacaoOrganizador({ usuarioId }: { usuarioId: string }) {
       <Pressable
         onPress={publicar}
         disabled={enviando}
-        className="bg-primary rounded-2xl py-4 items-center shadow-lg shadow-primary/30 active:opacity-90"
+        className="bg-primary rounded-2xl py-4 items-center   active:opacity-90"
       >
         {enviando ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold text-sm">Publicar no Feed</Text>}
       </Pressable>

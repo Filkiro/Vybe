@@ -110,7 +110,7 @@ export function PublicacaoCard({ item }: { item: PublicacaoFeedItem }) {
   }
 
   return (
-    <View className="bg-[#121829] rounded-3xl mb-4 overflow-hidden border border-white/5 shadow-xl shadow-black/20">
+    <View className="bg-[#121829] rounded-3xl mb-4 overflow-hidden border border-white/5  ">
       <View className="flex-row items-center px-4 pt-4 pb-3">
         <Pressable onPress={() => abrirPerfil(item.usuario_id)} className="flex-row items-center flex-1">
           {item.foto_perfil_url ? (
@@ -133,7 +133,7 @@ export function PublicacaoCard({ item }: { item: PublicacaoFeedItem }) {
 
           <Modal transparent visible={mostrarOpcoes} animationType="fade" onRequestClose={() => setMostrarOpcoes(false)}>
             <Pressable className="flex-1 bg-black/50 justify-center items-center" onPress={() => setMostrarOpcoes(false)}>
-              <Pressable className="w-64 bg-[#1A2235] border border-white/10 rounded-2xl overflow-hidden shadow-2xl" onPress={(e) => e.stopPropagation()}>
+              <Pressable className="w-64 bg-[#1A2235] border border-white/10 rounded-2xl overflow-hidden " onPress={(e) => e.stopPropagation()}>
                 <Pressable 
                   onPress={() => {
                     setMostrarOpcoes(false);

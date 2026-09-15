@@ -140,7 +140,7 @@ export function SearchOverlay({ visible, onClose }: SearchOverlayProps) {
         <Pressable style={StyleSheet.absoluteFillObject} onPress={onClose} />
 
         {/* CONTAINER DO OVERLAY estilo YT Music */}
-        <View className="mt-12 mx-4 max-w-[600px] self-center w-full rounded-3xl overflow-hidden border border-white/10 bg-[#0F172A]/95 shadow-2xl">
+        <View className="mt-12 mx-4 max-w-[600px] self-center w-full rounded-3xl overflow-hidden border border-white/10 bg-[#0F172A]/95 ">
           <BlurView intensity={40} tint="dark" className="p-4">
             
             {/* INPUT DE BUSCA */}

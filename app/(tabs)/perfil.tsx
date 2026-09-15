@@ -59,7 +59,7 @@ export default function Perfil() {
         </Text>
         <Pressable
           onPress={() => router.push("/(auth)/entrar?aba=cadastro")}
-          className="bg-primary rounded-2xl py-4 items-center w-full mb-3 shadow-lg shadow-primary/20"
+          className="bg-primary rounded-2xl py-4 items-center w-full mb-3  "
         >
           <Text className="text-white font-bold text-base">Criar conta</Text>
         </Pressable>
@@ -93,7 +93,7 @@ export default function Perfil() {
               <Pressable
                 onPress={() => setAba("biblioteca")}
                 className={`flex-1 py-3 rounded-xl items-center justify-center transition-all ${
-                  aba === "biblioteca" ? "bg-primary shadow-md" : "bg-transparent"
+                  aba === "biblioteca" ? "bg-primary " : "bg-transparent"
                 }`}
               >
                 <Text
@@ -108,7 +108,7 @@ export default function Perfil() {
               <Pressable
                 onPress={() => setAba("dados")}
                 className={`flex-1 py-3 rounded-xl items-center justify-center transition-all ${
-                  aba === "dados" ? "bg-primary shadow-md" : "bg-transparent"
+                  aba === "dados" ? "bg-primary " : "bg-transparent"
                 }`}
               >
                 <Text
@@ -160,7 +160,7 @@ export default function Perfil() {
           <Text className="text-muted text-[11px] font-bold uppercase tracking-wider mb-3 px-1">
             Navegação Rápida
           </Text>
-          <View className="bg-card border border-border/60 rounded-3xl overflow-hidden shadow-sm">
+          <View className="bg-card border border-border/60 rounded-3xl overflow-hidden ">
             {usuario.tipo_conta === "musico" && (
               <ItemMenu
                 icone={<BarChart3 color={colors.primary} size={18} />}
@@ -311,7 +311,7 @@ function CabecalhoPerfil({ usuario }: { usuario: any }) {
           <>
             <View className="absolute -top-10 -left-10 w-48 h-48 rounded-full bg-primary/25 blur-2xl" />
             <View className="absolute top-0 right-0 w-56 h-56 rounded-full bg-blue-600/15 blur-3xl" />
-            <BlurView intensity={30} tint="dark" style={StyleSheet.absoluteFillObject} />
+            <BlurView intensity={30} tint="dark" experimentalBlurMethod="dimezisBlurView" style={StyleSheet.absoluteFillObject} />
           </>
         )}
 
@@ -337,7 +337,7 @@ function CabecalhoPerfil({ usuario }: { usuario: any }) {
       <View className="items-center -mt-14 px-4">
         <Pressable onPress={ehMusico ? trocarFoto : undefined} disabled={!ehMusico || enviandoFoto}>
           <View
-            className="rounded-full items-center justify-center bg-surface relative shadow-2xl"
+            className="rounded-full items-center justify-center bg-surface relative "
             style={{ width: 108, height: 108, borderWidth: 4, borderColor: "#0B101E" }}
           >
             {fotoUrl ? (
@@ -351,7 +351,7 @@ function CabecalhoPerfil({ usuario }: { usuario: any }) {
             )}
 
             {ehMusico && (
-              <View className="absolute bottom-0 right-0 bg-primary rounded-full p-2 border-2 border-[#0B101E] shadow-md">
+              <View className="absolute bottom-0 right-0 bg-primary rounded-full p-2 border-2 border-[#0B101E] ">
                 <Camera color="white" size={14} />
               </View>
             )}
@@ -628,7 +628,7 @@ function BibliotecaOrganizador({ usuarioId }: { usuarioId: string }) {
       {eventos.map((item) => (
         <View
           key={item.id}
-          className="bg-card border border-border/80 rounded-2xl p-4 mb-3 flex-row items-center justify-between shadow-sm"
+          className="bg-card border border-border/80 rounded-2xl p-4 mb-3 flex-row items-center justify-between "
         >
           <View className="flex-1 pr-3">
             <Text className="font-bold text-textDark text-sm">{item.nome}</Text>
@@ -693,7 +693,7 @@ function ModalConfirmarExclusao({
   return (
     <Modal visible={visivel} transparent animationType="fade" onRequestClose={onCancelar}>
       <View className="flex-1 bg-black/75 items-center justify-center px-6">
-        <View className="bg-card rounded-3xl p-6 w-full border border-border shadow-2xl">
+        <View className="bg-card rounded-3xl p-6 w-full border border-border ">
           <View className="w-12 h-12 rounded-2xl bg-red-500/10 items-center justify-center self-center mb-4">
             <AlertTriangle color={colors.danger} size={24} />
           </View>
@@ -708,7 +708,7 @@ function ModalConfirmarExclusao({
           <Pressable
             onPress={onConfirmar}
             disabled={excluindo}
-            className="bg-red-500 rounded-2xl py-3.5 items-center mb-2 shadow-lg shadow-red-500/20"
+            className="bg-red-500 rounded-2xl py-3.5 items-center mb-2  -500/20"
           >
             <Text className="text-white font-bold text-xs">
               {excluindo ? "Excluindo..." : "Sim, excluir minha conta"}
@@ -835,7 +835,7 @@ function FormularioMusico({ usuarioId }: { usuarioId: string }) {
       <Pressable
         onPress={salvar}
         disabled={salvando}
-        className="bg-primary rounded-2xl py-4 items-center mt-3 shadow-lg shadow-primary/20 active:opacity-90"
+        className="bg-primary rounded-2xl py-4 items-center mt-3   active:opacity-90"
       >
         <Text className="text-white font-bold text-sm">
           {salvando ? "Salvando alterações..." : "Salvar Alterações"}
@@ -896,7 +896,7 @@ function FormularioOrganizador({ usuarioId }: { usuarioId: string }) {
       <Pressable
         onPress={salvar}
         disabled={salvando}
-        className="bg-primary rounded-2xl py-4 items-center mt-3 shadow-lg shadow-primary/20 active:opacity-90"
+        className="bg-primary rounded-2xl py-4 items-center mt-3   active:opacity-90"
       >
         <Text className="text-white font-bold text-sm">
           {salvando ? "Salvando alterações..." : "Salvar Alterações"}

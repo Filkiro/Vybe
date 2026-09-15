@@ -284,10 +284,10 @@ export function AnimatedBackgroundBlobs({ height = 520 }: AnimatedBackgroundBlob
         />
       </View>
 
-      {/* Camada de Blur estilo Glassmorphism */}
       <BlurView
         intensity={Platform.OS === "ios" ? 90 : 70}
         tint="dark"
+        experimentalBlurMethod="dimezisBlurView"
         style={StyleSheet.absoluteFillObject}
       />
 

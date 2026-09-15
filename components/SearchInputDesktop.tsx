@@ -138,7 +138,7 @@ export function SearchInputDesktop() {
       )}
 
       <View 
-        className={"flex-row items-center bg-[#1A2235] border h-11 rounded-full px-3 z-[1001] overflow-hidden " + (focado ? "border-primary shadow-lg shadow-primary/20" : "border-white/10")}
+        className={"flex-row items-center bg-[#1A2235] border h-11 rounded-full px-3 z-[1001] overflow-hidden " + (focado ? "border-primary  " : "border-white/10")}
       >
         <View className="mr-2 shrink-0">
           <Search color={focado ? "#3B82F6" : "#8B95A8"} size={18} />
@@ -163,7 +163,7 @@ export function SearchInputDesktop() {
 
       {mostrarDropdown && (
         <View 
-          className="absolute left-0 right-0 mt-14 rounded-2xl border border-white/10 bg-[#0F172A]/95 overflow-hidden shadow-2xl z-[1001]"
+          className="absolute left-0 right-0 mt-14 rounded-2xl border border-white/10 bg-[#0F172A]/95 overflow-hidden  z-[1001]"
           style={{ shadowColor: "#000", shadowOffset: { width: 0, height: 15 }, shadowOpacity: 0.6, shadowRadius: 20 }}
         >
           <BlurView intensity={40} tint="dark" className="p-3">
