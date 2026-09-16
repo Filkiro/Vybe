@@ -39,6 +39,27 @@ export function PublicacaoCard({ item }: { item: PublicacaoFeedItem }) {
   const [descricaoDenuncia, setDescricaoDenuncia] = useState("");
   const [erroDenuncia, setErroDenuncia] = useState<string | null>(null);
   const [enviandoDenuncia, setEnviandoDenuncia] = useState(false);
+  const [artistasConfirmados, setArtistasConfirmados] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (item.evento_id) {
+      supabase
+        .from("evento_convite")
+        .select("musico_id")
+        .eq("evento_id", item.evento_id)
+        .eq("status", "aceito")
+        .then(async ({ data }) => {
+          if (data && data.length > 0) {
+            const ids = data.map((d: any) => d.musico_id);
+            const { data: perfis } = await supabase
+              .from("perfil_musico")
+              .select("usuario_id, apelido, foto_url")
+              .in("usuario_id", ids);
+            setArtistasConfirmados(perfis ?? []);
+          }
+        });
+    }
+  }, [item.evento_id]);
 
   async function alternarCurtida() {
     requireAuth(async () => {
@@ -165,6 +186,30 @@ export function PublicacaoCard({ item }: { item: PublicacaoFeedItem }) {
 
       {item.foto_url && (
         <Image source={{ uri: item.foto_url }} className="w-full bg-[#0B101E]" style={{ aspectRatio: 1 }} resizeMode="cover" />
+      )}
+
+      {artistasConfirmados.length > 0 && (
+        <View className="px-4 py-3 bg-[#161C2C] border-t border-white/5">
+          <Text className="text-white/60 text-[10px] font-bold uppercase tracking-wider mb-2">Artistas Confirmados</Text>
+          <View className="flex-row flex-wrap gap-2">
+            {artistasConfirmados.map((a: any) => (
+              <Pressable
+                key={a.usuario_id}
+                onPress={() => abrirPerfil(a.usuario_id)}
+                className="flex-row items-center bg-white/5 border border-white/10 rounded-full pr-3 py-1 overflow-hidden"
+              >
+                {a.foto_url ? (
+                  <Image source={{ uri: a.foto_url }} className="w-5 h-5 rounded-full mr-2" />
+                ) : (
+                  <View className="w-5 h-5 rounded-full bg-[#3B82F6] items-center justify-center mr-2">
+                    <Text className="text-white text-[10px] font-bold">{a.apelido?.[0] ?? "A"}</Text>
+                  </View>
+                )}
+                <Text className="text-white text-xs font-medium">{a.apelido}</Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
       )}
 
       <View className="flex-row items-center px-4 py-3 border-t border-white/5 bg-[#121829]">

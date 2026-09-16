@@ -487,46 +487,196 @@ function FormEvento({ usuarioId }: { usuarioId: string }) {
   const [localizacao, setLocalizacao] = useState("");
   const [generoMusical, setGeneroMusical] = useState("");
   const [capacidade, setCapacidade] = useState("");
+  const [descricao, setDescricao] = useState("");
+  const [capaUri, setCapaUri] = useState<string | null>(null);
+  
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [sucesso, setSucesso] = useState(false);
 
-  async function publicar() {
+  // Convites
+  const [musicos, setMusicos] = useState<any[]>([]);
+  const [convidados, setConvidados] = useState<string[]>([]);
+
+  useEffect(() => {
+    supabase
+      .from("perfil_musico")
+      .select("usuario_id, apelido, foto_url")
+      .then(({ data }) => setMusicos(data ?? []));
+  }, []);
+
+  function toggleConvidado(id: string) {
+    setConvidados((prev) =>
+      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]
+    );
+  }
+
+  async function escolherFoto() {
+    const permissao = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permissao.granted) {
+      setErro("Precisa de permissão para acessar suas fotos.");
+      return;
+    }
+    const resultado = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.8,
+    });
+    if (!resultado.canceled) setCapaUri(resultado.assets[0].uri);
+  }
+
+  async function publicar(comoRascunho: boolean) {
     setErro(null);
     setSucesso(false);
-    if (!nome || !data) {
-      setErro("Preencha ao menos o nome e a data do evento.");
+    if (!nome || !data || !descricao || !capaUri) {
+      setErro("Preencha nome, data, descrição e escolha uma foto para o evento.");
       return;
     }
     setEnviando(true);
-    const { error } = await supabase.from("evento").insert({
-      organizador_id: usuarioId,
-      nome,
-      data: data ? parseDateToDB(data) : null,
-      horario: horario || null,
-      localizacao: localizacao || null,
-      genero_musical: generoMusical || null,
-      capacidade: capacidade ? Number(capacidade) : null,
-    });
-    setEnviando(false);
-    if (error) {
-      setErro(error.message);
-      return;
+    
+    try {
+      // 1. Criar Evento
+      const { data: novoEvento, error } = await supabase.from("evento").insert({
+        organizador_id: usuarioId,
+        nome,
+        data: data ? parseDateToDB(data) : null,
+        horario: horario || null,
+        localizacao: localizacao || null,
+        genero_musical: generoMusical || null,
+        capacidade: capacidade ? Number(capacidade) : null,
+        status: comoRascunho ? "rascunho" : "aberto",
+      }).select().single();
+
+      if (error) throw error;
+      // 2. Fazer upload da foto
+      let fotoUrl: string | null = null;
+      if (capaUri) {
+        fotoUrl = await enviarArquivoParaStorage({
+          bucket: "capa_musica",
+          uri: capaUri,
+          nomeArquivo: `${usuarioId}-evento-${Date.now()}.jpg`,
+          contentType: "image/jpeg",
+        });
+      }
+
+      // 3. Criar Publicacao
+      await supabase.from("publicacao").insert({
+        usuario_id: usuarioId,
+        evento_id: novoEvento.id,
+        foto_url: fotoUrl,
+        descricao,
+        status: comoRascunho ? "rascunho" : "publicado",
+      });
+
+      let redirecionarConversaId = null;
+
+      if (convidados.length > 0 && novoEvento) {
+        const convites = convidados.map((musicoId) => ({
+          evento_id: novoEvento.id,
+          musico_id: musicoId,
+          status: "pendente",
+        }));
+        
+        const { data: convitesInseridos } = await supabase
+          .from("evento_convite")
+          .insert(convites)
+          .select();
+
+        if (convitesInseridos) {
+          for (const convite of convitesInseridos) {
+            let conversaId;
+            const { data: convExistente } = await supabase
+              .from("conversa")
+              .select("id")
+              .or(`and(usuario_id1.eq.${usuarioId},usuario_id2.eq.${convite.musico_id}),and(usuario_id1.eq.${convite.musico_id},usuario_id2.eq.${usuarioId})`)
+              .maybeSingle();
+
+            if (convExistente) {
+              conversaId = convExistente.id;
+            } else {
+              const { data: novaConv } = await supabase
+                .from("conversa")
+                .insert({ usuario_id1: usuarioId, usuario_id2: convite.musico_id })
+                .select()
+                .single();
+              if (novaConv) conversaId = novaConv.id;
+            }
+
+            if (conversaId) {
+              redirecionarConversaId = conversaId;
+              await supabase.from("mensagem").insert({
+                conversa_id: conversaId,
+                remetente_id: usuarioId,
+                conteudo: "Você foi convidado para um evento!",
+                evento_convite_id: convite.id,
+              });
+            }
+          }
+        }
+      }
+
+      setEnviando(false);
+      setSucesso(true);
+      setNome("");
+      setData("");
+      setHorario("");
+      setLocalizacao("");
+      setGeneroMusical("");
+      setCapacidade("");
+      setDescricao("");
+      setCapaUri(null);
+      setConvidados([]);
+      useHomeStore.getState().invalidarHome();
+
+      if (convidados.length === 1 && redirecionarConversaId) {
+        const musicoId = convidados[0];
+        const musico = musicos.find((m) => m.usuario_id === musicoId);
+        const nomeContato = musico?.apelido ?? "Músico";
+        let url = `/chat/${redirecionarConversaId}?contatoId=${musicoId}&contatoNome=${encodeURIComponent(nomeContato)}`;
+        if (musico?.foto_url) {
+          url += `&contatoFotoUrl=${encodeURIComponent(musico.foto_url)}`;
+        }
+        router.push(url as any);
+      } else if (convidados.length > 1) {
+        router.push("/(tabs)/conversa");
+      }
+    } catch (e: any) {
+      setErro(e.message ?? "Erro ao publicar evento.");
+      setEnviando(false);
     }
-    setSucesso(true);
-    setNome("");
-    setData("");
-    setHorario("");
-    setLocalizacao("");
-    setGeneroMusical("");
-    setCapacidade("");
   }
 
   return (
     <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, paddingTop: 12, paddingBottom }} showsVerticalScrollIndicator={false}>
       <Text className="text-2xl font-black text-white mb-5">Novo evento</Text>
 
+      <Pressable onPress={escolherFoto} className="w-full h-48 bg-white/5 border border-white/10 rounded-2xl mb-5 items-center justify-center overflow-hidden border-dashed">
+        {capaUri ? (
+          <Image source={{ uri: capaUri }} className="w-full h-full" resizeMode="cover" />
+        ) : (
+          <>
+            <View className="w-12 h-12 bg-white/5 rounded-full items-center justify-center mb-2">
+              <Upload color="#94A3B8" size={24} />
+            </View>
+            <Text className="text-gray-400 font-medium text-sm">Toque para adicionar o Banner / Foto do Evento</Text>
+          </>
+        )}
+      </Pressable>
+
       <CampoTexto label="Nome do Evento" placeholder="Ex: Festival de Verão" value={nome} onChangeText={setNome} />
+      
+      <View className="mb-4">
+        <Text className="text-white/60 text-xs font-bold mb-1.5 ml-1 uppercase tracking-wider">Descrição (Para o Feed)</Text>
+        <TextInput
+          value={descricao}
+          onChangeText={setDescricao}
+          placeholder="Conte um pouco sobre o evento..."
+          placeholderTextColor="#64748B"
+          multiline
+          className="bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 text-white text-[15px] min-h-[100px]"
+          style={{ textAlignVertical: "top" }}
+        />
+      </View>
+
       <CampoTexto 
         label="Data" 
         placeholder="DD/MM/AAAA" 
@@ -539,20 +689,54 @@ function FormEvento({ usuarioId }: { usuarioId: string }) {
       <CampoTexto label="Gênero Principal" placeholder="Ex: Indie / Rock" value={generoMusical} onChangeText={setGeneroMusical} />
       <CampoTexto label="Capacidade de Público" placeholder="Ex: 500" value={capacidade} onChangeText={setCapacidade} keyboardType="numeric" />
 
+      {musicos.length > 0 && (
+        <View className="mb-6 bg-white/5 border border-white/10 rounded-2xl p-4">
+          <Text className="text-white/60 text-xs font-bold mb-3 uppercase tracking-wider">Convidar Artistas</Text>
+          <View className="flex-row flex-wrap gap-2">
+            {musicos.map((m) => {
+              const selecionado = convidados.includes(m.usuario_id);
+              return (
+                <Pressable
+                  key={m.usuario_id}
+                  onPress={() => toggleConvidado(m.usuario_id)}
+                  className={`px-3 py-1.5 rounded-full border ${
+                    selecionado ? "bg-primary border-primary" : "bg-white/5 border-white/10"
+                  }`}
+                >
+                  <Text className={`text-xs font-medium ${selecionado ? "text-white" : "text-white/70"}`}>
+                    {m.apelido || "Sem Nome"}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+      )}
+
       {erro && <Text className="text-red-400 mb-4 text-center font-medium text-xs">{erro}</Text>}
       {sucesso && (
         <Text className="text-emerald-400 mb-4 text-center font-medium text-xs">
-          Evento criado! Vá na aba "Publicação" para divulgá-lo no Explorar.
+          Evento salvo!
         </Text>
       )}
 
-      <Pressable
-        onPress={publicar}
-        disabled={enviando}
-        className="bg-primary rounded-2xl py-4 items-center   active:opacity-90 mt-2"
-      >
-        {enviando ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold text-sm">Criar Evento</Text>}
-      </Pressable>
+      <View className="flex-row gap-3 mt-2">
+        <Pressable
+          onPress={() => publicar(true)}
+          disabled={enviando}
+          className="flex-1 bg-white/10 rounded-2xl py-4 items-center active:opacity-70 border border-white/10"
+        >
+          <Text className="text-white font-bold text-sm">Salvar Rascunho</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => publicar(false)}
+          disabled={enviando}
+          className="flex-1 bg-primary rounded-2xl py-4 items-center active:opacity-90"
+        >
+          {enviando ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold text-sm">Publicar Evento</Text>}
+        </Pressable>
+      </View>
     </ScrollView>
   );
 }
@@ -592,7 +776,7 @@ function FormPublicacaoMusico({ usuarioId }: { usuarioId: string }) {
     if (!resultado.canceled) setCapaUri(resultado.assets[0].uri);
   }
 
-  async function publicar() {
+  async function publicar(comoRascunho: boolean) {
     setErro(null);
     setSucesso(false);
     if (!descricao && !capaUri && !itemEscolhido?.capa_url) {
@@ -615,6 +799,7 @@ function FormPublicacaoMusico({ usuarioId }: { usuarioId: string }) {
         usuario_id: usuarioId,
         foto_url: fotoUrl,
         descricao: descricao || null,
+        status: comoRascunho ? "rascunho" : "publicado",
       });
       if (error) throw error;
 
@@ -674,15 +859,29 @@ function FormPublicacaoMusico({ usuarioId }: { usuarioId: string }) {
       )}
 
       {erro && <Text className="text-red-400 mb-4 text-center font-medium text-xs">{erro}</Text>}
-      {sucesso && <Text className="text-emerald-400 mb-4 text-center font-medium text-xs">Publicado no Explorar!</Text>}
+      {sucesso && (
+        <Text className="text-emerald-400 mb-4 text-center font-medium text-xs">
+          Publicação salva!
+        </Text>
+      )}
 
-      <Pressable
-        onPress={publicar}
-        disabled={enviando}
-        className="bg-primary rounded-2xl py-4 items-center   active:opacity-90"
-      >
-        {enviando ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold text-sm">Publicar no Feed</Text>}
-      </Pressable>
+      <View className="flex-row gap-3 mt-2">
+        <Pressable
+          onPress={() => publicar(true)}
+          disabled={enviando}
+          className="flex-1 bg-white/10 rounded-2xl py-4 items-center active:opacity-70 border border-white/10"
+        >
+          <Text className="text-white font-bold text-sm">Salvar Rascunho</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => publicar(false)}
+          disabled={enviando}
+          className="flex-1 bg-primary rounded-2xl py-4 items-center active:opacity-90"
+        >
+          {enviando ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold text-sm">Postar</Text>}
+        </Pressable>
+      </View>
     </ScrollView>
   );
 }
@@ -719,7 +918,7 @@ function FormPublicacaoOrganizador({ usuarioId }: { usuarioId: string }) {
     if (!resultado.canceled) setFotoUri(resultado.assets[0].uri);
   }
 
-  async function publicar() {
+  async function publicar(comoRascunho: boolean) {
     setErro(null);
     setSucesso(false);
     if (!eventoId) {
@@ -743,6 +942,7 @@ function FormPublicacaoOrganizador({ usuarioId }: { usuarioId: string }) {
         evento_id: eventoId,
         foto_url: fotoUrl,
         descricao: descricao || null,
+        status: comoRascunho ? "rascunho" : "publicado",
       });
       if (error) throw error;
 
@@ -779,7 +979,7 @@ function FormPublicacaoOrganizador({ usuarioId }: { usuarioId: string }) {
       <Text className="text-white font-bold text-sm mb-2">Evento a divulgar</Text>
       <View className="mb-4">
         {meusEventos.map((e) => (
-          <ItemEscolha key={e.id} nome={`${e.nome} — ${e.data}`} tag="Evento" selecionado={eventoId === e.id} onPress={() => setEventoId(e.id)} />
+          <ItemEscolha key={e.id} nome={`${e.nome} - ${e.data}`} tag="Evento" selecionado={eventoId === e.id} onPress={() => setEventoId(e.id)} />
         ))}
       </View>
 
@@ -803,15 +1003,29 @@ function FormPublicacaoOrganizador({ usuarioId }: { usuarioId: string }) {
       <CampoTexto label="Legenda" placeholder="Escreva sobre o evento..." value={descricao} onChangeText={setDescricao} multiline numberOfLines={4} />
 
       {erro && <Text className="text-red-400 mb-4 text-center font-medium text-xs">{erro}</Text>}
-      {sucesso && <Text className="text-emerald-400 mb-4 text-center font-medium text-xs">Publicado no Explorar!</Text>}
+      {sucesso && (
+        <Text className="text-emerald-400 mb-4 text-center font-medium text-xs">
+          Publicação salva!
+        </Text>
+      )}
 
-      <Pressable
-        onPress={publicar}
-        disabled={enviando}
-        className="bg-primary rounded-2xl py-4 items-center   active:opacity-90"
-      >
-        {enviando ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold text-sm">Publicar no Feed</Text>}
-      </Pressable>
+      <View className="flex-row gap-3 mt-2">
+        <Pressable
+          onPress={() => publicar(true)}
+          disabled={enviando}
+          className="flex-1 bg-white/10 rounded-2xl py-4 items-center active:opacity-70 border border-white/10"
+        >
+          <Text className="text-white font-bold text-sm">Salvar Rascunho</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => publicar(false)}
+          disabled={enviando}
+          className="flex-1 bg-primary rounded-2xl py-4 items-center active:opacity-90"
+        >
+          {enviando ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold text-sm">Postar</Text>}
+        </Pressable>
+      </View>
     </ScrollView>
   );
 }

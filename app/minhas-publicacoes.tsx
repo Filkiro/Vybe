@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { View, Text, TextInput, Pressable, FlatList, Image, ActivityIndicator } from "react-native";
 import { router } from "expo-router";
-import { ChevronLeft, Pencil, Trash2, X, Check } from "lucide-react-native";
+import { ChevronLeft, Pencil, Trash2, X, Check, Sparkles } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 import { supabase } from "../lib/supabase";
@@ -17,6 +17,7 @@ type Publicacao = {
   criado_em: string;
   evento_id: string | null;
   evento?: { nome: string } | null;
+  status?: string;
 };
 
 // Tela de gerenciamento das próprias publicações (acessada pelo
@@ -42,7 +43,7 @@ export default function MinhasPublicacoes() {
     setCarregando(true);
     const { data } = await supabase
       .from("publicacao")
-      .select("id, foto_url, descricao, criado_em, evento_id, evento:evento_id(nome)")
+      .select("id, foto_url, descricao, criado_em, evento_id, evento:evento_id(nome), status")
       .eq("usuario_id", usuario.id)
       .order("criado_em", { ascending: false });
     setPublicacoes((data as any) ?? []);
@@ -153,6 +154,12 @@ export default function MinhasPublicacoes() {
             const emEdicao = editandoId === item.id;
             return (
               <View className="bg-card rounded-2xl mb-4 border border-border overflow-hidden self-center w-full max-w-[700px]">
+                {item.status === 'rascunho' && (
+                  <View className="bg-yellow-500/20 px-3 py-1.5 flex-row items-center justify-center">
+                    <Sparkles color="#EAB308" size={14} className="mr-1.5" />
+                    <Text className="text-yellow-500 text-xs font-bold uppercase tracking-wider">Rascunho</Text>
+                  </View>
+                )}
                 {item.evento && (
                   <View className="px-3 pt-3">
                     <Text className="text-primary text-xs font-bold">Evento: {item.evento.nome}</Text>
@@ -206,6 +213,18 @@ export default function MinhasPublicacoes() {
                       <Image source={{ uri: item.foto_url }} className="w-full" style={{ aspectRatio: 1 }} resizeMode="cover" />
                     )}
                     <View className="flex-row gap-2 p-3">
+                      {item.status === 'rascunho' && (
+                        <Pressable
+                          onPress={async () => {
+                            await supabase.from("publicacao").update({ status: "publicado" }).eq("id", item.id);
+                            setPublicacoes((atual) => atual.map((p) => p.id === item.id ? { ...p, status: "publicado" } : p));
+                          }}
+                          className="flex-row items-center gap-1.5 bg-emerald-500/20 px-3 py-2 rounded-xl border border-emerald-500/30"
+                        >
+                          <Check color="#10B981" size={14} />
+                          <Text className="text-emerald-500 font-bold text-xs">Publicar</Text>
+                        </Pressable>
+                      )}
                       <Pressable
                         onPress={() => iniciarEdicao(item)}
                         className="flex-row items-center gap-1.5 bg-surface px-3 py-2 rounded-xl border border-border"

@@ -35,6 +35,7 @@ export default function Explorar() {
       .select(
         "id, usuario_id, foto_url, descricao, criado_em, evento_id, usuario:usuario_id(nome, tipo_conta), evento:evento_id(nome, data, localizacao)"
       )
+      .eq("status", "publicado")
       .order("criado_em", { ascending: false })
       .limit(50);
 

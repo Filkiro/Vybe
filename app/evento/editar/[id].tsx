@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { View, Text, TextInput, Pressable, ScrollView, ActivityIndicator } from "react-native";
+import { View, Text, TextInput, Pressable, ScrollView, ActivityIndicator, Modal } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ChevronLeft, Trash2 } from "lucide-react-native";
 import { supabase } from "../../../lib/supabase";
@@ -8,10 +8,11 @@ import { confirmar } from "../../../lib/alertas";
 import { useAuthStore } from "../../../store/authStore";
 import { colors } from "../../../constants/theme";
 import { maskDate, parseDateToDB, parseDateFromDB } from "../../../lib/dateMask";
+import { withAuth } from "../../../components/AuthGuard";
 
 const STATUS_OPCOES = ["aberto", "encerrado", "cancelado"] as const;
 
-export default function GerenciarEvento() {
+function GerenciarEvento() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const usuario = useAuthStore((s) => s.usuario);
@@ -86,6 +87,36 @@ export default function GerenciarEvento() {
         .eq("id", evento.id);
       if (error) throw error;
 
+      // NOTIFICAR MÚSICOS CONFIRMADOS
+      const { data: convitesAceitos } = await supabase
+        .from("evento_convite")
+        .select("musico_id")
+        .eq("evento_id", evento.id)
+        .eq("status", "aceito");
+
+      if (convitesAceitos && convitesAceitos.length > 0) {
+        for (const convite of convitesAceitos) {
+          let conversaId;
+          const { data: convExistente } = await supabase
+            .from("conversa")
+            .select("id")
+            .or(`and(usuario_id1.eq.${evento.organizador_id},usuario_id2.eq.${convite.musico_id}),and(usuario_id1.eq.${convite.musico_id},usuario_id2.eq.${evento.organizador_id})`)
+            .maybeSingle();
+
+          if (convExistente) {
+            conversaId = convExistente.id;
+          }
+
+          if (conversaId) {
+            await supabase.from("mensagem").insert({
+              conversa_id: conversaId,
+              remetente_id: evento.organizador_id,
+              conteudo: `📢 **Atualização de Evento**\nO evento "${nome}" foi atualizado pelo organizador. Confira os novos detalhes!`,
+            });
+          }
+        }
+      }
+
       setSucesso(true);
     } catch (e: any) {
       setErro(e.message ?? "Erro ao salvar as alterações.");
@@ -94,20 +125,52 @@ export default function GerenciarEvento() {
     }
   }
 
-  async function confirmarExclusao() {
-    const ok = await confirmar(
-      "Excluir evento",
-      `Tem certeza que quer excluir "${evento.nome}"? Publicações que divulgam esse evento continuam existindo, só perdem o vínculo. Essa ação não pode ser desfeita.`,
-      "Excluir"
-    );
-    if (ok) excluir();
+  const [modalExclusao, setModalExclusao] = useState(false);
+  const [motivoExclusao, setMotivoExclusao] = useState("");
+
+  function iniciarExclusao() {
+    setMotivoExclusao("");
+    setModalExclusao(true);
   }
 
-  async function excluir() {
-    if (!evento) return;
+  async function confirmarExclusao() {
+    if (!evento || !motivoExclusao.trim()) return;
     setExcluindo(true);
+    setErro(null);
     try {
+      // 1. Notificar os músicos confirmados/pendentes sobre o cancelamento do evento
+      const { data: convites } = await supabase
+        .from("evento_convite")
+        .select("musico_id")
+        .eq("evento_id", evento.id)
+        .in("status", ["aceito", "pendente"]);
+
+      if (convites && convites.length > 0) {
+        for (const convite of convites) {
+          let conversaId;
+          const { data: convExistente } = await supabase
+            .from("conversa")
+            .select("id")
+            .or(`and(usuario_id1.eq.${evento.organizador_id},usuario_id2.eq.${convite.musico_id}),and(usuario_id1.eq.${convite.musico_id},usuario_id2.eq.${evento.organizador_id})`)
+            .maybeSingle();
+
+          if (convExistente) {
+            conversaId = convExistente.id;
+          }
+
+          if (conversaId) {
+            await supabase.from("mensagem").insert({
+              conversa_id: conversaId,
+              remetente_id: evento.organizador_id,
+              conteudo: `⚠️ **Evento Cancelado**\nO evento "${evento.nome}" foi apagado pelo organizador.\n\nMotivo: ${motivoExclusao.trim()}`,
+            });
+          }
+        }
+      }
+
+      // 2. Excluir o evento
       await excluirEvento(evento);
+      setModalExclusao(false);
       router.replace("/(tabs)/perfil");
     } catch (e: any) {
       setErro(e.message ?? "Erro ao excluir o evento.");
@@ -215,7 +278,7 @@ export default function GerenciarEvento() {
       </Pressable>
 
       <Pressable
-        onPress={confirmarExclusao}
+        onPress={iniciarExclusao}
         disabled={salvando || excluindo}
         className="flex-row items-center justify-center border border-red-500/30 bg-red-500/10 rounded-full py-4"
       >
@@ -228,6 +291,51 @@ export default function GerenciarEvento() {
           </>
         )}
       </Pressable>
+
+      <Modal transparent visible={modalExclusao} animationType="fade" onRequestClose={() => setModalExclusao(false)}>
+        <View className="flex-1 justify-center bg-black/50 px-4">
+          <View className="bg-[#1A2235] rounded-2xl p-6 border border-white/10">
+            <Text className="text-white font-bold text-xl mb-2">Excluir Evento</Text>
+            <Text className="text-gray-400 text-sm mb-4">
+              Ao excluir o evento, os músicos confirmados serão notificados no chat. Informe o motivo do cancelamento:
+            </Text>
+
+            <TextInput
+              value={motivoExclusao}
+              onChangeText={setMotivoExclusao}
+              placeholder="Motivo do cancelamento..."
+              placeholderTextColor="#64748B"
+              multiline
+              className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white min-h-[100px] mb-4"
+              style={{ textAlignVertical: "top" }}
+            />
+
+            <View className="flex-row gap-3">
+              <Pressable 
+                onPress={() => setModalExclusao(false)}
+                className="flex-1 bg-white/10 rounded-xl py-3 items-center border border-white/10"
+              >
+                <Text className="text-white font-bold">Voltar</Text>
+              </Pressable>
+              
+              <Pressable 
+                onPress={confirmarExclusao}
+                disabled={excluindo || !motivoExclusao.trim()}
+                className={`flex-1 rounded-xl py-3 items-center ${!motivoExclusao.trim() ? 'bg-red-500/30' : 'bg-red-500'}`}
+              >
+                {excluindo ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text className="text-white font-bold">Excluir Evento</Text>
+                )}
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
     </ScrollView>
   );
 }
+
+export default withAuth(GerenciarEvento, ['organizador']);

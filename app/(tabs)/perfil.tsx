@@ -215,16 +215,16 @@ function CabecalhoPerfil({ usuario }: { usuario: any }) {
     if (!tabelaPerfil) return;
     supabase
       .from(tabelaPerfil)
-      .select(ehMusico ? "foto_url, banner_url, apelido, disponivel" : "banner_url, apelido")
+      .select(ehMusico ? "foto_url, banner_url, apelido, disponivel" : "banner_url")
       .eq("usuario_id", usuario.id)
       .single()
       .then(({ data }) => {
         if (ehMusico) {
           setFotoUrl((data as any)?.foto_url ?? null);
           setDisponivel((data as any)?.disponivel ?? null);
+          setApelido((data as any)?.apelido ?? null);
         }
         setBannerUrl((data as any)?.banner_url ?? null);
-        setApelido((data as any)?.apelido ?? null);
       });
   }, [usuario.id, tabelaPerfil]);
 
@@ -435,6 +435,7 @@ function BibliotecaPropria({ tipoConta, usuarioId }: { tipoConta: string; usuari
 function BibliotecaMusico({ usuarioId }: { usuarioId: string }) {
   const [musicas, setMusicas] = useState<any[]>([]);
   const [albuns, setAlbuns] = useState<any[]>([]);
+  const [eventos, setEventos] = useState<any[]>([]);
   const tocarMusica = usePlayerStore((s) => s.tocarMusica);
   const router = useRouter();
   const { width } = useWindowDimensions();
@@ -448,18 +449,24 @@ function BibliotecaMusico({ usuarioId }: { usuarioId: string }) {
   useEffect(() => {
     supabase
       .from("musica")
-      .select("id, nome, capa_url, arquivo_url, status")
+      .select("*")
       .eq("usuario_id", usuarioId)
+      .eq("status", "ativo")
       .order("data_lancamento", { ascending: false })
       .then(({ data }) => setMusicas(data ?? []));
-
     supabase
       .from("album")
-      .select("id, nome, capa_url")
+      .select("*")
       .eq("usuario_id", usuarioId)
       .eq("status", "ativo")
       .order("criado_em", { ascending: false })
       .then(({ data }) => setAlbuns(data ?? []));
+    supabase
+      .from("evento_convite")
+      .select("id, evento:evento_id(*)")
+      .eq("musico_id", usuarioId)
+      .eq("status", "aceito")
+      .then(({ data }) => setEventos((data ?? []).map((d: any) => d.evento).filter(Boolean)));
   }, [usuarioId]);
 
   return (
@@ -533,6 +540,33 @@ function BibliotecaMusico({ usuarioId }: { usuarioId: string }) {
             )}
             <Text numberOfLines={1} className="font-bold text-textDark text-xs">
               {item.nome}
+            </Text>
+          </Pressable>
+        )}
+      />
+
+      <SecaoBiblioteca
+        titulo="Eventos Contratados"
+        itens={eventos}
+        larguraCard={larguraCard}
+        gap={GAP}
+        limite={LIMITE_PREVIA}
+        verTudoHref="/meus-eventos"
+        vazio="Nenhum evento contratado ainda."
+        renderItem={(item) => (
+          <Pressable
+            key={item.id}
+            style={{ width: larguraCard }}
+            className="bg-card border border-border/80 rounded-2xl p-2.5"
+          >
+            <View className="w-full aspect-square rounded-xl bg-primary/20 mb-2.5 items-center justify-center">
+              <Text className="text-primary font-bold text-[10px] text-center px-1 uppercase">{item.data}</Text>
+            </View>
+            <Text numberOfLines={1} className="font-bold text-textDark text-xs">
+              {item.nome}
+            </Text>
+            <Text numberOfLines={1} className="text-muted text-[10px] uppercase font-semibold mt-0.5">
+              Aceito
             </Text>
           </Pressable>
         )}

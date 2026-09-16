@@ -115,4 +115,14 @@ export type Mensagem = {
   conteudo: string;
   data_hora: string;
   lida: boolean;
+  evento_convite_id?: string | null;
+  evento_convite?: {
+    id: string;
+    status: string;
+    evento: {
+      id: string;
+      nome: string;
+      data: string;
+    } | null;
+  } | null;
 };
