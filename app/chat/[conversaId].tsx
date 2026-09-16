@@ -435,7 +435,6 @@
               placeholderTextColor="#64748B"
               className="flex-1 bg-[#1A2235] border border-white/5 rounded-3xl px-5 py-3.5 mr-3 text-white text-[15px]"
               multiline
-              maxLength={255}
               style={{ maxHeight: 120 }}
             />
             <Pressable
@@ -448,9 +447,6 @@
               <Send color={!texto.trim() ? "#64748B" : "white"} size={20} style={{ marginLeft: !texto.trim() ? 0 : 2 }} />
             </Pressable>
           </View>
-          <Text className="text-[10px] text-[#64748B] text-right mt-1.5 mr-[60px]">
-            {texto.length}/255
-          </Text>
         </View>
 
         {/* Modal de Envio de Convite */}
