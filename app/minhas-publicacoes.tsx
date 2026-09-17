@@ -210,14 +210,14 @@ export default function MinhasPublicacoes() {
                   <>
                     {item.descricao && <Text className="text-textDark px-3 pt-3 pb-2">{item.descricao}</Text>}
                     {item.foto_url && (
-                      <Image source={{ uri: item.foto_url }} className="w-full" style={{ aspectRatio: 1 }} resizeMode="cover" />
+                      <Image source={{ uri: item.foto_url }} className="w-full" style={{ aspectRatio: 1 }} resizeMode="contain" />
                     )}
                     <View className="flex-row gap-2 p-3">
                       {item.status === 'rascunho' && (
                         <Pressable
                           onPress={async () => {
-                            await supabase.from("publicacao").update({ status: "publicado" }).eq("id", item.id);
-                            setPublicacoes((atual) => atual.map((p) => p.id === item.id ? { ...p, status: "publicado" } : p));
+                            await supabase.from("publicacao").update({ status: "ativo" }).eq("id", item.id);
+                            setPublicacoes((atual) => atual.map((p) => p.id === item.id ? { ...p, status: "ativo" } : p));
                           }}
                           className="flex-row items-center gap-1.5 bg-emerald-500/20 px-3 py-2 rounded-xl border border-emerald-500/30"
                         >

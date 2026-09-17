@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { View, Text, Pressable, Image, TextInput, ActivityIndicator, Modal } from "react-native";
 import { Heart, MoreVertical, Flag } from "lucide-react-native";
 import { supabase } from "../lib/supabase";
@@ -185,7 +185,7 @@ export function PublicacaoCard({ item }: { item: PublicacaoFeedItem }) {
       )}
 
       {item.foto_url && (
-        <Image source={{ uri: item.foto_url }} className="w-full bg-[#0B101E]" style={{ aspectRatio: 1 }} resizeMode="cover" />
+        <Image source={{ uri: item.foto_url }} className="w-full bg-[#0B101E]" style={{ aspectRatio: 1 }} resizeMode="contain" />
       )}
 
       {artistasConfirmados.length > 0 && (

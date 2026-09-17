@@ -169,7 +169,7 @@ function FormMusica({ usuarioId }: { usuarioId: string }) {
       return;
     }
     const resultado = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ImagePicker.MediaTypeOptions.Images, allowsEditing: true,
       quality: 0.8,
     });
     if (!resultado.canceled) setCapaUri(resultado.assets[0].uri);
@@ -245,7 +245,7 @@ function FormMusica({ usuarioId }: { usuarioId: string }) {
         className="w-full h-44 rounded-3xl bg-[#121829] border border-dashed border-border/80 items-center justify-center mb-6 overflow-hidden relative"
       >
         {capaUri ? (
-          <Image source={{ uri: capaUri }} className="w-full h-full" resizeMode="cover" />
+          <Image source={{ uri: capaUri }} className="w-full h-full" resizeMode="contain" />
         ) : (
           <View className="items-center px-4">
             <View className="w-12 h-12 rounded-full bg-surface items-center justify-center mb-2">
@@ -332,7 +332,7 @@ function FormAlbum({ usuarioId }: { usuarioId: string }) {
       return;
     }
     const resultado = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ImagePicker.MediaTypeOptions.Images, allowsEditing: true,
       quality: 0.8,
     });
     if (!resultado.canceled) setCapaUri(resultado.assets[0].uri);
@@ -403,7 +403,7 @@ function FormAlbum({ usuarioId }: { usuarioId: string }) {
         className="w-full h-44 rounded-3xl bg-[#121829] border border-dashed border-border/80 items-center justify-center mb-6 overflow-hidden"
       >
         {capaUri ? (
-          <Image source={{ uri: capaUri }} className="w-full h-full" resizeMode="cover" />
+          <Image source={{ uri: capaUri }} className="w-full h-full" resizeMode="contain" />
         ) : (
           <View className="items-center px-4">
             <View className="w-12 h-12 rounded-full bg-surface items-center justify-center mb-2">
@@ -518,7 +518,7 @@ function FormEvento({ usuarioId }: { usuarioId: string }) {
       return;
     }
     const resultado = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ImagePicker.MediaTypeOptions.Images, allowsEditing: true,
       quality: 0.8,
     });
     if (!resultado.canceled) setCapaUri(resultado.assets[0].uri);
@@ -564,7 +564,7 @@ function FormEvento({ usuarioId }: { usuarioId: string }) {
         evento_id: novoEvento.id,
         foto_url: fotoUrl,
         descricao,
-        status: comoRascunho ? "rascunho" : "publicado",
+        status: comoRascunho ? "rascunho" : "ativo",
       });
 
       let redirecionarConversaId = null;
@@ -651,7 +651,7 @@ function FormEvento({ usuarioId }: { usuarioId: string }) {
 
       <Pressable onPress={escolherFoto} className="w-full h-48 bg-white/5 border border-white/10 rounded-2xl mb-5 items-center justify-center overflow-hidden border-dashed">
         {capaUri ? (
-          <Image source={{ uri: capaUri }} className="w-full h-full" resizeMode="cover" />
+          <Image source={{ uri: capaUri }} className="w-full h-full" resizeMode="contain" />
         ) : (
           <>
             <View className="w-12 h-12 bg-white/5 rounded-full items-center justify-center mb-2">
@@ -770,7 +770,7 @@ function FormPublicacaoMusico({ usuarioId }: { usuarioId: string }) {
       return;
     }
     const resultado = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ImagePicker.MediaTypeOptions.Images, allowsEditing: true,
       quality: 0.8,
     });
     if (!resultado.canceled) setCapaUri(resultado.assets[0].uri);
@@ -799,7 +799,7 @@ function FormPublicacaoMusico({ usuarioId }: { usuarioId: string }) {
         usuario_id: usuarioId,
         foto_url: fotoUrl,
         descricao: descricao || null,
-        status: comoRascunho ? "rascunho" : "publicado",
+        status: comoRascunho ? "rascunho" : "ativo",
       });
       if (error) throw error;
 
@@ -827,7 +827,7 @@ function FormPublicacaoMusico({ usuarioId }: { usuarioId: string }) {
         className="w-full h-56 rounded-3xl bg-[#121829] border border-dashed border-border/80 items-center justify-center mb-6 overflow-hidden relative"
       >
         {fotoPreview ? (
-          <Image source={{ uri: fotoPreview }} className="w-full h-full" resizeMode="cover" />
+          <Image source={{ uri: fotoPreview }} className="w-full h-full" resizeMode="contain" />
         ) : (
           <View className="items-center px-4">
             <View className="w-12 h-12 rounded-full bg-surface items-center justify-center mb-2">
@@ -912,7 +912,7 @@ function FormPublicacaoOrganizador({ usuarioId }: { usuarioId: string }) {
       return;
     }
     const resultado = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ImagePicker.MediaTypeOptions.Images, allowsEditing: true,
       quality: 0.8,
     });
     if (!resultado.canceled) setFotoUri(resultado.assets[0].uri);
@@ -942,7 +942,7 @@ function FormPublicacaoOrganizador({ usuarioId }: { usuarioId: string }) {
         evento_id: eventoId,
         foto_url: fotoUrl,
         descricao: descricao || null,
-        status: comoRascunho ? "rascunho" : "publicado",
+        status: comoRascunho ? "rascunho" : "ativo",
       });
       if (error) throw error;
 
@@ -988,7 +988,7 @@ function FormPublicacaoOrganizador({ usuarioId }: { usuarioId: string }) {
         className="w-full h-56 rounded-3xl bg-[#121829] border border-dashed border-border/80 items-center justify-center mb-6 overflow-hidden relative"
       >
         {fotoUri ? (
-          <Image source={{ uri: fotoUri }} className="w-full h-full" resizeMode="cover" />
+          <Image source={{ uri: fotoUri }} className="w-full h-full" resizeMode="contain" />
         ) : (
           <View className="items-center px-4">
             <View className="w-12 h-12 rounded-full bg-surface items-center justify-center mb-2">
