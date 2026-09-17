@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   Pressable,
   ScrollView,
   Image,
+  ImageBackground,
   ActivityIndicator,
 } from "react-native";
 import { router } from "expo-router";
@@ -15,6 +16,7 @@ import {
   Music,
   Disc,
   Calendar,
+  Clock,
   Sparkles,
   Upload,
   X,
@@ -32,6 +34,8 @@ import { colors } from "../../constants/theme";
 import { useHomeStore } from "../../store/homeStore";
 import { usePlayerAwarePadding } from "../../hooks/usePlayerAwarePadding";
 import { maskDate, parseDateToDB } from "../../lib/dateMask";
+import DatePickerModal from "../../components/DatePickerModal";
+import TimePickerModal from "../../components/TimePickerModal";
 
 export default function Criar() {
   const usuario = useAuthStore((s) => s.usuario);
@@ -89,6 +93,35 @@ function CampoTexto({ label, ...props }: React.ComponentProps<typeof TextInput> 
         className="bg-[#161D30] border border-border/60 rounded-2xl px-4 py-3.5 text-white font-medium focus:border-primary"
         {...props}
       />
+    </View>
+  );
+}
+
+function CampoSelecionavel({
+  label,
+  valor,
+  placeholder,
+  icone,
+  onPress,
+}: {
+  label: string;
+  valor: string;
+  placeholder: string;
+  icone: React.ReactNode;
+  onPress: () => void;
+}) {
+  return (
+    <View className="mb-4">
+      <Text className="text-white text-xs font-semibold mb-2 ml-1">{label}</Text>
+      <Pressable
+        onPress={onPress}
+        className="bg-[#161D30] border border-border/60 rounded-2xl px-4 py-3.5 flex-row items-center justify-between"
+      >
+        <Text className={`font-medium ${valor ? "text-white" : "text-[#64748B]"}`}>
+          {valor || placeholder}
+        </Text>
+        {icone}
+      </Pressable>
     </View>
   );
 }
@@ -161,6 +194,9 @@ function FormMusica({ usuarioId }: { usuarioId: string }) {
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [sucesso, setSucesso] = useState(false);
+  
+  // 1. Adicionado o estado para controlar o modal do calendário
+  const [mostrarCalendario, setMostrarCalendario] = useState(false);
 
   async function escolherCapa() {
     const permissao = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -235,69 +271,80 @@ function FormMusica({ usuarioId }: { usuarioId: string }) {
     }
   }
 
+  // 2. Fragment adicionado em volta do retorno para acomodar o Modal
   return (
-    <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, paddingTop: 12, paddingBottom }} showsVerticalScrollIndicator={false}>
-      <Text className="text-2xl font-black text-white mb-5">Nova música</Text>
+    <Fragment>
+      <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, paddingTop: 12, paddingBottom }} showsVerticalScrollIndicator={false}>
+        <Text className="text-2xl font-black text-white mb-5">Nova música</Text>
 
-      {/* Upload da Capa Estilo Banner / Card */}
-      <Pressable
-        onPress={escolherCapa}
-        className="w-full h-44 rounded-3xl bg-[#121829] border border-dashed border-border/80 items-center justify-center mb-6 overflow-hidden relative"
-      >
-        {capaUri ? (
-          <Image source={{ uri: capaUri }} className="w-full h-full" resizeMode="contain" />
-        ) : (
-          <View className="items-center px-4">
-            <View className="w-12 h-12 rounded-full bg-surface items-center justify-center mb-2">
-              <ImageIcon size={22} color={colors.primary} />
-            </View>
-            <Text className="text-white font-semibold text-sm">Capa da música</Text>
-            <Text className="text-muted text-xs mt-1 text-center">Toque para selecionar uma imagem</Text>
-          </View>
-        )}
-      </Pressable>
-
-      <CampoTexto label="Título" placeholder="Ex: Melodia da Noite" value={nome} onChangeText={setNome} />
-      <CampoTexto label="Descrição" placeholder="Conte um pouco sobre essa faixa..." value={descricao} onChangeText={setDescricao} multiline numberOfLines={3} />
-      <CampoTexto label="Gênero Musical" placeholder="Ex: Rock, MPB, Indie..." value={genero} onChangeText={setGenero} />
-      <CampoTexto 
-        label="Data de Lançamento" 
-        placeholder="DD/MM/AAAA" 
-        value={dataLancamento} 
-        onChangeText={(txt) => setDataLancamento(maskDate(txt))} 
-        keyboardType="numeric"
-      />
-
-      {/* Selecionar Áudio */}
-      <View className="mb-6">
-        <Text className="text-white text-xs font-semibold mb-2 ml-1">Arquivo de Áudio</Text>
         <Pressable
-          onPress={escolherArquivo}
-          className="bg-[#121829] border border-border/80 rounded-2xl py-4 px-4 flex-row items-center justify-between"
+          onPress={escolherCapa}
+          className="w-full h-44 rounded-3xl bg-[#121829] border border-dashed border-border/80 items-center justify-center mb-6 overflow-hidden relative"
         >
-          <View className="flex-row items-center flex-1 mr-2">
-            <View className="w-10 h-10 rounded-xl bg-primary/20 items-center justify-center mr-3">
-              <Music size={20} color={colors.primary} />
+          {capaUri ? (
+            <Image source={{ uri: capaUri }} className="w-full h-full" resizeMode="contain" />
+          ) : (
+            <View className="items-center px-4">
+              <View className="w-12 h-12 rounded-full bg-surface items-center justify-center mb-2">
+                <ImageIcon size={22} color={colors.primary} />
+              </View>
+              <Text className="text-white font-semibold text-sm">Capa da música</Text>
+              <Text className="text-muted text-xs mt-1 text-center">Toque para selecionar uma imagem</Text>
             </View>
-            <Text numberOfLines={1} className="text-white font-semibold text-sm flex-1">
-              {arquivo ? arquivo.nome : "Escolher áudio do dispositivo"}
-            </Text>
-          </View>
-          <Upload size={18} color={colors.muted} />
+          )}
         </Pressable>
-      </View>
 
-      {erro && <Text className="text-red-400 mb-4 text-center font-medium text-xs">{erro}</Text>}
-      {sucesso && <Text className="text-emerald-400 mb-4 text-center font-medium text-xs">Música publicada com sucesso!</Text>}
+        <CampoTexto label="Título" placeholder="Ex: Melodia da Noite" value={nome} onChangeText={setNome} />
+        <CampoTexto label="Descrição" placeholder="Conte um pouco sobre essa faixa..." value={descricao} onChangeText={setDescricao} multiline numberOfLines={3} />
+        <CampoTexto label="Gênero Musical" placeholder="Ex: Rock, MPB, Indie..." value={genero} onChangeText={setGenero} />
+        
+        {/* 3. Trocado CampoTexto pelo CampoSelecionavel */}
+        <CampoSelecionavel
+          label="Data de Lançamento"
+          placeholder="DD/MM/AAAA"
+          valor={dataLancamento}
+          icone={<Calendar size={16} color={colors.muted} />}
+          onPress={() => setMostrarCalendario(true)}
+        />
 
-      <Pressable
-        onPress={publicar}
-        disabled={enviando}
-        className="bg-primary rounded-2xl py-4 items-center   active:opacity-90"
-      >
-        {enviando ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold text-sm">Publicar Música</Text>}
-      </Pressable>
-    </ScrollView>
+        <View className="mb-6">
+          <Text className="text-white text-xs font-semibold mb-2 ml-1">Arquivo de Áudio</Text>
+          <Pressable
+            onPress={escolherArquivo}
+            className="bg-[#121829] border border-border/80 rounded-2xl py-4 px-4 flex-row items-center justify-between"
+          >
+            <View className="flex-row items-center flex-1 mr-2">
+              <View className="w-10 h-10 rounded-xl bg-primary/20 items-center justify-center mr-3">
+                <Music size={20} color={colors.primary} />
+              </View>
+              <Text numberOfLines={1} className="text-white font-semibold text-sm flex-1">
+                {arquivo ? arquivo.nome : "Escolher áudio do dispositivo"}
+              </Text>
+            </View>
+            <Upload size={18} color={colors.muted} />
+          </Pressable>
+        </View>
+
+        {erro && <Text className="text-red-400 mb-4 text-center font-medium text-xs">{erro}</Text>}
+        {sucesso && <Text className="text-emerald-400 mb-4 text-center font-medium text-xs">Música publicada com sucesso!</Text>}
+
+        <Pressable
+          onPress={publicar}
+          disabled={enviando}
+          className="bg-primary rounded-2xl py-4 items-center active:opacity-90"
+        >
+          {enviando ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold text-sm">Publicar Música</Text>}
+        </Pressable>
+      </ScrollView>
+
+      {/* 4. Modal do calendário adicionado ao final */}
+      <DatePickerModal
+        visible={mostrarCalendario}
+        valor={dataLancamento}
+        onFechar={() => setMostrarCalendario(false)}
+        onSelecionar={setDataLancamento}
+      />
+    </Fragment>
   );
 }
 
@@ -494,6 +541,9 @@ function FormEvento({ usuarioId }: { usuarioId: string }) {
   const [erro, setErro] = useState<string | null>(null);
   const [sucesso, setSucesso] = useState(false);
 
+  const [mostrarCalendario, setMostrarCalendario] = useState(false);
+  const [mostrarRelogio, setMostrarRelogio] = useState(false);
+
   // Convites
   const [musicos, setMusicos] = useState<any[]>([]);
   const [convidados, setConvidados] = useState<string[]>([]);
@@ -646,19 +696,29 @@ function FormEvento({ usuarioId }: { usuarioId: string }) {
   }
 
   return (
+    <Fragment>
     <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, paddingTop: 12, paddingBottom }} showsVerticalScrollIndicator={false}>
       <Text className="text-2xl font-black text-white mb-5">Novo evento</Text>
 
-      <Pressable onPress={escolherFoto} className="w-full h-48 bg-white/5 border border-white/10 rounded-2xl mb-5 items-center justify-center overflow-hidden border-dashed">
+      <Pressable onPress={escolherFoto} className="w-full h-48 bg-white/5 border border-white/10 rounded-2xl mb-5 overflow-hidden border-dashed">
         {capaUri ? (
-          <Image source={{ uri: capaUri }} className="w-full h-full" resizeMode="contain" />
+          <ImageBackground
+            source={{ uri: capaUri }}
+            resizeMode="cover"
+            className="w-full h-full items-end justify-end p-3"
+          >
+            <View className="bg-black/60 px-3 py-1.5 rounded-full flex-row items-center">
+              <ImageIcon size={12} color="#fff" />
+              <Text className="text-white text-[10px] font-bold ml-1.5">Trocar foto</Text>
+            </View>
+          </ImageBackground>
         ) : (
-          <>
+          <View className="w-full h-full items-center justify-center">
             <View className="w-12 h-12 bg-white/5 rounded-full items-center justify-center mb-2">
               <Upload color="#94A3B8" size={24} />
             </View>
             <Text className="text-gray-400 font-medium text-sm">Toque para adicionar o Banner / Foto do Evento</Text>
-          </>
+          </View>
         )}
       </Pressable>
 
@@ -677,14 +737,20 @@ function FormEvento({ usuarioId }: { usuarioId: string }) {
         />
       </View>
 
-      <CampoTexto 
-        label="Data" 
-        placeholder="DD/MM/AAAA" 
-        value={data} 
-        onChangeText={(txt) => setData(maskDate(txt))} 
-        keyboardType="numeric"
+      <CampoSelecionavel
+        label="Data"
+        placeholder="Selecionar data"
+        valor={data}
+        icone={<Calendar size={16} color={colors.muted} />}
+        onPress={() => setMostrarCalendario(true)}
       />
-      <CampoTexto label="Horário" placeholder="HH:MM" value={horario} onChangeText={setHorario} />
+      <CampoSelecionavel
+        label="Horário"
+        placeholder="Selecionar horário"
+        valor={horario}
+        icone={<Clock size={16} color={colors.muted} />}
+        onPress={() => setMostrarRelogio(true)}
+      />
       <CampoTexto label="Localização" placeholder="Ex: Av. Paulista, 1000 - SP" value={localizacao} onChangeText={setLocalizacao} />
       <CampoTexto label="Gênero Principal" placeholder="Ex: Indie / Rock" value={generoMusical} onChangeText={setGeneroMusical} />
       <CampoTexto label="Capacidade de Público" placeholder="Ex: 500" value={capacidade} onChangeText={setCapacidade} keyboardType="numeric" />
@@ -738,6 +804,21 @@ function FormEvento({ usuarioId }: { usuarioId: string }) {
         </Pressable>
       </View>
     </ScrollView>
+
+    <DatePickerModal
+      visible={mostrarCalendario}
+      valor={data}
+      onFechar={() => setMostrarCalendario(false)}
+      onSelecionar={setData}
+      dataMinima={new Date()}
+    />
+    <TimePickerModal
+      visible={mostrarRelogio}
+      valor={horario}
+      onFechar={() => setMostrarRelogio(false)}
+      onSelecionar={setHorario}
+    />
+    </Fragment>
   );
 }
 

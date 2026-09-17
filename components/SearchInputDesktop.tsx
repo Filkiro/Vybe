@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -13,17 +13,29 @@ import { BlurView } from "expo-blur";
 import { Search, X, Music } from "lucide-react-native";
 import { supabase } from "../lib/supabase";
 import { useAbrirPerfil } from "../store/perfilModalStore";
+import { usePlayerStore } from "../store/playerStore";
+import { useRequireAuth } from "../store/authPromptStore";
+import { buscarApelidos } from "../lib/buscaUtils";
 import { router } from "expo-router";
 
 type Aba = "todos" | "musicas" | "albuns" | "perfis";
 
 export function SearchInputDesktop() {
   const abrirPerfil = useAbrirPerfil();
+  const tocarMusica = usePlayerStore((s) => s.tocarMusica);
+  const requireAuth = useRequireAuth();
+  const inputRef = useRef<TextInput>(null);
   const [busca, setBusca] = useState("");
   const [aba, setAba] = useState<Aba>("todos");
   const [resultados, setResultados] = useState<any[]>([]);
   const [carregando, setCarregando] = useState(false);
   const [focado, setFocado] = useState(false);
+
+  // Tira o foco da pesquisa (fecha o dropdown e o teclado/cursor)
+  function perderFoco() {
+    setFocado(false);
+    inputRef.current?.blur();
+  }
 
   useEffect(() => {
     if (!busca.trim()) {
@@ -79,10 +91,11 @@ export function SearchInputDesktop() {
     if (aba === "todos" || aba === "musicas") {
       const { data: musicas } = await supabase
         .from("musica")
-        .select("id, nome, capa_url, genero, usuario_id")
+        .select("id, nome, capa_url, genero, usuario_id, arquivo_url")
         .ilike("nome", termo)
         .limit(6);
 
+      const apelidos = await buscarApelidos((musicas ?? []).map((m: any) => m.usuario_id));
       const listaMusicas = (musicas ?? []).map((m: any) => ({
         tipo: "musica",
         id: m.id,
@@ -90,6 +103,8 @@ export function SearchInputDesktop() {
         titulo: m.nome,
         subtitulo: "Música • " + (m.genero || ""),
         foto_url: m.capa_url,
+        arquivo_url: m.arquivo_url,
+        autor_apelido: apelidos.get(m.usuario_id) ?? null,
       }));
       itens = [...itens, ...listaMusicas];
     }
@@ -117,12 +132,38 @@ export function SearchInputDesktop() {
   }
 
   function selecionarItem(item: any) {
+    const listaMusicas = resultados
+      .filter((r: any) => r.tipo === "musica" && r.arquivo_url)
+      .map((r: any) => ({
+        id: r.id,
+        nome: r.titulo,
+        autorApelido: r.autor_apelido ?? null,
+        arquivoUrl: r.arquivo_url,
+        capaUrl: r.foto_url ?? null,
+      }));
+
     setBusca("");
-    setFocado(false);
-    if (item.tipo === "musico" || item.tipo === "organizador" || item.tipo === "musica") {
+    perderFoco();
+
+    if (item.tipo === "musico" || item.tipo === "organizador") {
       abrirPerfil(item.usuario_id || item.id);
     } else if (item.tipo === "album") {
       router.push(`/album/${item.id}`);
+    } else if (item.tipo === "musica") {
+      // Clicar numa música toca a música (antes abria o perfil do artista).
+      // No desktop o player toca na sidebar, então não navega.
+      requireAuth(() =>
+        tocarMusica(
+          {
+            id: item.id,
+            nome: item.titulo,
+            autorApelido: item.autor_apelido ?? null,
+            arquivoUrl: item.arquivo_url,
+            capaUrl: item.foto_url ?? null,
+          },
+          listaMusicas
+        )
+      );
     }
   }
 
@@ -130,10 +171,11 @@ export function SearchInputDesktop() {
 
   return (
     <View style={{ flex: 1, minWidth: 250, maxWidth: 420, zIndex: 1000, position: "relative" }}>
-      {mostrarDropdown && (
+      {/* Clicar em qualquer lugar fora tira o foco da pesquisa */}
+      {focado && (
         <Pressable
           style={{ position: "fixed" as any, top: 0, left: 0, right: 0, bottom: 0, zIndex: 999 }}
-          onPress={() => setFocado(false)}
+          onPress={perderFoco}
         />
       )}
 
@@ -144,6 +186,7 @@ export function SearchInputDesktop() {
           <Search color={focado ? "#3B82F6" : "#8B95A8"} size={18} />
         </View>
         <TextInput
+          ref={inputRef}
           placeholder="Pesquisar músicas, artistas, álbuns..."
           placeholderTextColor="#8B95A8"
           value={busca}

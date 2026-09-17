@@ -13,6 +13,7 @@ import { useEhDesktop } from "../../hooks/useEhDesktop";
 import { LinearGradient } from "expo-linear-gradient";
 import { MapPin, Play, User as UserIcon, Calendar, Heart, X } from "lucide-react-native";
 import { AnimatedBackgroundBlobs } from "../../components/AnimatedBackgroundBlobs";
+import { EscolhaADedo } from "../../components/EscolhaADedo";
 import { parseDateFromDB } from "../../lib/dateMask";
 
 type MusicaComAutor = {
@@ -69,6 +70,7 @@ type PerfilLogado = {
 };
 
 const LIMITE_ALBUNS_HOME = 6;
+const LIMITE_LANCAMENTOS_HOME = 5;
 
 // --- Helper: iniciais a partir do nome ---
 function getIniciais(nome: string) {
@@ -82,6 +84,8 @@ export default function Home() {
   const [albuns, setAlbuns] = useState<AlbumDestaque[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [atualizando, setAtualizando] = useState(false);
+  // Muda a cada recarga da Home — faz a seção "Escolha a dedo" sortear outras músicas
+  const [tokenEscolhaADedo, setTokenEscolhaADedo] = useState(0);
 
   // Perfil logado — usado só para decidir o conteúdo do card hero e os títulos
   const [perfilLogado, setPerfilLogado] = useState<PerfilLogado | null>(null);
@@ -264,7 +268,7 @@ export default function Home() {
         .select("*")
         .eq("status", "ativo")
         .order("data_lancamento", { ascending: false })
-        .limit(10),
+        .limit(LIMITE_LANCAMENTOS_HOME),
       supabase
         .from("album")
         .select("id, nome, capa_url, usuario_id")
@@ -337,6 +341,8 @@ export default function Home() {
 
   async function aoAtualizar() {
     setAtualizando(true);
+    // Só o "puxar pra atualizar" re-sorteia o "Escolha a dedo"
+    setTokenEscolhaADedo((t) => t + 1);
     try {
       await carregarDados();
     } catch (erro) {
@@ -465,6 +471,9 @@ export default function Home() {
           </ScrollView>
         </View>
       )}
+
+      {/* ESCOLHA A DEDO — seleção aleatória, muda a cada recarga */}
+      <EscolhaADedo recarregarToken={tokenEscolhaADedo} />
 
       {/* CABEÇALHO DA LISTA PRINCIPAL — o título muda com o chip escolhido */}
       <View className="px-5 pt-8 pb-2 w-full max-w-[1200px] self-center">

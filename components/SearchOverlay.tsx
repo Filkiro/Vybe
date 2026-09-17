@@ -14,6 +14,10 @@ import { BlurView } from "expo-blur";
 import { Search, X, Music, Disc, User, Sparkles } from "lucide-react-native";
 import { supabase } from "../lib/supabase";
 import { useAbrirPerfil } from "../store/perfilModalStore";
+import { usePlayerStore } from "../store/playerStore";
+import { useRequireAuth } from "../store/authPromptStore";
+import { useEhDesktop } from "../hooks/useEhDesktop";
+import { buscarApelidos } from "../lib/buscaUtils";
 import { router } from "expo-router";
 
 type Aba = "todos" | "musicas" | "albuns" | "perfis";
@@ -25,6 +29,9 @@ interface SearchOverlayProps {
 
 export function SearchOverlay({ visible, onClose }: SearchOverlayProps) {
   const abrirPerfil = useAbrirPerfil();
+  const tocarMusica = usePlayerStore((s) => s.tocarMusica);
+  const requireAuth = useRequireAuth();
+  const ehDesktop = useEhDesktop();
   const [busca, setBusca] = useState("");
   const [aba, setAba] = useState<Aba>("todos");
   const [resultados, setResultados] = useState<any[]>([]);
@@ -87,10 +94,11 @@ export function SearchOverlay({ visible, onClose }: SearchOverlayProps) {
     if (aba === "todos" || aba === "musicas") {
       const { data: musicas } = await supabase
         .from("musica")
-        .select("id, nome, capa_url, genero, usuario_id")
+        .select("id, nome, capa_url, genero, usuario_id, arquivo_url")
         .ilike("nome", termo)
         .limit(6);
 
+      const apelidos = await buscarApelidos((musicas ?? []).map((m: any) => m.usuario_id));
       const listaMusicas = (musicas ?? []).map((m: any) => ({
         tipo: "musica",
         id: m.id,
@@ -98,6 +106,8 @@ export function SearchOverlay({ visible, onClose }: SearchOverlayProps) {
         titulo: m.nome,
         subtitulo: `Música · ${m.genero || ""}`,
         foto_url: m.capa_url,
+        arquivo_url: m.arquivo_url,
+        autor_apelido: apelidos.get(m.usuario_id) ?? null,
       }));
       itens = [...itens, ...listaMusicas];
     }
@@ -126,10 +136,34 @@ export function SearchOverlay({ visible, onClose }: SearchOverlayProps) {
 
   function selecionarItem(item: any) {
     onClose();
-    if (item.tipo === "musico" || item.tipo === "organizador" || item.tipo === "musica") {
+    if (item.tipo === "musico" || item.tipo === "organizador") {
       abrirPerfil(item.usuario_id || item.id);
     } else if (item.tipo === "album") {
       router.push(`/album/${item.id}`);
+    } else if (item.tipo === "musica") {
+      // Clicar numa música toca a música (antes abria o perfil do artista).
+      requireAuth(() => {
+        const fila = resultados
+          .filter((r: any) => r.tipo === "musica" && r.arquivo_url)
+          .map((r: any) => ({
+            id: r.id,
+            nome: r.titulo,
+            autorApelido: r.autor_apelido ?? null,
+            arquivoUrl: r.arquivo_url,
+            capaUrl: r.foto_url ?? null,
+          }));
+        tocarMusica(
+          {
+            id: item.id,
+            nome: item.titulo,
+            autorApelido: item.autor_apelido ?? null,
+            arquivoUrl: item.arquivo_url,
+            capaUrl: item.foto_url ?? null,
+          },
+          fila
+        );
+        if (!ehDesktop) router.push("/tocando");
+      });
     }
   }
 

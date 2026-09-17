@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   View,
   Text,
@@ -14,6 +14,10 @@ import { ChevronLeft, Search, X, Music, Disc, User, Sparkles } from "lucide-reac
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "../lib/supabase";
 import { useAbrirPerfil } from "../store/perfilModalStore";
+import { usePlayerStore } from "../store/playerStore";
+import { useRequireAuth } from "../store/authPromptStore";
+import { useEhDesktop } from "../hooks/useEhDesktop";
+import { buscarApelidos } from "../lib/buscaUtils";
 import { AnimatedBackgroundBlobs } from "../components/AnimatedBackgroundBlobs";
 
 type Aba = "musicas" | "albuns" | "perfis";
@@ -31,12 +35,21 @@ function obterIniciais(titulo: string) {
 export default function Pesquisa() {
   const insets = useSafeAreaInsets();
   const abrirPerfil = useAbrirPerfil();
+  const tocarMusica = usePlayerStore((s) => s.tocarMusica);
+  const requireAuth = useRequireAuth();
+  const ehDesktop = useEhDesktop();
   const [aba, setAba] = useState<Aba>("perfis");
   const [modoPerfil, setModoPerfil] = useState<ModoPerfil>("nome");
   const [busca, setBusca] = useState("");
   const [resultados, setResultados] = useState<any[]>([]);
   const [carregando, setCarregando] = useState(false);
   const [buscou, setBuscou] = useState(false);
+  const inputRef = useRef<TextInput>(null);
+
+  // Tira o foco do campo de pesquisa (ex.: ao clicar/rolar fora dele)
+  function perderFoco() {
+    inputRef.current?.blur();
+  }
 
   async function buscar() {
     if (!busca.trim()) return;
@@ -92,10 +105,11 @@ export default function Pesquisa() {
     } else if (aba === "musicas") {
       const { data } = await supabase
         .from("musica")
-        .select("id, nome, capa_url, genero, usuario_id")
+        .select("id, nome, capa_url, genero, usuario_id, arquivo_url")
         .ilike("nome", termo)
         .eq("status", "ativo")
         .limit(30);
+      const apelidos = await buscarApelidos((data ?? []).map((m: any) => m.usuario_id));
       setResultados(
         (data ?? []).map((m: any) => ({
           tipo: "musica",
@@ -104,6 +118,8 @@ export default function Pesquisa() {
           subtitulo: m.genero,
           foto_url: m.capa_url,
           usuario_id: m.usuario_id,
+          arquivo_url: m.arquivo_url,
+          autor_apelido: apelidos.get(m.usuario_id) ?? null,
         }))
       );
     } else {
@@ -128,9 +144,35 @@ export default function Pesquisa() {
   }
 
   function abrir(item: any) {
-    if (item.tipo === "musico" || item.tipo === "organizador") abrirPerfil(item.usuario_id);
-    else if (item.tipo === "album") router.push(`/album/${item.id}`);
-    else if (item.tipo === "musica") abrirPerfil(item.usuario_id);
+    if (item.tipo === "musico" || item.tipo === "organizador") {
+      abrirPerfil(item.usuario_id);
+    } else if (item.tipo === "album") {
+      router.push(`/album/${item.id}`);
+    } else if (item.tipo === "musica") {
+      // Clicar numa música toca a música (antes abria o perfil do artista).
+      requireAuth(() => {
+        const fila = resultados
+          .filter((r: any) => r.tipo === "musica" && r.arquivo_url)
+          .map((r: any) => ({
+            id: r.id,
+            nome: r.titulo,
+            autorApelido: r.autor_apelido ?? null,
+            arquivoUrl: r.arquivo_url,
+            capaUrl: r.foto_url ?? null,
+          }));
+        tocarMusica(
+          {
+            id: item.id,
+            nome: item.titulo,
+            autorApelido: item.autor_apelido ?? null,
+            arquivoUrl: item.arquivo_url,
+            capaUrl: item.foto_url ?? null,
+          },
+          fila
+        );
+        if (!ehDesktop) router.push("/tocando");
+      });
+    }
   }
 
   function limparBusca() {
@@ -142,6 +184,9 @@ export default function Pesquisa() {
   return (
     <View style={{ flex: 1, backgroundColor: "#0B101E" }}>
       <AnimatedBackgroundBlobs height={400} />
+
+      {/* Fundo clicável: clicar em qualquer lugar fora tira o foco da pesquisa */}
+      <Pressable style={StyleSheet.absoluteFillObject} onPress={perderFoco} />
 
       {/* CABEÇALHO */}
       <View
@@ -166,6 +211,7 @@ export default function Pesquisa() {
   </View>
 
   <TextInput
+    ref={inputRef}
     placeholder={
       aba === "perfis"
         ? modoPerfil === "genero"
@@ -258,6 +304,9 @@ export default function Pesquisa() {
       ) : (
         <FlatList
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          onScrollBeginDrag={perderFoco}
           data={resultados}
           keyExtractor={(item, i) => `${item.tipo}-${item.id ?? item.usuario_id}-${i}`}
           contentContainerStyle={{
