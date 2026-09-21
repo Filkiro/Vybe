@@ -1,0 +1,204 @@
+import { useState } from "react";
+import { Tabs } from "expo-router";
+import { View, StyleSheet, Platform } from "react-native";
+import { Home, Compass, Plus, User, ShieldCheck, Settings, MessageCircle } from "lucide-react-native";
+import { BlurView } from "expo-blur";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { MiniPlayer } from "../../components/MiniPlayer";
+import { PlayerBarDesktop } from "../../components/PlayerBarDesktop";
+import { SidebarNavDesktop } from "../../components/SidebarNavDesktop";
+import { AppHeader } from "../../components/AppHeader";
+import { AnimatedBackgroundBlobs } from "../../components/AnimatedBackgroundBlobs";
+import { SearchOverlay } from "../../components/SearchOverlay"; // <--- 1. Importação do Overlay
+import { useAuthStore, ehContaComum, ehModerador, ehAdministrador } from "../../store/authStore";
+import { useUnreadStore } from "../../store/unreadStore";
+import { useEhDesktop } from "../../hooks/useEhDesktop";
+import { colors } from "../../constants/theme";
+import { TAB_BAR_CAPSULE_HEIGHT } from "../../constants/layout";
+
+// Ícone de cada aba: quando ativa, ganha um "pill" preenchido com efeito neon glow estilo YouTube Music
+function TabIcon({ Icone, focado }: { Icone: any; focado: boolean }) {
+  return (
+    <View
+      style={{
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: focado ? colors.primary : "transparent",
+        shadowColor: focado ? "#3B82F6" : "transparent",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: focado ? 0.8 : 0,
+        shadowRadius: 10,
+        elevation: focado ? 8 : 0,
+      }}
+    >
+      <Icone color={focado ? "#FFFFFF" : colors.muted} size={20} />
+    </View>
+  );
+}
+
+export default function TabsLayout() {
+  const insets = useSafeAreaInsets();
+  const usuario = useAuthStore((s) => s.usuario);
+  const comum = ehContaComum(usuario);
+  const moderacao = ehModerador(usuario);
+  const admin = ehAdministrador(usuario);
+  const naoLidas = useUnreadStore((state) => state.naoLidas);
+  const ehDesktop = useEhDesktop();
+
+  // 2. Estado para controlar a visibilidade do SearchOverlay
+  const [pesquisaAberta, setPesquisaAberta] = useState(false);
+
+  // Calcula margem inferior considerando safe areas
+  const bottomInset = Math.max(insets.bottom, 14);
+
+  return (
+    <View style={{ flex: 1, backgroundColor: "#0B101E" }}>
+      {/* Linha principal: sidebar de navegação (Desktop) + conteúdo das tabs */}
+      <View style={{ flex: 1, flexDirection: "row" }}>
+        {ehDesktop && <SidebarNavDesktop />}
+
+        <View style={{ flex: 1, backgroundColor: "transparent" }}>
+          {/* O Header foi movido para cá para que a Sidebar ocupe o lado esquerdo completo */}
+          <AppHeader onOpenSearch={() => setPesquisaAberta(true)} />
+          <Tabs
+            initialRouteName="home"
+            safeAreaInsets={{ bottom: 0 }}
+            screenOptions={
+              {
+                headerShown: false,
+                unmountOnBlur: true,
+                tabBarActiveTintColor: "#3B82F6",
+                sceneStyle: { backgroundColor: "#0B101E" },
+                tabBarInactiveTintColor: colors.muted,
+                tabBarShowLabel: false,
+                tabBarIconStyle: {
+                  width: "100%",
+                  height: "100%",
+                  justifyContent: "center",
+                  alignItems: "center",
+                },
+                tabBarItemStyle: {
+                  flex: 1,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  padding: 0,
+                  height: TAB_BAR_CAPSULE_HEIGHT,
+                  borderWidth: 0,
+                  // @ts-ignore
+                  outlineStyle: "none",
+                },
+                tabBarBackground: () => (
+                  <View
+                    style={{
+                      ...StyleSheet.absoluteFillObject,
+                      borderRadius: TAB_BAR_CAPSULE_HEIGHT / 2,
+                      overflow: "hidden",
+                      borderWidth: 1,
+                      borderColor: "rgba(255, 255, 255, 0.14)",
+                      backgroundColor: "rgba(15, 22, 38, 0.75)",
+                    }}
+                  >
+                    <BlurView
+                      experimentalBlurMethod="dimezisBlurView"
+                      intensity={80}
+                      tint="dark"
+                      style={StyleSheet.absoluteFillObject}
+                    />
+                  </View>
+                ),
+                tabBarStyle: ehDesktop
+                  ? { display: "none" }
+                  : {
+                        position: "absolute",
+                        left: 20,
+                        right: 20,
+                        bottom: bottomInset,
+                        height: TAB_BAR_CAPSULE_HEIGHT,
+                        borderRadius: TAB_BAR_CAPSULE_HEIGHT / 2,
+                        backgroundColor: "transparent",
+                        borderTopWidth: 0,
+                        elevation: 12,
+                        paddingTop: 0,
+                        paddingBottom: 0,
+                    },
+              } as any
+            }
+          >
+            <Tabs.Screen
+              name="home"
+              options={{
+                title: "Início",
+                tabBarIcon: ({ focused }) => <TabIcon Icone={Home} focado={focused} />,
+              }}
+            />
+            <Tabs.Screen
+              name="explorar"
+              options={{
+                href: comum ? "/(tabs)/explorar" : null,
+                title: "Explorar",
+                tabBarIcon: ({ focused }) => <TabIcon Icone={Compass} focado={focused} />,
+              }}
+            />
+            <Tabs.Screen
+              name="criar"
+              options={{
+                href: comum ? "/(tabs)/criar" : null,
+                title: "Criar",
+                tabBarIcon: ({ focused }) => <TabIcon Icone={Plus} focado={focused} />,
+              }}
+            />
+            <Tabs.Screen
+              name="conversa"
+              options={{
+                href: comum ? "/(tabs)/conversa" : null,
+                title: "Conversas",
+                tabBarIcon: ({ focused }) => <TabIcon Icone={MessageCircle} focado={focused} />,
+                tabBarBadge: naoLidas > 0 ? naoLidas : undefined,
+                tabBarBadgeStyle: {
+                  backgroundColor: colors.primary,
+                  color: "white",
+                  transform: [{ translateY: 2 }],
+                },
+              }}
+            />
+            <Tabs.Screen
+              name="moderacao"
+              options={{
+                href: moderacao ? "/(tabs)/moderacao" : null,
+                title: "Moderação",
+                tabBarIcon: ({ focused }) => <TabIcon Icone={ShieldCheck} focado={focused} />,
+              }}
+            />
+            <Tabs.Screen
+              name="admin"
+              options={{
+                href: admin ? "/(tabs)/admin" : null,
+                title: "Painel",
+                tabBarIcon: ({ focused }) => <TabIcon Icone={Settings} focado={focused} />,
+              }}
+            />
+            <Tabs.Screen
+              name="perfil"
+              options={{
+                title: "Perfil",
+                // @ts-ignore
+                unmountOnBlur: true,
+                tabBarIcon: ({ focused }) => <TabIcon Icone={User} focado={focused} />,
+              }}
+            />
+          </Tabs>
+
+        </View>
+      </View>
+
+      {/* 3. O MODAL É INSERIDO AQUI — No final da árvore para sobrepor toda a interface */}
+      <SearchOverlay
+        visible={pesquisaAberta}
+        onClose={() => setPesquisaAberta(false)}
+      />
+    </View>
+  );
+}
