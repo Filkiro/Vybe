@@ -178,9 +178,9 @@ export function EscolhaADedo({ recarregarToken = 0 }: Props) {
                   onPress={() => tocar(musica)}
                   className="flex-row items-center p-2 rounded-xl active:bg-white/10 hover:bg-white/5"
                 >
-                  <Capa uri={musica.capa_url} tamanho={48} />
+                  <Capa uri={musica.capa_url} tamanho={75} />
                   <View className="flex-1 ml-3">
-                    <Text numberOfLines={1} className="text-white font-semibold text-sm">
+                    <Text numberOfLines={1} className="text-white font-semibold text-md">
                       {musica.nome}
                     </Text>
                     <Text numberOfLines={1} className="text-gray-400 text-xs mt-0.5">
@@ -231,16 +231,16 @@ export function EscolhaADedo({ recarregarToken = 0 }: Props) {
                 key={musica.id}
                 onPress={() => tocar(musica)}
                 style={{ width: ladoCard }}
-                className="active:opacity-80"
+                className="active:opacity-80 mt-2"
               >
                 <Capa uri={musica.capa_url} tamanho={ladoCard} quadrado />
                 <Text
                   numberOfLines={1}
-                  className="text-white text-[11px] font-semibold mt-1.5"
+                  className="text-white text-sm font-semibold mt-1.5"
                 >
                   {musica.nome}
                 </Text>
-                <Text numberOfLines={1} className="text-gray-400 text-[10px]">
+                <Text numberOfLines={1} className="text-gray-400 text-xs">
                   {musica.autor_apelido ?? "Artista"}
                 </Text>
               </Pressable>

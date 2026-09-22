@@ -156,17 +156,18 @@ export default function Home() {
     return null;
   }, []);
 
-  // --- Eventos futuros em aberto, recomendados ao músico logado ---
   const carregarEventosProximos = useCallback(async () => {
     const hoje = new Date().toISOString().slice(0, 10); // evento.data é "date"
 
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("evento")
       .select("id, nome, data, localizacao, genero_musical")
       .eq("status", "aberto")
       .gte("data", hoje)
       .order("data", { ascending: true })
       .limit(6);
+
+    if (error) console.error("ERRO CARREGANDO EVENTOS:", error);
 
     const lista = (data ?? []).map((e) => ({
       id: e.id,
@@ -303,9 +304,10 @@ export default function Home() {
     // Carrega o conteúdo do card hero de acordo com o tipo real do usuário
     const perfil = await carregarPerfilLogado();
 
-    if (perfil?.tipo === "musico") {
+    const tipoParaHero = perfil?.tipo ?? "musico";
+    if (tipoParaHero === "musico") {
       await carregarEventosProximos();
-    } else if (perfil?.tipo === "organizador") {
+    } else if (tipoParaHero === "organizador") {
       await carregarArtistasDestaque();
     }
   }, [carregarPerfilLogado, carregarEventosProximos, carregarArtistasDestaque]);
