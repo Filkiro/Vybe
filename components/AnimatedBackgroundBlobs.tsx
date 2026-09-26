@@ -213,7 +213,7 @@ export function AnimatedBackgroundBlobs({ height = 520 }: AnimatedBackgroundBlob
               width: 360,
               height: 360,
               borderRadius: 180,
-              backgroundColor: "rgba(6, 182, 212, 0.65)",
+              backgroundColor: "rgba(20, 90, 110, 0.28)",
               shadowColor: "#06B6D4",
               shadowOffset: { width: 0, height: 0 },
               shadowOpacity: 0.8,
@@ -233,7 +233,7 @@ export function AnimatedBackgroundBlobs({ height = 520 }: AnimatedBackgroundBlob
               width: 380,
               height: 380,
               borderRadius: 190,
-              backgroundColor: "rgba(139, 92, 246, 0.6)",
+              backgroundColor: "rgba(88, 30, 160, 0.26)",
               shadowColor: "#8B5CF6",
               shadowOffset: { width: 0, height: 0 },
               shadowOpacity: 0.8,
@@ -253,7 +253,7 @@ export function AnimatedBackgroundBlobs({ height = 520 }: AnimatedBackgroundBlob
               width: 320,
               height: 320,
               borderRadius: 160,
-              backgroundColor: "rgba(59, 130, 246, 0.55)",
+              backgroundColor: "rgba(37, 99, 235, 0.12)",
               shadowColor: "#3B82F6",
               shadowOffset: { width: 0, height: 0 },
               shadowOpacity: 0.7,
@@ -273,7 +273,7 @@ export function AnimatedBackgroundBlobs({ height = 520 }: AnimatedBackgroundBlob
               width: 340,
               height: 340,
               borderRadius: 170,
-              backgroundColor: "rgba(236, 72, 153, 0.35)",
+              backgroundColor: "rgba(13, 148, 136, 0.15)",
               shadowColor: "#EC4899",
               shadowOffset: { width: 0, height: 0 },
               shadowOpacity: 0.6,
@@ -291,14 +291,14 @@ export function AnimatedBackgroundBlobs({ height = 520 }: AnimatedBackgroundBlob
         style={StyleSheet.absoluteFillObject}
       />
 
-      {/* Transição ultra-suave com gradiente de 5 stops para o fundo sólido #0B101E */}
+      {/* Transição ultra-suave com gradiente de 5 stops para o fundo sólido #090C13 */}
       <LinearGradient
         colors={[
-          "rgba(11, 16, 30, 0.05)",
-          "rgba(11, 16, 30, 0.25)",
-          "rgba(11, 16, 30, 0.65)",
-          "rgba(11, 16, 30, 0.92)",
-          "#0B101E",
+          "rgba(9, 12, 19, 0.05)",
+          "rgba(9, 12, 19, 0.25)",
+          "rgba(9, 12, 19, 0.65)",
+          "rgba(9, 12, 19, 0.92)",
+          "#090C13",
         ]}
         locations={[0, 0.35, 0.65, 0.88, 1]}
         style={StyleSheet.absoluteFillObject}

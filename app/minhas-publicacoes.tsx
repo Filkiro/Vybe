@@ -129,8 +129,8 @@ export default function MinhasPublicacoes() {
   }
 
   return (
-    <View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
-      <View className="flex-row items-center px-4 pt-14 pb-3 bg-card border-b border-border">
+    <View className="flex-1 bg-background overflow-hidden" style={{ paddingTop: insets.top }}>
+      <View className="flex-row items-center px-4 pt-4 pb-3 bg-card border-b border-border">
         <Pressable onPress={() => router.back()} hitSlop={12} className="mr-2 p-1">
           <ChevronLeft color={colors.textDark} size={24} />
         </Pressable>

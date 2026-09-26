@@ -44,7 +44,7 @@ export default function AuthScreen() {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#070B14" }}>
+    <View style={{ flex: 1, backgroundColor: "#090C13" }}>
       {/* BACKGROUND OCUPANDO A TELA INTEIRA SEM CORTAR */}
       <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
         <AnimatedBackgroundBlobs height="100%" />

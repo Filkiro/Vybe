@@ -168,7 +168,7 @@ function CriarMusico({ usuarioId }: { usuarioId: string }) {
           </View>
 
           {/* TABS — mesmo padrão do Organizador */}
-          <View className="flex-row p-1.5 bg-[#141a24] border border-white/10 rounded-2xl self-start lg:self-auto shadow-xl">
+          <View className="flex-row flex-wrap p-1.5 bg-[#141a24] border border-white/10 rounded-2xl self-start lg:self-auto shadow-xl">
             <Pressable
               onPress={() => setAba("musica")}
               className={`flex-row items-center gap-2 px-5 py-2 rounded-xl transition-all duration-200 ${aba === "musica" ? "bg-[#3B82F6] shadow-[0_0_20px_rgba(59,130,246,0.45)]" : "hover:bg-white/5"}`}
@@ -368,7 +368,7 @@ function FormMusica({ usuarioId }: { usuarioId: string }) {
         {/* LEFT COLUMN */}
         <View className="flex-col gap-0 w-full lg:flex-[7] bg-[#141a24]/80 rounded-2xl border border-white/5 shadow-2xl overflow-hidden">
           {/* Card Header */}
-          <View className="flex-row items-center justify-between px-5 py-4 border-b border-white/5">
+          <View className="flex-row flex-wrap items-center justify-between gap-2 px-5 py-4 border-b border-white/5">
             <View className="flex-row items-center gap-3">
               <View className="w-8 h-8 rounded-lg bg-[#3B82F6]/15 items-center justify-center">
                 <Music size={16} color="#3B82F6" />
@@ -497,19 +497,19 @@ function FormMusica({ usuarioId }: { usuarioId: string }) {
             </View>
 
             {/* Ações */}
-            <View className="flex-row items-center justify-between pt-4 border-t border-white/5">
+            <View className="flex-col gap-3 pt-4 border-t border-white/5">
               {erro && (
-                <View className="bg-red-500/10 border border-red-500/20 p-3 rounded-xl mb-3">
+                <View className="bg-red-500/10 border border-red-500/20 p-3 rounded-xl">
                   <Text className="text-red-400 text-xs font-medium">{erro}</Text>
                 </View>
               )}
               {sucesso && (
-                <View className="bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-xl mb-3">
+                <View className="bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-xl">
                   <Text className="text-emerald-400 text-xs font-medium">Música publicada com sucesso!</Text>
                 </View>
               )}
 
-              <View className="flex-row items-center justify-between w-full">
+              <View className="flex-row flex-wrap items-center justify-between gap-3">
                 <Pressable
                   onPress={() => {
                     setNome(""); setDescricao(""); setGenero(""); setDataLancamento(""); setCapaUri(null); setArquivo(null);

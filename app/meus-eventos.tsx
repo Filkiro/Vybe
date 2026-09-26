@@ -70,9 +70,7 @@ function MeusEventos() {
   }
 
   return (
-    <View className="flex-1 bg-[#0f131c]">
-      <View className="absolute top-10 -left-10 w-96 h-96 bg-[#2563eb]/10 rounded-full blur-3xl" />
-      <View className="absolute bottom-24 -right-10 w-80 h-80 bg-[#3761ea]/10 rounded-full blur-3xl" />
+    <View style={{ flex: 1, backgroundColor: "#0f131c", overflow: "hidden" }}>
 
       <View className="px-6 pt-16 pb-4">
         <View className="flex-row items-center gap-4 mb-6">
@@ -113,6 +111,7 @@ function MeusEventos() {
         <FlatList
           data={eventos}
           keyExtractor={(item) => item.id}
+          style={{ flex: 1, backgroundColor: '#0f131c' }}
           contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 120 }}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
@@ -126,7 +125,7 @@ function MeusEventos() {
             const dataStr = dataObj ? dataObj.toLocaleDateString('pt-BR') : 'Data não definida';
 
             return (
-              <View className="rounded-2xl bg-[#1c2028]/90 border border-[#31353e] p-5 shadow-lg mb-4">
+              <View className="rounded-2xl bg-[#1c2028] border border-[#31353e] p-5 shadow-lg mb-4">
                 <View className="flex-row flex-wrap items-center justify-between gap-2 pb-4 border-b border-[#31353e] pt-0">
                   <View className="flex-row items-center gap-3">
                     <Text className="text-xl text-[#dfe2ee] font-bold tracking-tight">{item.evento?.nome}</Text>

@@ -216,24 +216,26 @@ export default function EditarAlbum() {
           </View>
 
           {/* Footer Actions */}
-          <View className="bg-[#181c24] p-4 rounded-xl border border-[#31353e] flex-row items-center justify-between">
-             <Pressable onPress={confirmarExclusao} disabled={salvando || excluindo} className="flex-row items-center px-4 py-2 bg-red-900/20 rounded-lg border border-red-900/30 active:bg-red-900/40">
-                <Trash2 color="#ef4444" size={16} />
-                <Text className="text-red-400 font-medium ml-2 text-[13px]">Excluir álbum</Text>
-             </Pressable>
+          <View className="bg-[#181c24] p-4 rounded-xl border border-[#31353e] flex-col gap-3">
+             <View className="flex-row flex-wrap items-center justify-between gap-3">
+               <Pressable onPress={confirmarExclusao} disabled={salvando || excluindo} className="flex-row items-center px-4 py-2 bg-red-900/20 rounded-lg border border-red-900/30 active:bg-red-900/40">
+                 <Trash2 color="#ef4444" size={16} />
+                 <Text className="text-red-400 font-medium ml-2 text-[13px]">Excluir álbum</Text>
+               </Pressable>
 
-             <View className="flex-row items-center gap-3">
-                <Pressable onPress={voltar} className="px-4 py-2">
+               <View className="flex-row items-center gap-3 flex-wrap">
+                 <Pressable onPress={voltar} className="px-4 py-2">
                    <Text className="text-[#c3c6d7] font-medium text-[13px]">Cancelar</Text>
-                </Pressable>
-                <Pressable onPress={salvar} disabled={salvando || excluindo} className="flex-row items-center px-6 py-2.5 bg-[#2563eb] rounded-lg shadow-lg active:bg-[#1d4ed8]">
+                 </Pressable>
+                 <Pressable onPress={salvar} disabled={salvando || excluindo} className="flex-row items-center px-6 py-2.5 bg-[#2563eb] rounded-lg shadow-lg active:bg-[#1d4ed8]">
                    {salvando ? <ActivityIndicator color="#fff" size="small" /> : (
                      <>
                        <Save color="#fff" size={16} />
                        <Text className="text-white font-medium ml-2 text-[13px]">Salvar alterações</Text>
                      </>
                    )}
-                </Pressable>
+                 </Pressable>
+               </View>
              </View>
           </View>
         </View>

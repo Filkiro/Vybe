@@ -638,13 +638,13 @@ function BibliotecaMusico({ usuarioId }: { usuarioId: string }) {
 
       {/* SECTION: Eventos Contratados */}
       <View className="flex-col gap-4">
-        <View className="flex-row items-center justify-between">
+        <View className="flex-col gap-1">
           <View className="flex-row items-center gap-2">
             <Calendar color="#3B82F6" size={22} />
-            <Text className="text-lg font-semibold text-textDark">Shows Confirmados & Contratos</Text>
+            <Text className="text-lg font-semibold text-textDark" numberOfLines={1}>Shows Confirmados</Text>
           </View>
-          <Pressable onPress={() => router.push("/meus-eventos")} className="flex-row items-center gap-1">
-            <Text className="text-xs text-[#3B82F6] uppercase font-bold tracking-wider hover:text-blue-400">Agenda Completa</Text>
+          <Pressable onPress={() => router.push("/meus-eventos")} className="flex-row items-center gap-1 self-start">
+            <Text className="text-xs text-[#3B82F6] uppercase font-bold tracking-wider">Agenda Completa</Text>
             <ChevronRight color="#3B82F6" size={16} />
           </Pressable>
         </View>

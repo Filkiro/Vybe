@@ -65,24 +65,24 @@ export default function TodasMusicas() {
   });
 
   return (
-    <View className="flex-1 bg-[#0a0e16]">
+    <View style={{ flex: 1, backgroundColor: "#0a0e16", overflow: "hidden" }}>
       {/* Top Bar Navigation & Actions */}
       <View className="px-4 sm:px-6 py-6 pt-14 flex-col md:flex-row md:items-center justify-between gap-6">
-        <View className="flex-row items-center gap-4">
+        <View className="flex-row items-start gap-4 flex-1">
           <Pressable
             onPress={voltar}
-            className="w-10 h-10 rounded-full bg-[#1c2028] flex items-center justify-center border border-white/5 shadow-md active:bg-[#262a33]"
+            className="w-10 h-10 rounded-full bg-[#1c2028] flex items-center justify-center border border-white/5 shadow-md active:bg-[#262a33] shrink-0 mt-1"
           >
             <ChevronLeft color="#dfe2ee" size={24} />
           </Pressable>
-          <View>
-            <View className="flex-row items-center gap-2">
+          <View className="flex-1 flex-shrink">
+            <View className="flex-row items-center gap-2 flex-wrap">
               <Text className="text-[26px] font-bold text-[#dfe2ee] tracking-tight">Suas músicas</Text>
               <View className="px-2 py-0.5 rounded-full bg-[#262a33]">
                 <Text className="text-[#b4c5ff] text-[12px] font-medium">{musicas.length} faixas</Text>
               </View>
             </View>
-            <Text className="text-[12px] text-[#c3c6d7] mt-0.5">Gerencie seus lançamentos, métricas de streaming e disponibilidade pública</Text>
+            <Text className="text-[12px] text-[#c3c6d7] mt-0.5 flex-wrap">Gerencie seus lançamentos, métricas de streaming e disponibilidade pública</Text>
           </View>
         </View>
 
@@ -117,6 +117,7 @@ export default function TodasMusicas() {
           data={musicasFiltradas}
           keyExtractor={(item) => item.id}
           showsVerticalScrollIndicator={false}
+          style={{ flex: 1, backgroundColor: '#0a0e16' }}
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 140, gap: 16 }}
           ListEmptyComponent={
             <Text className="text-[#8d90a0] text-center mt-8 text-sm">Nenhuma música encontrada nesta categoria.</Text>
