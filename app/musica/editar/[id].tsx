@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { View, Text, TextInput, Pressable, ScrollView, Image, ActivityIndicator } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ChevronLeft, Trash2 } from "lucide-react-native";
+import { ChevronLeft, Trash2, Camera, Globe, Music, Tag, Calendar, FileAudio, Save } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
 import { supabase } from "../../../lib/supabase";
@@ -12,20 +12,6 @@ import { useAuthStore } from "../../../store/authStore";
 import { colors } from "../../../constants/theme";
 import { maskDate, parseDateToDB, parseDateFromDB } from "../../../lib/dateMask";
 
-function CampoTexto(props: React.ComponentProps<typeof TextInput>) {
-  return (
-    <TextInput
-      placeholderTextColor="#9CA3AF"
-      className="border border-border rounded-2xl px-4 py-3 mb-4 text-textDark"
-      {...props}
-    />
-  );
-}
-
-// Edição de uma música já publicada — reaproveita o mesmo visual do
-// formulário de criação (app/(tabs)/criar.tsx), mas pré-carregado
-// com os dados atuais. Também é daqui que dá pra apagar a música de
-// vez (áudio, capa e o registro no banco).
 export default function EditarMusica() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -113,8 +99,6 @@ export default function EditarMusica() {
         data_lancamento: dataLancamento ? parseDateToDB(dataLancamento) : null,
       };
 
-      // Só reenvia a capa se o usuário escolheu uma nova — evita
-      // reupload desnecessário quando ela não mudou.
       if (capaTrocada && capaUri) {
         const novaCapaUrl = await enviarArquivoParaStorage({
           bucket: "capa_musica",
@@ -122,11 +106,12 @@ export default function EditarMusica() {
           nomeArquivo: `${musica.usuario_id}-capa.jpg`,
           contentType: "image/jpeg",
         });
-        await excluirArquivoDoStorage({ bucket: "capa_musica", url: musica.capa_url });
+        if (musica.capa_url) {
+          await excluirArquivoDoStorage({ bucket: "capa_musica", url: musica.capa_url });
+        }
         dadosAtualizados.capa_url = novaCapaUrl;
       }
 
-      // Idem pro arquivo de áudio — só troca se um novo foi escolhido.
       if (arquivo) {
         const novoArquivoUrl = await enviarArquivoParaStorage({
           bucket: "musica_audio",
@@ -134,7 +119,9 @@ export default function EditarMusica() {
           nomeArquivo: `${musica.usuario_id}-${arquivo.nome}`,
           contentType: arquivo.tipo,
         });
-        await excluirArquivoDoStorage({ bucket: "musica_audio", url: musica.arquivo_url });
+        if (musica.arquivo_url) {
+           await excluirArquivoDoStorage({ bucket: "musica_audio", url: musica.arquivo_url });
+        }
         dadosAtualizados.arquivo_url = novoArquivoUrl;
       }
 
@@ -173,16 +160,16 @@ export default function EditarMusica() {
 
   if (carregando) {
     return (
-      <View className="flex-1 bg-background items-center justify-center">
-        <Text className="text-muted">Carregando...</Text>
+      <View className="flex-1 bg-[#0a0e16] items-center justify-center">
+        <ActivityIndicator color="#2563eb" size="large" />
       </View>
     );
   }
 
   if (!musica || !souDono) {
     return (
-      <View className="flex-1 bg-background items-center justify-center px-8">
-        <Text className="text-muted text-center">
+      <View className="flex-1 bg-[#0a0e16] items-center justify-center px-8">
+        <Text className="text-[#8d90a0] text-center">
           Você não tem permissão para editar essa música.
         </Text>
       </View>
@@ -190,66 +177,136 @@ export default function EditarMusica() {
   }
 
   return (
-    <ScrollView className="flex-1 bg-background" contentContainerStyle={{ padding: 16, paddingTop: 56, paddingBottom: 140 }}>
-      <View className="flex-row items-center mb-6">
-        <Pressable
-          onPress={voltar}
-          hitSlop={{ top: 16, right: 16, bottom: 16, left: 16 }}
-          className="bg-card rounded-full p-2 mr-3"
-        >
-          <ChevronLeft color={colors.textDark} size={22} />
+    <ScrollView className="flex-1 bg-[#0a0e16]" contentContainerStyle={{ padding: 24, paddingTop: 64, paddingBottom: 140 }}>
+      {/* Top Bar */}
+      <View className="flex-row items-center mb-8">
+        <Pressable onPress={voltar} className="w-10 h-10 rounded-full bg-[#1c2028] flex items-center justify-center border border-white/5 active:bg-[#262a33]">
+          <ChevronLeft color="#dfe2ee" size={24} />
         </Pressable>
-        <Text className="text-2xl font-bold text-textDark">Editar música</Text>
+        <View className="ml-4">
+          <Text className="text-[11px] font-semibold text-[#8d90a0] uppercase tracking-wider">Gerenciamento de Faixa</Text>
+          <Text className="text-[26px] font-bold text-[#dfe2ee] tracking-tight mt-0.5">Editar música</Text>
+        </View>
       </View>
 
-      <Pressable
-        onPress={trocarCapa}
-        className="self-center w-36 h-36 rounded-2xl bg-surface items-center justify-center mb-4 overflow-hidden"
-      >
-        {capaUri ? (
-          <Image source={{ uri: capaUri }} className="w-full h-full" />
-        ) : (
-          <Text className="text-muted text-center px-3 text-sm">Toque para escolher a capa</Text>
-        )}
-      </Pressable>
+      <View className="flex-col md:flex-row gap-6">
+        {/* Left Column */}
+        <View className="w-full md:w-[35%] flex-col gap-4">
+          {/* Capa */}
+          <View className="bg-[#181c24] p-5 rounded-xl shadow-lg border border-[#31353e]">
+            <Text className="font-semibold text-[#dfe2ee] mb-4">Capa da Faixa</Text>
+            <Pressable onPress={trocarCapa} className="w-full aspect-square rounded-lg bg-[#1c2028] overflow-hidden items-center justify-center border border-[#31353e] mb-4 relative group">
+              {capaUri ? (
+                 <Image source={{ uri: capaUri }} className="w-full h-full object-cover" />
+              ) : (
+                 <View className="items-center justify-center">
+                   <Camera color="#8d90a0" size={32} />
+                 </View>
+              )}
+            </Pressable>
+            <Pressable onPress={trocarCapa} className="w-full py-2.5 rounded-lg bg-[#1c2028] border border-[#31353e] items-center justify-center active:bg-[#262a33]">
+               <Text className="text-[#dfe2ee] font-medium text-[13px]">Substituir arte</Text>
+            </Pressable>
+          </View>
 
-      <CampoTexto placeholder="Nome da música" value={nome} onChangeText={setNome} />
-      <CampoTexto placeholder="Descrição" value={descricao} onChangeText={setDescricao} multiline />
-      <CampoTexto placeholder="Gênero" value={genero} onChangeText={setGenero} />
-      <Text className="text-white text-xs font-semibold mb-2 ml-1">Data de Lançamento</Text>
-      <CampoTexto 
-        placeholder="DD/MM/AAAA" 
-        value={dataLancamento} 
-        onChangeText={(txt) => setDataLancamento(maskDate(txt))} 
-        keyboardType="numeric"
-      />
+          {/* Status */}
+          <View className="bg-[#181c24] p-4 rounded-xl border border-[#31353e]">
+             <Text className="text-[11px] font-semibold text-[#8d90a0] uppercase tracking-wider mb-2">Status de Distribuição</Text>
+             <View className="flex-row items-center justify-between bg-[#1c2028] p-3 rounded-lg border border-[#31353e]">
+                <View className="flex-row items-center gap-2">
+                   <Globe color="#b4c5ff" size={18} />
+                   <Text className="text-[#dfe2ee] text-[13px]">Disponibilidade</Text>
+                </View>
+                <View className="bg-[#b4c5ff]/10 px-2 py-0.5 rounded-full border border-[#b4c5ff]/20">
+                   <Text className="text-[#b4c5ff] text-[11px] font-medium">Pública</Text>
+                </View>
+             </View>
+          </View>
+        </View>
 
-      <Pressable onPress={trocarArquivo} className="border border-border rounded-2xl py-4 items-center mb-4">
-        <Text className="text-textDark font-medium">
-          {arquivo ? arquivo.nome : "Trocar arquivo de áudio (opcional)"}
-        </Text>
-      </Pressable>
+        {/* Right Column */}
+        <View className="w-full md:w-[65%] flex-col gap-4">
+          <View className="bg-[#181c24] p-5 rounded-xl shadow-lg border border-[#31353e] flex-col gap-4">
+             <Text className="text-[20px] font-semibold text-[#dfe2ee] mb-2">Metadados da Faixa</Text>
+             
+             <View>
+                <Text className="text-[#c3c6d7] text-[13px] font-medium mb-1.5">Título / Nome da faixa <Text className="text-[#b4c5ff]">*</Text></Text>
+                <View className="bg-[#1c2028] border border-[#31353e] rounded-lg px-3 py-1 flex-row items-center">
+                  <Music color="#8d90a0" size={18} />
+                  <TextInput value={nome} onChangeText={setNome} placeholder="Nome da música..." placeholderTextColor="#8d90a0" className="flex-1 ml-2 text-[#dfe2ee] text-[14px] py-3" />
+                </View>
+             </View>
 
-      {erro && <Text className="text-red-500 mb-4 text-center">{erro}</Text>}
+             <View>
+                <Text className="text-[#c3c6d7] text-[13px] font-medium mb-1.5">Descrição / Notas conceituais</Text>
+                <View className="bg-[#1c2028] border border-[#31353e] rounded-lg px-3 py-1">
+                  <TextInput multiline value={descricao} onChangeText={setDescricao} placeholder="Conte aos seus ouvintes..." placeholderTextColor="#8d90a0" className="text-[#dfe2ee] text-[14px] py-3 min-h-[80px]" textAlignVertical="top" />
+                </View>
+             </View>
 
-      <Pressable onPress={salvar} disabled={salvando || excluindo} className="bg-primary rounded-full py-4 items-center mb-3">
-        {salvando ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold">Salvar alterações</Text>}
-      </Pressable>
+             <View className="flex-col sm:flex-row gap-4">
+                <View className="flex-1">
+                   <Text className="text-[#c3c6d7] text-[13px] font-medium mb-1.5">Gênero / Tag</Text>
+                   <View className="bg-[#1c2028] border border-[#31353e] rounded-lg px-3 py-1 flex-row items-center">
+                      <Tag color="#8d90a0" size={18} />
+                      <TextInput value={genero} onChangeText={setGenero} placeholder="Indie Pop..." placeholderTextColor="#8d90a0" className="flex-1 ml-2 text-[#dfe2ee] text-[14px] py-3" />
+                   </View>
+                </View>
+                <View className="flex-1">
+                   <Text className="text-[#c3c6d7] text-[13px] font-medium mb-1.5">Data de Lançamento</Text>
+                   <View className="bg-[#1c2028] border border-[#31353e] rounded-lg px-3 py-1 flex-row items-center">
+                      <Calendar color="#8d90a0" size={18} />
+                      <TextInput keyboardType="numeric" value={dataLancamento} onChangeText={(t) => setDataLancamento(maskDate(t))} placeholder="DD/MM/AAAA" placeholderTextColor="#8d90a0" className="flex-1 ml-2 text-[#dfe2ee] text-[14px] py-3" />
+                   </View>
+                </View>
+             </View>
 
-      <Pressable
-        onPress={confirmarExclusao}
-        disabled={salvando || excluindo}
-        className="flex-row items-center justify-center border border-red-500/30 bg-red-500/10 rounded-full py-4"
-      >
-        {excluindo ? (
-          <ActivityIndicator color={colors.danger} />
-        ) : (
-          <>
-            <Trash2 color={colors.danger} size={18} />
-            <Text className="text-red-400 font-bold ml-2">Excluir música</Text>
-          </>
-        )}
-      </Pressable>
+             <View className="mt-2">
+                <View className="flex-row items-center justify-between mb-1.5">
+                   <Text className="text-[#c3c6d7] text-[13px] font-medium">Trocar arquivo de áudio (opcional)</Text>
+                   <Text className="text-[#b4c5ff] text-[11px] font-semibold">Áudio Master Ativo</Text>
+                </View>
+                <Pressable onPress={trocarArquivo} className="bg-[#1c2028] border border-[#31353e] rounded-lg p-3 flex-row items-center justify-between active:bg-[#262a33]">
+                   <View className="flex-row items-center flex-1">
+                      <View className="w-10 h-10 rounded-lg bg-[#31353e] items-center justify-center mr-3">
+                         <FileAudio color="#b4c5ff" size={20} />
+                      </View>
+                      <Text className="text-[#dfe2ee] text-[13px] font-medium flex-1" numberOfLines={1}>
+                        {arquivo ? arquivo.nome : (musica.arquivo_url ? "Arquivo original mantido" : "Nenhum arquivo selecionado")}
+                      </Text>
+                   </View>
+                   <View className="bg-[#31353e] px-3 py-1.5 rounded-full ml-2">
+                      <Text className="text-[#dfe2ee] text-[11px] font-medium">Substituir</Text>
+                   </View>
+                </Pressable>
+             </View>
+
+             {erro && <Text className="text-red-400 text-sm mt-2 text-center">{erro}</Text>}
+          </View>
+
+          {/* Footer Actions */}
+          <View className="bg-[#181c24] p-4 rounded-xl border border-[#31353e] flex-row items-center justify-between">
+             <Pressable onPress={confirmarExclusao} disabled={salvando || excluindo} className="flex-row items-center px-4 py-2 bg-red-900/20 rounded-lg border border-red-900/30 active:bg-red-900/40">
+                <Trash2 color="#ef4444" size={16} />
+                <Text className="text-red-400 font-medium ml-2 text-[13px]">Excluir música</Text>
+             </Pressable>
+
+             <View className="flex-row items-center gap-3">
+                <Pressable onPress={voltar} className="px-4 py-2">
+                   <Text className="text-[#c3c6d7] font-medium text-[13px]">Cancelar</Text>
+                </Pressable>
+                <Pressable onPress={salvar} disabled={salvando || excluindo} className="flex-row items-center px-6 py-2.5 bg-[#2563eb] rounded-lg shadow-lg active:bg-[#1d4ed8]">
+                   {salvando ? <ActivityIndicator color="#fff" size="small" /> : (
+                     <>
+                       <Save color="#fff" size={16} />
+                       <Text className="text-white font-medium ml-2 text-[13px]">Salvar alterações</Text>
+                     </>
+                   )}
+                </Pressable>
+             </View>
+          </View>
+        </View>
+      </View>
     </ScrollView>
   );
 }

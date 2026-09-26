@@ -1,41 +1,25 @@
 import { useEffect, useState } from "react";
-import { View, Text, Pressable, Image, FlatList, useWindowDimensions } from "react-native";
+import { View, Text, Pressable, Image, FlatList, ActivityIndicator } from "react-native";
 import { router } from "expo-router";
-import { ChevronLeft, Disc, Pencil, Trash2 } from "lucide-react-native";
+import { ChevronLeft, Pencil, Trash2, Calendar, Disc } from "lucide-react-native";
 import { supabase } from "../../lib/supabase";
 import { useAuthStore } from "../../store/authStore";
 import { excluirAlbum } from "../../lib/biblioteca";
 import { confirmar, avisar } from "../../lib/alertas";
-import { colors } from "../../constants/theme";
 
-const LARGURA_IDEAL_CARD = 170;
-const MAX_COLUNAS = 6;
-
-// Lista completa dos álbuns do usuário logado — alcançada pelo
-// botão "Gerenciar"/"Ver tudo" da seção Álbuns no Perfil (sempre
-// visível, mesmo com poucos álbuns). Sempre tem botão de voltar, já
-// que essa tela só existe como destino de navegação. Cada card tem
-// os botões de editar e excluir sempre visíveis.
 export default function TodosAlbuns() {
   const usuario = useAuthStore((s) => s.usuario);
   const [albuns, setAlbuns] = useState<any[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [excluindoId, setExcluindoId] = useState<string | null>(null);
-  const { width } = useWindowDimensions();
-
-  const PADDING_HORIZONTAL = 16;
-  const GAP = 12;
-  const larguraUtil = width - PADDING_HORIZONTAL * 2;
-  const numColunas = Math.min(MAX_COLUNAS, Math.max(2, Math.floor(larguraUtil / LARGURA_IDEAL_CARD)));
-  const larguraCard = (larguraUtil - GAP * (numColunas - 1)) / numColunas;
+  const [aba, setAba] = useState<"todos" | "ativos" | "rascunhos">("todos");
 
   useEffect(() => {
     if (!usuario) return;
     supabase
       .from("album")
-      .select("id, nome, capa_url")
+      .select("id, nome, capa_url, status, criado_em")
       .eq("usuario_id", usuario.id)
-      .eq("status", "ativo")
       .order("criado_em", { ascending: false })
       .then(({ data }) => {
         setAlbuns(data ?? []);
@@ -51,7 +35,7 @@ export default function TodosAlbuns() {
   async function confirmarExclusao(item: any) {
     const ok = await confirmar(
       "Excluir álbum",
-      `Tem certeza que quer excluir "${item.nome}"? As músicas não serão apagadas, só saem do álbum. Essa ação não pode ser desfeita.`,
+      `Tem certeza que quer excluir o álbum "${item.nome}"? As músicas dele não serão excluídas, mas ficarão sem álbum.`,
       "Excluir"
     );
     if (!ok) return;
@@ -67,70 +51,142 @@ export default function TodosAlbuns() {
     }
   }
 
+  const albunsAtivos = albuns.filter((a) => a.status === "ativo");
+  const albunsRascunho = albuns.filter((a) => a.status === "rascunho");
+
+  const albunsFiltrados = albuns.filter((a) => {
+    if (aba === "todos") return true;
+    if (aba === "ativos") return a.status === "ativo";
+    if (aba === "rascunhos") return a.status === "rascunho";
+    return true;
+  });
+
   return (
-    <View className="flex-1 bg-background">
-      <View className="flex-row items-center px-4 pt-14 pb-4">
-        <Pressable
-          onPress={voltar}
-          hitSlop={{ top: 16, right: 16, bottom: 16, left: 16 }}
-          className="bg-card rounded-full p-2 mr-3"
-        >
-          <ChevronLeft color={colors.textDark} size={22} />
-        </Pressable>
-        <Text className="text-xl font-bold text-textDark">Seus álbuns</Text>
+    <View className="flex-1 bg-[#0a0e16]">
+      {/* Top Bar Navigation & Actions */}
+      <View className="px-4 sm:px-6 py-6 pt-14 flex-col md:flex-row md:items-center justify-between gap-6">
+        <View className="flex-row items-center gap-4">
+          <Pressable
+            onPress={voltar}
+            className="w-10 h-10 rounded-full bg-[#1c2028] flex items-center justify-center border border-white/5 shadow-md active:bg-[#262a33]"
+          >
+            <ChevronLeft color="#dfe2ee" size={24} />
+          </Pressable>
+          <View>
+            <View className="flex-row items-center gap-2">
+              <Text className="text-[26px] font-bold text-[#dfe2ee] tracking-tight">Seus álbuns</Text>
+              <View className="px-2 py-0.5 rounded-full bg-[#262a33]">
+                <Text className="text-[#b4c5ff] text-[12px] font-medium">{albuns.length} álbuns</Text>
+              </View>
+            </View>
+            <Text className="text-[12px] text-[#c3c6d7] mt-0.5">Gerencie seus projetos maiores, EPs e discografia</Text>
+          </View>
+        </View>
+
+        <View className="flex-row items-center bg-[#181c24] rounded-lg p-1">
+          <Pressable
+            onPress={() => setAba("todos")}
+            className={`px-4 py-1.5 rounded-md ${aba === "todos" ? "bg-[#2563eb] shadow-md" : ""}`}
+          >
+            <Text className={`text-[13px] font-medium ${aba === "todos" ? "text-[#eeefff]" : "text-[#c3c6d7]"}`}>Todos ({albuns.length})</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => setAba("ativos")}
+            className={`px-4 py-1.5 rounded-md ${aba === "ativos" ? "bg-[#2563eb] shadow-md" : ""}`}
+          >
+            <Text className={`text-[13px] font-medium ${aba === "ativos" ? "text-[#eeefff]" : "text-[#c3c6d7]"}`}>Ativos ({albunsAtivos.length})</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => setAba("rascunhos")}
+            className={`px-4 py-1.5 rounded-md ${aba === "rascunhos" ? "bg-[#2563eb] shadow-md" : ""}`}
+          >
+            <Text className={`text-[13px] font-medium ${aba === "rascunhos" ? "text-[#eeefff]" : "text-[#c3c6d7]"}`}>Rascunhos ({albunsRascunho.length})</Text>
+          </Pressable>
+        </View>
       </View>
 
       {carregando ? (
-        <Text className="text-muted text-center mt-4">Carregando...</Text>
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator color="#2563eb" size="large" />
+        </View>
       ) : (
         <FlatList
-          data={albuns}
+          data={albunsFiltrados}
           keyExtractor={(item) => item.id}
-          key={numColunas}
-          numColumns={numColunas}
-          contentContainerStyle={{ paddingHorizontal: PADDING_HORIZONTAL, paddingBottom: 140 }}
-          columnWrapperStyle={{ gap: GAP }}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 140, gap: 16 }}
           ListEmptyComponent={
-            <Text className="text-muted text-center mt-8">Nenhum álbum criado ainda.</Text>
+            <Text className="text-[#8d90a0] text-center mt-8 text-sm">Nenhum álbum encontrado nesta categoria.</Text>
           }
-          renderItem={({ item }) => (
-            <View style={{ width: larguraCard }} className="bg-card rounded-2xl p-3 mb-4">
-              <Pressable onPress={() => router.push(`/album/${item.id}`)}>
-                {item.capa_url ? (
-                  <Image source={{ uri: item.capa_url }} className="w-full aspect-square rounded-xl mb-2" />
-                ) : (
-                  <View className="w-full aspect-square rounded-xl bg-surface mb-2 items-center justify-center">
-                    <Disc color={colors.muted} size={28} />
+          renderItem={({ item }) => {
+            const isAtivo = item.status === "ativo";
+            const dataCriacao = item.criado_em 
+              ? new Date(item.criado_em).toLocaleDateString('pt-BR') 
+              : "Data não definida";
+
+            return (
+              <View className="flex-col md:flex-row items-start md:items-center justify-between gap-6 p-4 rounded-xl bg-[#181c24] border border-[#31353e] shadow-sm">
+                
+                <View className="flex-row items-center gap-4 flex-1 w-full">
+                  {/* Album Cover */}
+                  <View className="relative w-24 h-24 rounded-xl overflow-hidden bg-[#0a0e16] border border-[#31353e] items-center justify-center">
+                    {item.capa_url ? (
+                      <Image source={{ uri: item.capa_url }} className="w-full h-full object-cover" />
+                    ) : (
+                      <Disc color="#8d90a0" size={32} />
+                    )}
                   </View>
-                )}
-              </Pressable>
 
-              <Text numberOfLines={1} className="font-bold text-textDark mb-2">
-                {item.nome}
-              </Text>
+                  {/* Metadata */}
+                  <View className="flex-col flex-1 gap-1">
+                    <View className="flex-row items-center gap-2 flex-wrap mb-1">
+                      <View className="flex-row items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#262a33]">
+                        <View className={`w-1.5 h-1.5 rounded-full ${isAtivo ? "bg-emerald-400" : "bg-gray-400"}`} />
+                        <Text className="text-[11px] font-semibold text-[#b4c5ff] capitalize">{item.status || "Ativo"}</Text>
+                      </View>
+                      <View className="px-2 py-0.5 rounded bg-[#31353e]">
+                        <Text className="text-[11px] font-medium text-[#c3c6d7]">Álbum / EP</Text>
+                      </View>
+                    </View>
 
-              <View className="flex-row gap-2">
-                <Pressable
-                  onPress={() => router.push(`/album/editar/${item.id}`)}
-                  className="flex-1 flex-row items-center justify-center bg-surface rounded-xl py-2"
-                >
-                  <Pencil color={colors.textDark} size={14} />
-                  <Text className="text-textDark text-xs font-medium ml-1">Editar</Text>
-                </Pressable>
-                <Pressable
-                  onPress={() => confirmarExclusao(item)}
-                  disabled={excluindoId === item.id}
-                  className="flex-1 flex-row items-center justify-center bg-red-500/10 rounded-xl py-2"
-                  style={{ opacity: excluindoId === item.id ? 0.6 : 1 }}
-                >
-                  <Trash2 color={colors.danger} size={14} />
-                  <Text className="text-red-400 text-xs font-medium ml-1">
-                    {excluindoId === item.id ? "..." : "Excluir"}
-                  </Text>
-                </Pressable>
+                    <Text numberOfLines={1} className="text-lg font-semibold text-[#dfe2ee] tracking-tight">
+                      {item.nome}
+                    </Text>
+
+                    <View className="flex-row items-center gap-3 text-[#c3c6d7] mt-1 flex-wrap">
+                      <View className="flex-row items-center gap-1">
+                        <Calendar color="#8d90a0" size={14} />
+                        <Text className="text-[#8d90a0] text-[12px]">Criado em {dataCriacao}</Text>
+                      </View>
+                    </View>
+                  </View>
+                </View>
+
+                {/* Actions */}
+                <View className="flex-row items-center justify-end gap-2 w-full md:w-auto mt-2 md:mt-0">
+                  <Pressable
+                    onPress={() => router.push(`/album/editar/${item.id}`)}
+                    className="flex-row items-center gap-1.5 px-4 py-2 rounded-lg bg-[#262a33] active:bg-[#31353e] border border-white/5"
+                  >
+                    <Pencil color="#dfe2ee" size={16} />
+                    <Text className="text-[#dfe2ee] text-[13px] font-medium">Editar</Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => confirmarExclusao(item)}
+                    disabled={excluindoId === item.id}
+                    className="flex-row items-center gap-1.5 px-4 py-2 rounded-lg bg-[#262a33] active:bg-red-500/20 border border-white/5"
+                    style={{ opacity: excluindoId === item.id ? 0.6 : 1 }}
+                  >
+                    <Trash2 color={excluindoId === item.id ? "#8d90a0" : "#dfe2ee"} size={16} />
+                    <Text className={`text-[13px] font-medium ${excluindoId === item.id ? "text-[#8d90a0]" : "text-[#dfe2ee]"}`}>
+                      {excluindoId === item.id ? "..." : "Excluir"}
+                    </Text>
+                  </Pressable>
+                </View>
+
               </View>
-            </View>
-          )}
+            );
+          }}
         />
       )}
     </View>

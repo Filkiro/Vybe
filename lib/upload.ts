@@ -39,11 +39,22 @@ export async function enviarArquivoParaStorage(params: {
   const resposta = await fetch(uri);
   const arrayBuffer = await resposta.arrayBuffer();
 
+  // Precisamos colocar o arquivo dentro de uma "pasta" com o ID do usuário.
+  // Isso atende à política de segurança padrão do Supabase que impede
+  // usuários de mexerem/criarem arquivos em diretórios de outras pessoas:
+  // (storage.foldername(name))[1] = auth.uid()
+  const { data: authData } = await supabase.auth.getUser();
+  const usuarioId = authData?.user?.id;
+  if (!usuarioId) {
+    throw new Error("Usuário não autenticado. Impossível fazer upload para o Storage.");
+  }
+
   // Nome curto gerado por nós — o nome original do arquivo do
   // usuário nunca vai pro bucket, só sua extensão é aproveitada.
   // Isso evita erro de nome grande demais (ou com caracteres
   // inválidos) ao salvar a URL na coluna do banco.
-  const caminho = gerarChaveStorage(obterExtensao(nomeArquivo, contentType));
+  const nomeCurto = gerarChaveStorage(obterExtensao(nomeArquivo, contentType));
+  const caminho = `${usuarioId}/${nomeCurto}`; // Ex: 123-456/.../16999999-abcd.jpg
 
   const { error } = await supabase.storage.from(bucket).upload(caminho, arrayBuffer, {
     contentType,

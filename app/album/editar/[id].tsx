@@ -1,18 +1,14 @@
 import { useEffect, useState } from "react";
 import { View, Text, TextInput, Pressable, ScrollView, Image, ActivityIndicator } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ChevronLeft, Trash2, Disc } from "lucide-react-native";
+import { ChevronLeft, Trash2, Camera, Globe, Disc, Save } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
 import { supabase } from "../../../lib/supabase";
 import { enviarArquivoParaStorage, excluirArquivoDoStorage } from "../../../lib/upload";
 import { excluirAlbum } from "../../../lib/biblioteca";
 import { confirmar } from "../../../lib/alertas";
 import { useAuthStore } from "../../../store/authStore";
-import { colors } from "../../../constants/theme";
 
-// Edição de um álbum já criado: nome e capa. Adicionar/remover
-// músicas continua acontecendo direto na tela do álbum
-// (app/album/[id].tsx); aqui é só onde apagar o álbum de vez.
 export default function EditarAlbum() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -72,7 +68,7 @@ export default function EditarAlbum() {
   async function salvar() {
     if (!album) return;
     setErro(null);
-    if (!nome) {
+    if (!nome.trim()) {
       setErro("Dê um nome para o álbum.");
       return;
     }
@@ -85,10 +81,12 @@ export default function EditarAlbum() {
         const novaCapaUrl = await enviarArquivoParaStorage({
           bucket: "capa_album",
           uri: capaUri,
-          nomeArquivo: `${album.usuario_id}-capa-album.jpg`,
+          nomeArquivo: `${album.usuario_id}-capa.jpg`,
           contentType: "image/jpeg",
         });
-        await excluirArquivoDoStorage({ bucket: "capa_album", url: album.capa_url });
+        if (album.capa_url) {
+          await excluirArquivoDoStorage({ bucket: "capa_album", url: album.capa_url });
+        }
         dadosAtualizados.capa_url = novaCapaUrl;
       }
 
@@ -106,7 +104,7 @@ export default function EditarAlbum() {
   async function confirmarExclusao() {
     const ok = await confirmar(
       "Excluir álbum",
-      `Tem certeza que quer excluir "${album.nome}"? As músicas não serão apagadas, só saem do álbum. Essa ação não pode ser desfeita.`,
+      `Tem certeza que quer excluir o álbum "${album.nome}"? As músicas não serão apagadas, apenas desvinculadas.`,
       "Excluir"
     );
     if (ok) excluir();
@@ -117,7 +115,7 @@ export default function EditarAlbum() {
     setExcluindo(true);
     try {
       await excluirAlbum(album);
-      router.replace("/biblioteca/albuns");
+      voltar();
     } catch (e: any) {
       setErro(e.message ?? "Erro ao excluir o álbum.");
     } finally {
@@ -127,75 +125,119 @@ export default function EditarAlbum() {
 
   if (carregando) {
     return (
-      <View className="flex-1 bg-background items-center justify-center">
-        <Text className="text-muted">Carregando...</Text>
+      <View className="flex-1 bg-[#0a0e16] items-center justify-center">
+        <ActivityIndicator color="#2563eb" size="large" />
       </View>
     );
   }
 
   if (!album || !souDono) {
     return (
-      <View className="flex-1 bg-background items-center justify-center px-8">
-        <Text className="text-muted text-center">Você não tem permissão para editar esse álbum.</Text>
+      <View className="flex-1 bg-[#0a0e16] items-center justify-center px-8">
+        <Text className="text-[#8d90a0] text-center">
+          Você não tem permissão para editar este álbum.
+        </Text>
       </View>
     );
   }
 
   return (
-    <ScrollView className="flex-1 bg-background" contentContainerStyle={{ padding: 16, paddingTop: 56, paddingBottom: 140 }}>
-      <View className="flex-row items-center mb-6">
-        <Pressable
-          onPress={voltar}
-          hitSlop={{ top: 16, right: 16, bottom: 16, left: 16 }}
-          className="bg-card rounded-full p-2 mr-3"
-        >
-          <ChevronLeft color={colors.textDark} size={22} />
+    <ScrollView className="flex-1 bg-[#0a0e16]" contentContainerStyle={{ padding: 24, paddingTop: 64, paddingBottom: 140 }}>
+      {/* Top Bar */}
+      <View className="flex-row items-center mb-8">
+        <Pressable onPress={voltar} className="w-10 h-10 rounded-full bg-[#1c2028] flex items-center justify-center border border-white/5 active:bg-[#262a33]">
+          <ChevronLeft color="#dfe2ee" size={24} />
         </Pressable>
-        <Text className="text-2xl font-bold text-textDark">Editar álbum</Text>
+        <View className="ml-4">
+          <Text className="text-[11px] font-semibold text-[#8d90a0] uppercase tracking-wider">Gerenciamento de Disco</Text>
+          <Text className="text-[26px] font-bold text-[#dfe2ee] tracking-tight mt-0.5">Editar álbum</Text>
+        </View>
       </View>
 
-      <Pressable
-        onPress={trocarCapa}
-        className="self-center w-36 h-36 rounded-2xl bg-surface items-center justify-center mb-4 overflow-hidden"
-      >
-        {capaUri ? (
-          <Image source={{ uri: capaUri }} className="w-full h-full" />
-        ) : (
-          <View className="items-center justify-center px-3">
-            <Disc color={colors.muted} size={28} />
-            <Text className="text-muted text-center text-sm mt-2">Toque para escolher a capa</Text>
+      <View className="flex-col md:flex-row gap-6">
+        {/* Left Column */}
+        <View className="w-full md:w-[35%] flex-col gap-4">
+          {/* Capa */}
+          <View className="bg-[#181c24] p-5 rounded-xl shadow-lg border border-[#31353e]">
+            <Text className="font-semibold text-[#dfe2ee] mb-4">Capa do Álbum</Text>
+            <Pressable onPress={trocarCapa} className="w-full aspect-square rounded-lg bg-[#1c2028] overflow-hidden items-center justify-center border border-[#31353e] mb-4 relative group">
+              {capaUri ? (
+                 <Image source={{ uri: capaUri }} className="w-full h-full object-cover" />
+              ) : (
+                 <View className="items-center justify-center">
+                   <Camera color="#8d90a0" size={32} />
+                 </View>
+              )}
+            </Pressable>
+            <Pressable onPress={trocarCapa} className="w-full py-2.5 rounded-lg bg-[#1c2028] border border-[#31353e] items-center justify-center active:bg-[#262a33]">
+               <Text className="text-[#dfe2ee] font-medium text-[13px]">Substituir arte</Text>
+            </Pressable>
           </View>
-        )}
-      </Pressable>
 
-      <TextInput
-        placeholder="Nome do álbum"
-        placeholderTextColor="#9CA3AF"
-        value={nome}
-        onChangeText={setNome}
-        className="border border-border rounded-2xl px-4 py-3 mb-4 text-textDark"
-      />
+          {/* Status */}
+          <View className="bg-[#181c24] p-4 rounded-xl border border-[#31353e]">
+             <Text className="text-[11px] font-semibold text-[#8d90a0] uppercase tracking-wider mb-2">Status de Distribuição</Text>
+             <View className="flex-row items-center justify-between bg-[#1c2028] p-3 rounded-lg border border-[#31353e]">
+                <View className="flex-row items-center gap-2">
+                   <Globe color="#b4c5ff" size={18} />
+                   <Text className="text-[#dfe2ee] text-[13px]">Disponibilidade</Text>
+                </View>
+                <View className="bg-[#b4c5ff]/10 px-2 py-0.5 rounded-full border border-[#b4c5ff]/20">
+                   <Text className="text-[#b4c5ff] text-[11px] font-medium capitalize">{album.status || "Pública"}</Text>
+                </View>
+             </View>
+          </View>
+        </View>
 
-      {erro && <Text className="text-red-500 mb-4 text-center">{erro}</Text>}
+        {/* Right Column */}
+        <View className="w-full md:w-[65%] flex-col gap-4">
+          <View className="bg-[#181c24] p-5 rounded-xl shadow-lg border border-[#31353e] flex-col gap-4">
+             <Text className="text-[20px] font-semibold text-[#dfe2ee] mb-2">Metadados do Álbum</Text>
+             
+             <View>
+                <Text className="text-[#c3c6d7] text-[13px] font-medium mb-1.5">Título / Nome do Álbum <Text className="text-[#b4c5ff]">*</Text></Text>
+                <View className="bg-[#1c2028] border border-[#31353e] rounded-lg px-3 py-1 flex-row items-center">
+                  <Disc color="#8d90a0" size={18} />
+                  <TextInput value={nome} onChangeText={setNome} placeholder="Nome do álbum..." placeholderTextColor="#8d90a0" className="flex-1 ml-2 text-[#dfe2ee] text-[14px] py-3" />
+                </View>
+             </View>
 
-      <Pressable onPress={salvar} disabled={salvando || excluindo} className="bg-primary rounded-full py-4 items-center mb-3">
-        {salvando ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold">Salvar alterações</Text>}
-      </Pressable>
+             <View className="mt-2 bg-[#2563eb]/10 p-4 rounded-lg border border-[#2563eb]/20 flex-row gap-3">
+               <View className="mt-0.5">
+                 <Disc color="#b4c5ff" size={20} />
+               </View>
+               <View className="flex-1">
+                 <Text className="text-[#b4c5ff] font-semibold text-[13px]">Como adicionar músicas?</Text>
+                 <Text className="text-[#8d90a0] text-[12px] mt-1">A adição ou remoção de faixas é feita diretamente acessando o álbum na sua página de perfil.</Text>
+               </View>
+             </View>
 
-      <Pressable
-        onPress={confirmarExclusao}
-        disabled={salvando || excluindo}
-        className="flex-row items-center justify-center border border-red-500/30 bg-red-500/10 rounded-full py-4"
-      >
-        {excluindo ? (
-          <ActivityIndicator color={colors.danger} />
-        ) : (
-          <>
-            <Trash2 color={colors.danger} size={18} />
-            <Text className="text-red-400 font-bold ml-2">Excluir álbum</Text>
-          </>
-        )}
-      </Pressable>
+             {erro && <Text className="text-red-400 text-sm mt-2 text-center">{erro}</Text>}
+          </View>
+
+          {/* Footer Actions */}
+          <View className="bg-[#181c24] p-4 rounded-xl border border-[#31353e] flex-row items-center justify-between">
+             <Pressable onPress={confirmarExclusao} disabled={salvando || excluindo} className="flex-row items-center px-4 py-2 bg-red-900/20 rounded-lg border border-red-900/30 active:bg-red-900/40">
+                <Trash2 color="#ef4444" size={16} />
+                <Text className="text-red-400 font-medium ml-2 text-[13px]">Excluir álbum</Text>
+             </Pressable>
+
+             <View className="flex-row items-center gap-3">
+                <Pressable onPress={voltar} className="px-4 py-2">
+                   <Text className="text-[#c3c6d7] font-medium text-[13px]">Cancelar</Text>
+                </Pressable>
+                <Pressable onPress={salvar} disabled={salvando || excluindo} className="flex-row items-center px-6 py-2.5 bg-[#2563eb] rounded-lg shadow-lg active:bg-[#1d4ed8]">
+                   {salvando ? <ActivityIndicator color="#fff" size="small" /> : (
+                     <>
+                       <Save color="#fff" size={16} />
+                       <Text className="text-white font-medium ml-2 text-[13px]">Salvar alterações</Text>
+                     </>
+                   )}
+                </Pressable>
+             </View>
+          </View>
+        </View>
+      </View>
     </ScrollView>
   );
 }

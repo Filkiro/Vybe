@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { View, Pressable, Text, Image } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useSegments } from "expo-router";
-import { Search } from "lucide-react-native";
+import { Search, Bell } from "lucide-react-native";
 import { useAuthStore } from "../store/authStore";
 import { supabase } from "../lib/supabase";
 import { useEhDesktop } from "../hooks/useEhDesktop";
@@ -77,27 +77,36 @@ export function AppHeader({ onOpenSearch }: AppHeaderProps) {
       <View style={{ paddingTop: Math.max(insets.top, 14), zIndex: 9999 }}>
         {/* Adiciona um background sutil ou border-b para o AppHeader não parecer parte do resto do site */}
         <View className="px-6 pb-4 flex-row items-center justify-between border-b border-white/5 bg-[#0B101E]/80 backdrop-blur-md">
-          {/* Esquerda: Espaço vazio para empurrar o centro (flex-1) */}
-          <View style={{ flex: 1 }} />
+          {/* Esquerda: Espaço vazio para empurrar o centro */}
+          <View className="flex-1 hidden md:flex" />
 
           {/* Centro: Input de Pesquisa Real */}
-          <SearchInputDesktop />
+          <View className="flex-[2] items-center justify-center px-2">
+            <SearchInputDesktop />
+          </View>
 
-          {/* Direita: Perfil/Avatar (flex-1 e alinhado à direita para manter o centro centralizado) */}
-          <View className="flex-row items-center gap-3 ml-4 justify-end" style={{ flex: 1 }}>
+          {/* Direita: Perfil/Avatar */}
+          <View className="flex-row items-center gap-2 lg:gap-4 ml-2 justify-end shrink-0">
             {usuario ? (
               <>
-                <View className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#3B82F6] border-opacity-50 items-center justify-center bg-[#3B82F6]">
-                  {fotoUrl ? (
-                    <Image source={{ uri: fotoUrl }} className="w-full h-full" />
-                  ) : (
-                    <Text className="text-white font-bold text-xs">{getIniciais(nomeExibido)}</Text>
-                  )}
-                </View>
-                <View>
-                  <Text className="text-textDark font-bold text-sm">{nomeExibido}</Text>
-                  {rotuloPerfil && <Text className="text-muted text-xs">{rotuloPerfil}</Text>}
-                </View>
+                <Pressable className="w-10 h-10 rounded-full items-center justify-center active:bg-white/10 relative shrink-0">
+                  <Bell size={20} color="#94A3B8" />
+                  <View className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-[#3B82F6] border border-[#0B101E]" />
+                </Pressable>
+                
+                <Pressable className="flex-row items-center gap-2 pl-1 pr-3 py-1 rounded-full bg-white/5 active:bg-white/10 transition-colors shrink-0 max-w-[200px]">
+                  <View className="w-8 h-8 rounded-full overflow-hidden items-center justify-center bg-[#3B82F6] shrink-0">
+                    {fotoUrl ? (
+                      <Image source={{ uri: fotoUrl }} className="w-full h-full" />
+                    ) : (
+                      <Text className="text-white font-bold text-[10px]">{getIniciais(nomeExibido)}</Text>
+                    )}
+                  </View>
+                  <View className="flex-shrink overflow-hidden">
+                    <Text className="text-white font-bold text-xs leading-tight truncate" numberOfLines={1}>{nomeExibido}</Text>
+                    {rotuloPerfil && <Text className="text-gray-400 text-[10px] leading-tight truncate" numberOfLines={1}>{rotuloPerfil}</Text>}
+                  </View>
+                </Pressable>
               </>
             ) : (
               <Pressable

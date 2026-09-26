@@ -170,7 +170,7 @@ export function SearchInputDesktop() {
   const mostrarDropdown = focado && (busca.length > 0 || resultados.length > 0);
 
   return (
-    <View style={{ flex: 1, minWidth: 250, maxWidth: 420, zIndex: 1000, position: "relative" }}>
+    <View style={{ width: "100%", maxWidth: 600, zIndex: 1000, position: "relative" }}>
       {/* Clicar em qualquer lugar fora tira o foco da pesquisa */}
       {focado && (
         <Pressable

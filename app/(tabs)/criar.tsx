@@ -24,7 +24,10 @@ import {
   Users,
   FileText,
   Info,
+  UserSearch,
+  CheckCircle2,
 } from "lucide-react-native";
+import { Heart } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
 import { supabase } from "../../lib/supabase";
@@ -131,22 +134,72 @@ function CampoSelecionavel({
 // -----------------------------------------------------------
 function CriarMusico({ usuarioId }: { usuarioId: string }) {
   const [aba, setAba] = useState<"musica" | "album" | "publicacao">("musica");
+  const paddingBottom = usePlayerAwarePadding(140);
+
+  const subtitulos = {
+    musica: "Lançamento de Faixa Solo",
+    album: "Lançamento de Álbum / EP",
+    publicacao: "Feed da Cena",
+  };
 
   return (
-    <View className="flex-1 bg-[#0B101E]">
-      {/* Navegação por Pills */}
-      <View className="px-4 pt-6 pb-2 w-full max-w-[800px] self-center">
-        <View className="flex-row bg-[#121829] p-1.5 rounded-full border border-border/40">
-          <SegmentoAba label="Música" ativa={aba === "musica"} onPress={() => setAba("musica")} />
-          <SegmentoAba label="Álbum" ativa={aba === "album"} onPress={() => setAba("album")} />
-          <SegmentoAba label="Publicação" ativa={aba === "publicacao"} onPress={() => setAba("publicacao")} />
-        </View>
-      </View>
+    <ScrollView className="flex-1 bg-[#0B101E]" contentContainerStyle={{ paddingBottom }}>
+      <View className="max-w-[1380px] mx-auto w-full flex-col gap-8 px-6 pt-10">
 
-      {aba === "musica" && <FormMusica usuarioId={usuarioId} />}
-      {aba === "album" && <FormAlbum usuarioId={usuarioId} />}
-      {aba === "publicacao" && <FormPublicacaoMusico usuarioId={usuarioId} />}
-    </View>
+        {/* HEADER CONTROL BAR WITH MODE TABS */}
+        <View className="flex-col lg:flex-row lg:items-end justify-between gap-6 pb-4 border-b border-white/5">
+          <View className="flex-col gap-1">
+            <View className="flex-row items-center gap-2">
+              <View className="w-2 h-2 rounded-full bg-[#3B82F6]" style={{ shadowColor: '#3B82F6', shadowRadius: 8, shadowOpacity: 1 }} />
+              <Text className="text-[11px] uppercase tracking-wider text-[#3B82F6] font-semibold">VYBE STUDIO HUB</Text>
+              <Text className="text-white/20">•</Text>
+              <Text className="text-[11px] text-[#94A3B8]">{subtitulos[aba]}</Text>
+            </View>
+            <Text className="text-[28px] lg:text-[32px] text-white tracking-tight font-bold">
+              Central de Criação
+            </Text>
+            <Text className="text-[#94A3B8] max-w-xl text-sm mt-1 leading-relaxed">
+              {aba === "musica"
+                ? "Publique seu som, construa seu catálogo e engaje diretamente com a cena independente."
+                : aba === "album"
+                ? "Agrupe suas faixas em um projeto coeso. Álbuns e EPs ganham mais destaque no feed."
+                : "Atualizações para seus fãs, bastidores do estúdio e novidades da sua carreira."}
+            </Text>
+          </View>
+
+          {/* TABS — mesmo padrão do Organizador */}
+          <View className="flex-row p-1.5 bg-[#141a24] border border-white/10 rounded-2xl self-start lg:self-auto shadow-xl">
+            <Pressable
+              onPress={() => setAba("musica")}
+              className={`flex-row items-center gap-2 px-5 py-2 rounded-xl transition-all duration-200 ${aba === "musica" ? "bg-[#3B82F6] shadow-[0_0_20px_rgba(59,130,246,0.45)]" : "hover:bg-white/5"}`}
+            >
+              <Music size={17} color={aba === "musica" ? "#fff" : "#94A3B8"} />
+              <Text className={`font-semibold text-sm ${aba === "musica" ? "text-white" : "text-[#94A3B8]"}`}>Música</Text>
+            </Pressable>
+
+            <Pressable
+              onPress={() => setAba("album")}
+              className={`flex-row items-center gap-2 px-5 py-2 rounded-xl transition-all duration-200 ${aba === "album" ? "bg-[#A855F7] shadow-[0_0_20px_rgba(168,85,247,0.45)]" : "hover:bg-white/5"}`}
+            >
+              <Disc size={17} color={aba === "album" ? "#fff" : "#94A3B8"} />
+              <Text className={`font-semibold text-sm ${aba === "album" ? "text-white" : "text-[#94A3B8]"}`}>Álbum</Text>
+            </Pressable>
+
+            <Pressable
+              onPress={() => setAba("publicacao")}
+              className={`flex-row items-center gap-2 px-5 py-2 rounded-xl transition-all duration-200 ${aba === "publicacao" ? "bg-emerald-600 shadow-[0_0_20px_rgba(16,185,129,0.45)]" : "hover:bg-white/5"}`}
+            >
+              <Sparkles size={17} color={aba === "publicacao" ? "#fff" : "#94A3B8"} />
+              <Text className={`font-semibold text-sm ${aba === "publicacao" ? "text-white" : "text-[#94A3B8]"}`}>Publicação</Text>
+            </Pressable>
+          </View>
+        </View>
+
+        {aba === "musica" && <FormMusica usuarioId={usuarioId} />}
+        {aba === "album" && <FormAlbum usuarioId={usuarioId} />}
+        {aba === "publicacao" && <FormPublicacaoMusico usuarioId={usuarioId} />}
+      </View>
+    </ScrollView>
   );
 }
 
@@ -157,16 +210,53 @@ function CriarOrganizador({ usuarioId }: { usuarioId: string }) {
   const [aba, setAba] = useState<"evento" | "publicacao">("evento");
 
   return (
-    <View className="flex-1 bg-[#0B101E]">
-      <View className="px-4 pt-6 pb-2 w-full max-w-[800px] self-center">
-        <View className="flex-row bg-[#121829] p-1.5 rounded-full border border-border/40">
-          <SegmentoAba label="Evento" ativa={aba === "evento"} onPress={() => setAba("evento")} />
-          <SegmentoAba label="Publicação" ativa={aba === "publicacao"} onPress={() => setAba("publicacao")} />
-        </View>
-      </View>
+    <ScrollView className="flex-1 bg-[#0B101E]" contentContainerStyle={{ paddingBottom: 140 }}>
+      <View className="max-w-[1380px] mx-auto w-full flex-col gap-8 px-6 pt-10">
+        
+        {/* HEADER CONTROL BAR WITH MODE TABS */}
+        <View className="flex-col lg:flex-row lg:items-end justify-between gap-6 pb-4 border-b border-white/5">
+          <View className="flex-col gap-1">
+            <View className="flex-row items-center gap-2">
+              <View className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_12px_#10b981]" />
+              <Text className="text-[11px] uppercase tracking-wider text-emerald-400 font-semibold">Vybe Organizer Hub</Text>
+              <Text className="text-white/20">•</Text>
+              <Text className="text-[11px] text-[#94A3B8]">
+                {aba === "evento" ? "Criação de Evento" : "Feed da Cena"}
+              </Text>
+            </View>
+            <Text className="text-[28px] lg:text-[32px] text-white tracking-tight font-bold flex-row items-center gap-2">
+              Central de Criação
+            </Text>
+            <Text className="text-[#94A3B8] max-w-xl text-sm mt-1 leading-relaxed">
+              {aba === "evento" 
+                ? "Organize seus eventos, defina localizações, horários e convide os artistas da cena para participar." 
+                : "Atualizações para o público, anúncios importantes e cobertura de eventos passados."}
+            </Text>
+          </View>
 
-      {aba === "evento" ? <FormEvento usuarioId={usuarioId} /> : <FormPublicacaoOrganizador usuarioId={usuarioId} />}
-    </View>
+          {/* TWO DISTINCT TABS */}
+          <View className="flex-row p-1.5 bg-[#141a24] border border-white/10 rounded-2xl self-start lg:self-auto shadow-xl">
+            <Pressable 
+              onPress={() => setAba("evento")}
+              className={`flex-row items-center gap-2 px-5 py-2 rounded-xl transition-all duration-200 ${aba === "evento" ? "bg-emerald-600 shadow-[0_0_20px_rgba(16,185,129,0.45)]" : "hover:bg-white/5"}`}
+            >
+              <Calendar size={19} color={aba === "evento" ? "#fff" : "#94A3B8"} />
+              <Text className={`font-semibold text-sm ${aba === "evento" ? "text-white" : "text-[#94A3B8]"}`}>Evento</Text>
+            </Pressable>
+            
+            <Pressable 
+              onPress={() => setAba("publicacao")}
+              className={`flex-row items-center gap-2 px-5 py-2 rounded-xl transition-all duration-200 ${aba === "publicacao" ? "bg-emerald-600 shadow-[0_0_20px_rgba(16,185,129,0.45)]" : "hover:bg-white/5"}`}
+            >
+              <Sparkles size={19} color={aba === "publicacao" ? "#fff" : "#94A3B8"} />
+              <Text className={`font-semibold text-sm ${aba === "publicacao" ? "text-white" : "text-[#94A3B8]"}`}>Publicação</Text>
+            </Pressable>
+          </View>
+        </View>
+
+        {aba === "evento" ? <FormEvento usuarioId={usuarioId} /> : <FormPublicacaoOrganizador usuarioId={usuarioId} />}
+      </View>
+    </ScrollView>
   );
 }
 
@@ -274,70 +364,220 @@ function FormMusica({ usuarioId }: { usuarioId: string }) {
   // 2. Fragment adicionado em volta do retorno para acomodar o Modal
   return (
     <Fragment>
-      <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, paddingTop: 12, paddingBottom, maxWidth: 800, width: '100%', alignSelf: 'center' }} showsVerticalScrollIndicator={false}>
-        <Text className="text-2xl font-black text-white mb-5">Nova música</Text>
-
-        <Pressable
-          onPress={escolherCapa}
-          className="w-full h-44 rounded-3xl bg-[#121829] border border-dashed border-border/80 items-center justify-center mb-6 overflow-hidden relative"
-        >
-          {capaUri ? (
-            <Image source={{ uri: capaUri }} className="w-full h-full" resizeMode="contain" />
-          ) : (
-            <View className="items-center px-4">
-              <View className="w-12 h-12 rounded-full bg-surface items-center justify-center mb-2">
-                <ImageIcon size={22} color={colors.primary} />
+      <View className="flex-col-reverse lg:flex-row gap-6 items-start w-full">
+        {/* LEFT COLUMN */}
+        <View className="flex-col gap-0 w-full lg:flex-[7] bg-[#141a24]/80 rounded-2xl border border-white/5 shadow-2xl overflow-hidden">
+          {/* Card Header */}
+          <View className="flex-row items-center justify-between px-5 py-4 border-b border-white/5">
+            <View className="flex-row items-center gap-3">
+              <View className="w-8 h-8 rounded-lg bg-[#3B82F6]/15 items-center justify-center">
+                <Music size={16} color="#3B82F6" />
               </View>
-              <Text className="text-white font-semibold text-sm">Capa da música</Text>
-              <Text className="text-muted text-xs mt-1 text-center">Toque para selecionar uma imagem</Text>
-            </View>
-          )}
-        </Pressable>
-
-        <CampoTexto label="Título" placeholder="Ex: Melodia da Noite" value={nome} onChangeText={setNome} />
-        <CampoTexto label="Descrição" placeholder="Conte um pouco sobre essa faixa..." value={descricao} onChangeText={setDescricao} multiline numberOfLines={3} />
-        <CampoTexto label="Gênero Musical" placeholder="Ex: Rock, MPB, Indie..." value={genero} onChangeText={setGenero} />
-        
-        {/* 3. Trocado CampoTexto pelo CampoSelecionavel */}
-        <CampoSelecionavel
-          label="Data de Lançamento"
-          placeholder="DD/MM/AAAA"
-          valor={dataLancamento}
-          icone={<Calendar size={16} color={colors.muted} />}
-          onPress={() => setMostrarCalendario(true)}
-        />
-
-        <View className="mb-6">
-          <Text className="text-white text-xs font-semibold mb-2 ml-1">Arquivo de Áudio</Text>
-          <Pressable
-            onPress={escolherArquivo}
-            className="bg-[#121829] border border-border/80 rounded-2xl py-4 px-4 flex-row items-center justify-between"
-          >
-            <View className="flex-row items-center flex-1 mr-2">
-              <View className="w-10 h-10 rounded-xl bg-primary/20 items-center justify-center mr-3">
-                <Music size={20} color={colors.primary} />
+              <View>
+                <Text className="text-white text-sm font-bold">Lançar Nova Faixa</Text>
+                <Text className="text-[11px] text-[#64748B]">Música individual com áudio</Text>
               </View>
-              <Text numberOfLines={1} className="text-white font-semibold text-sm flex-1">
-                {arquivo ? arquivo.nome : "Escolher áudio do dispositivo"}
-              </Text>
             </View>
-            <Upload size={18} color={colors.muted} />
-          </Pressable>
+            <View className="px-2.5 py-1 rounded-full bg-[#3B82F6]/10 border border-[#3B82F6]/20">
+              <Text className="text-[10px] text-[#3B82F6] font-bold uppercase tracking-wider">SINGLE</Text>
+            </View>
+          </View>
+
+          <View className="p-5 flex-col gap-5">
+            {/* Capa */}
+            <View className="flex-col gap-2">
+              <View className="flex-row items-center justify-between">
+                <Text className="text-sm font-semibold text-white">Capa do Single</Text>
+                <Text className="text-[11px] text-[#64748B]">1:1 • Mínimo 800 x 800 px</Text>
+              </View>
+              <Pressable
+                onPress={escolherCapa}
+                className="rounded-xl bg-[#0a0e16] border border-dashed border-white/10 p-8 flex-col items-center justify-center overflow-hidden"
+              >
+                {capaUri ? (
+                  <Image source={{ uri: capaUri }} className="w-full aspect-square rounded-lg" resizeMode="cover" />
+                ) : (
+                  <>
+                    <View className="w-12 h-12 rounded-xl bg-[#1a2035] items-center justify-center mb-3">
+                      <ImageIcon size={22} color="#3B82F6" />
+                    </View>
+                    <Text className="text-white font-semibold text-sm mb-1">Arraste a capa da música aqui</Text>
+                    <Text className="text-xs text-[#64748B] text-center mb-4">Formatos aceitos: JPG ou PNG.</Text>
+                    <View className="flex-row items-center gap-2 bg-[#1a2035] border border-white/10 rounded-lg px-4 py-2">
+                      <Upload size={14} color="#94A3B8" />
+                      <Text className="text-[#94A3B8] text-xs font-medium">Selecionar arte do dispositivo</Text>
+                    </View>
+                  </>
+                )}
+              </Pressable>
+            </View>
+
+            {/* Título */}
+            <View className="flex-col gap-1.5">
+              <View className="flex-row items-center justify-between">
+                <Text className="text-sm font-semibold text-white">Título da Faixa</Text>
+                <Text className="text-[11px] text-[#64748B]">{nome.length}/60</Text>
+              </View>
+              <TextInput
+                className="bg-[#0a0e16] border border-white/10 w-full text-white text-sm px-4 py-3 rounded-xl"
+                placeholder="Ex: Melodia da Noite"
+                placeholderTextColor="#4B5563"
+                value={nome}
+                onChangeText={setNome}
+                maxLength={60}
+              />
+            </View>
+
+            {/* Descrição */}
+            <View className="flex-col gap-1.5">
+              <Text className="text-sm font-semibold text-white">Descrição & Notas</Text>
+              <TextInput
+                className="bg-[#0a0e16] border border-white/10 w-full text-white text-sm px-4 py-3 rounded-xl min-h-[90px]"
+                placeholder="Conte um pouco sobre essa faixa..."
+                placeholderTextColor="#4B5563"
+                value={descricao}
+                onChangeText={setDescricao}
+                multiline
+                textAlignVertical="top"
+              />
+            </View>
+
+            {/* Gênero + Data */}
+            <View className="flex-col sm:flex-row gap-4">
+              <View className="flex-col gap-1.5 flex-1">
+                <Text className="text-sm font-semibold text-white">Gênero Musical</Text>
+                <TextInput
+                  className="bg-[#0a0e16] border border-white/10 w-full text-white text-sm px-4 py-3 rounded-xl"
+                  placeholder="Ex: Rock, MPB..."
+                  placeholderTextColor="#4B5563"
+                  value={genero}
+                  onChangeText={setGenero}
+                />
+              </View>
+              <View className="flex-col gap-1.5 flex-1">
+                <Text className="text-sm font-semibold text-white">Data de Lançamento</Text>
+                <Pressable
+                  onPress={() => setMostrarCalendario(true)}
+                  className="bg-[#0a0e16] border border-white/10 w-full px-4 py-3 rounded-xl flex-row items-center justify-between"
+                >
+                  <Text className={`text-sm ${dataLancamento ? 'text-white' : 'text-[#4B5563]'}`}>
+                    {dataLancamento || "DD/MM/AAAA"}
+                  </Text>
+                  <Calendar size={15} color="#64748B" />
+                </Pressable>
+              </View>
+            </View>
+
+            {/* Arquivo de Áudio */}
+            <View className="flex-col gap-1.5">
+              <View className="flex-row items-center justify-between">
+                <Text className="text-sm font-semibold text-white">Arquivo de Áudio</Text>
+                <View className="flex-row gap-1.5">
+                  {["MP3", "WAV", "AAC"].map(f => (
+                    <View key={f} className="px-1.5 py-0.5 rounded bg-[#3B82F6]/10 border border-[#3B82F6]/20">
+                      <Text className="text-[10px] text-[#3B82F6] font-bold">{f}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+              <Pressable
+                onPress={escolherArquivo}
+                className="bg-[#0a0e16] border border-white/10 rounded-xl px-4 py-4 flex-row items-center justify-between"
+              >
+                <View className="flex-row items-center flex-1 mr-3 gap-3">
+                  <View className="w-9 h-9 rounded-lg bg-[#3B82F6]/10 items-center justify-center">
+                    <Music size={18} color="#3B82F6" />
+                  </View>
+                  <Text numberOfLines={1} className={`text-sm flex-1 ${arquivo ? 'text-white font-medium' : 'text-[#4B5563]'}`}>
+                    {arquivo ? arquivo.nome : "Escolher áudio do dispositivo"}
+                  </Text>
+                </View>
+                <Upload size={16} color="#64748B" />
+              </Pressable>
+            </View>
+
+            {/* Ações */}
+            <View className="flex-row items-center justify-between pt-4 border-t border-white/5">
+              {erro && (
+                <View className="bg-red-500/10 border border-red-500/20 p-3 rounded-xl mb-3">
+                  <Text className="text-red-400 text-xs font-medium">{erro}</Text>
+                </View>
+              )}
+              {sucesso && (
+                <View className="bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-xl mb-3">
+                  <Text className="text-emerald-400 text-xs font-medium">Música publicada com sucesso!</Text>
+                </View>
+              )}
+
+              <View className="flex-row items-center justify-between w-full">
+                <Pressable
+                  onPress={() => {
+                    setNome(""); setDescricao(""); setGenero(""); setDataLancamento(""); setCapaUri(null); setArquivo(null);
+                  }}
+                  className="flex-row items-center gap-1.5 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 active:opacity-70"
+                >
+                  <Upload size={15} color="#94A3B8" />
+                  <Text className="text-white text-xs font-semibold">Salvar Rascunho</Text>
+                </Pressable>
+
+                <Pressable
+                  onPress={publicar}
+                  disabled={enviando}
+                  className="flex-row items-center gap-2 px-6 py-2.5 rounded-xl bg-[#3B82F6] hover:bg-blue-500 shadow-[0_0_24px_rgba(37,99,235,0.4)] active:opacity-90"
+                >
+                  {enviando ? <ActivityIndicator color="#fff" size="small" /> : (
+                    <>
+                      <Upload size={16} color="white" />
+                      <Text className="text-white font-semibold text-sm">Publicar Música</Text>
+                    </>
+                  )}
+                </Pressable>
+              </View>
+            </View>
+          </View>
         </View>
 
-        {erro && <Text className="text-red-400 mb-4 text-center font-medium text-xs">{erro}</Text>}
-        {sucesso && <Text className="text-emerald-400 mb-4 text-center font-medium text-xs">Música publicada com sucesso!</Text>}
+        {/* RIGHT COLUMN: PREVIEW */}
+        <View className="hidden lg:flex w-full lg:flex-[5] flex-col gap-4 lg:sticky top-4">
+          <View className="bg-[#141a24]/80 border border-white/5 rounded-2xl overflow-hidden shadow-2xl">
+            {/* Preview header */}
+            <View className="flex-row items-center justify-between px-5 py-3 border-b border-white/5">
+              <View className="flex-row items-center gap-2">
+                <View className="w-2 h-2 rounded-full bg-emerald-400" />
+                <Text className="text-white text-xs font-bold uppercase tracking-wider">Preview do Single</Text>
+              </View>
+              <Text className="text-[11px] text-[#64748B]">Feed do Ouvinte</Text>
+            </View>
 
-        <Pressable
-          onPress={publicar}
-          disabled={enviando}
-          className="bg-primary rounded-2xl py-4 items-center active:opacity-90"
-        >
-          {enviando ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold text-sm">Publicar Música</Text>}
-        </Pressable>
-      </ScrollView>
+            {/* Capa */}
+            <View className="w-full aspect-square bg-[#0a0e16]">
+              {capaUri ? (
+                <Image source={{ uri: capaUri }} className="w-full h-full" resizeMode="cover" />
+              ) : (
+                <View className="w-full h-full items-center justify-center">
+                  <Music size={56} color="#1E3A5F" />
+                </View>
+              )}
+            </View>
 
-      {/* 4. Modal do calendário adicionado ao final */}
+            {/* Info */}
+            <View className="p-5">
+              <Text className="text-white font-black text-xl" numberOfLines={1}>{nome || "Melodia da Noite"}</Text>
+              <Text className="text-[#64748B] text-xs mt-1">
+                {genero ? genero : "Gênero Musical"}
+              </Text>
+
+              {arquivo && (
+                <View className="flex-row items-center gap-2 mt-4 bg-[#3B82F6]/10 rounded-lg px-3 py-2 border border-[#3B82F6]/15">
+                  <Music size={13} color="#3B82F6" />
+                  <Text className="text-[#3B82F6] text-xs flex-1" numberOfLines={1}>{arquivo.nome}</Text>
+                </View>
+              )}
+            </View>
+          </View>
+        </View>
+      </View>
+
       <DatePickerModal
         visible={mostrarCalendario}
         valor={dataLancamento}
@@ -442,87 +682,165 @@ function FormAlbum({ usuarioId }: { usuarioId: string }) {
   }
 
   return (
-    <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, paddingTop: 12, paddingBottom, maxWidth: 800, width: '100%', alignSelf: 'center' }} showsVerticalScrollIndicator={false}>
-      <Text className="text-2xl font-black text-white mb-5">Novo álbum</Text>
-
-      <Pressable
-        onPress={escolherCapa}
-        className="w-full h-44 rounded-3xl bg-[#121829] border border-dashed border-border/80 items-center justify-center mb-6 overflow-hidden"
-      >
-        {capaUri ? (
-          <Image source={{ uri: capaUri }} className="w-full h-full" resizeMode="contain" />
-        ) : (
-          <View className="items-center px-4">
-            <View className="w-12 h-12 rounded-full bg-surface items-center justify-center mb-2">
-              <Disc size={22} color={colors.primary} />
+    <View className="flex-col-reverse lg:flex-row gap-8 items-start w-full">
+      {/* LEFT COLUMN: FORM SECTION */}
+      <View className="flex-col gap-5 w-full lg:flex-[7]">
+        <View className="bg-[#141a24]/70 rounded-2xl p-6 flex-col gap-6 shadow-2xl border border-white/5 backdrop-blur-xl">
+          <View className="flex-row items-center justify-between pb-2 border-b border-white/5">
+            <View className="flex-row items-center gap-2.5">
+              <View className="w-8 h-8 rounded-lg bg-[#A855F7]/10 items-center justify-center">
+                <Disc size={18} color="#A855F7" />
+              </View>
+              <View>
+                <Text className="text-white text-lg font-bold">Novo Álbum</Text>
+                <Text className="text-xs text-[#94A3B8]">Agrupe suas músicas em um lançamento</Text>
+              </View>
             </View>
-            <Text className="text-white font-semibold text-sm">Capa do álbum</Text>
-            <Text className="text-muted text-xs mt-1 text-center">Toque para selecionar uma imagem</Text>
+            <View className="px-2.5 py-1 rounded-full bg-[#A855F7]/10 border border-[#A855F7]/20">
+              <Text className="text-[10px] text-[#A855F7] font-bold uppercase tracking-wider">ÁLBUM / EP</Text>
+            </View>
           </View>
-        )}
-      </Pressable>
 
-      <CampoTexto label="Nome do Álbum" placeholder="Ex: Meu Primeiro Disco" value={nome} onChangeText={setNome} />
+          {/* Capa */}
+          <View className="flex-col gap-2">
+            <View className="flex-row items-center justify-between">
+              <Text className="text-sm font-semibold text-white">Capa do Álbum</Text>
+              <Text className="text-xs text-[#94A3B8]">Proporção quadrada 1:1</Text>
+            </View>
+            <Pressable
+              onPress={escolherCapa}
+              className="group overflow-hidden rounded-xl bg-[#0a0e16]/80 border border-dashed border-white/15 p-6 flex-col items-center justify-center text-center hover:border-[#A855F7]/50 hover:bg-[#12162a]/60 transition-all"
+            >
+              {capaUri ? (
+                <ImageBackground source={{ uri: capaUri }} className="w-full aspect-square rounded-xl shadow-lg" resizeMode="cover" />
+              ) : (
+                <>
+                  <View className="w-12 h-12 rounded-full bg-[#182030] items-center justify-center mb-2 group-hover:scale-110 group-hover:bg-[#A855F7] transition-all shadow-md">
+                    <Disc size={24} color="#A855F7" />
+                  </View>
+                  <Text className="text-white font-medium text-sm mb-0.5">Toque para selecionar a capa</Text>
+                  <Text className="text-xs text-[#8D90A0] max-w-sm mb-3 text-center">A capa será o rosto principal do seu lançamento.</Text>
+                </>
+              )}
+            </Pressable>
+          </View>
 
-      <View className="mt-2 mb-4">
-        <Text className="text-white font-bold text-sm mb-1">Adicionar músicas (opcional)</Text>
-        <Text className="text-muted text-xs">
-          Selecione faixas para incluir neste álbum agora ou adicione depois.
-        </Text>
+          {/* Informações Básicas */}
+          <View className="flex-col gap-4">
+            <View className="flex-col gap-1.5 w-full">
+              <Text className="text-sm font-semibold text-white">Nome do Álbum</Text>
+              <TextInput
+                className="bg-[#0a0e16]/75 border border-white/10 w-full text-white text-sm px-4 py-3 rounded-xl focus:border-[#A855F7]"
+                placeholder="Ex: Meu Primeiro Disco"
+                placeholderTextColor="#64748B"
+                value={nome}
+                onChangeText={setNome}
+              />
+            </View>
+          </View>
+
+          <View className="mt-2 mb-2">
+            <Text className="text-white font-bold text-sm mb-1">Adicionar músicas (opcional)</Text>
+            <Text className="text-[#94A3B8] text-xs">
+              Selecione faixas já enviadas para incluir neste álbum.
+            </Text>
+          </View>
+
+          {carregandoMusicas ? (
+            <ActivityIndicator color="#A855F7" className="py-6" />
+          ) : minhasMusicas.length === 0 ? (
+            <View className="bg-[#0a0e16]/50 border border-white/5 rounded-xl p-4 mb-2">
+              <Text className="text-[#94A3B8] text-xs text-center">
+                Você ainda não publicou nenhuma música solta. Crie músicas primeiro para adicioná-las.
+              </Text>
+            </View>
+          ) : (
+            <View className="bg-[#0a0e16]/50 border border-white/5 rounded-2xl p-2 mb-2 max-h-[250px] overflow-hidden">
+              <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={false}>
+                {minhasMusicas.map((item) => {
+                  const marcada = selecionadas.has(item.id);
+                  return (
+                    <Pressable
+                      key={item.id}
+                      onPress={() => alternarSelecao(item.id)}
+                      className={`flex-row items-center p-3 rounded-xl transition-colors ${marcada ? 'bg-[#A855F7]/10' : 'hover:bg-white/5'}`}
+                    >
+                      {item.capa_url ? (
+                        <Image source={{ uri: item.capa_url }} className="w-10 h-10 rounded-lg mr-3" />
+                      ) : (
+                        <View className="w-10 h-10 rounded-lg bg-[#182030] items-center justify-center mr-3">
+                          <Music size={16} color="#64748B" />
+                        </View>
+                      )}
+                      <Text numberOfLines={1} className={`font-medium flex-1 text-sm ${marcada ? 'text-white' : 'text-[#CBD5E1]'}`}>
+                        {item.nome}
+                      </Text>
+                      <View
+                        className={`w-6 h-6 rounded-full items-center justify-center border transition-colors ${
+                          marcada ? "bg-[#A855F7] border-[#A855F7]" : "border-white/20 bg-transparent"
+                        }`}
+                      >
+                        {marcada && <Check color="#fff" size={14} />}
+                      </View>
+                    </Pressable>
+                  );
+                })}
+              </ScrollView>
+            </View>
+          )}
+
+          {/* Ações */}
+          <View className="flex-col gap-3 mt-2 pt-4 border-t border-white/5">
+            {erro && (
+              <View className="bg-red-500/10 border border-red-500/20 p-3 rounded-xl flex-row items-center gap-2">
+                <Text className="text-red-400 text-xs font-medium flex-1">{erro}</Text>
+              </View>
+            )}
+            {sucesso && (
+              <View className="bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-xl flex-row items-center gap-2">
+                <Text className="text-emerald-400 text-xs font-medium flex-1">Álbum criado com sucesso!</Text>
+              </View>
+            )}
+
+            <Pressable
+              onPress={criarAlbum}
+              disabled={enviando}
+              className="bg-[#A855F7] rounded-xl py-4 items-center active:opacity-90 shadow-lg shadow-[#A855F7]/20"
+            >
+              {enviando ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold text-sm">Criar Álbum</Text>}
+            </Pressable>
+          </View>
+        </View>
       </View>
 
-      {carregandoMusicas ? (
-        <ActivityIndicator color={colors.primary} className="py-6" />
-      ) : minhasMusicas.length === 0 ? (
-        <View className="bg-[#121829] border border-border/40 rounded-2xl p-4 mb-6">
-          <Text className="text-muted text-xs text-center">
-            Você ainda não publicou nenhuma música. Publique na aba "Música" para adicioná-las.
+      {/* RIGHT COLUMN: PREVIEW */}
+      <View className="hidden lg:flex w-full lg:flex-[5] flex-col gap-4 lg:sticky top-4">
+        <View className="bg-[#181C24]/50 border border-white/5 rounded-2xl p-6 backdrop-blur-sm">
+          <Text className="text-white text-sm font-bold mb-4 flex-row items-center">
+            <Disc size={16} color="#9CA3AF" className="mr-2" /> Pré-visualização do Álbum
           </Text>
-        </View>
-      ) : (
-        <View className="bg-[#121829] border border-border/60 rounded-3xl p-2 mb-6">
-          {minhasMusicas.map((item) => {
-            const marcada = selecionadas.has(item.id);
-            return (
-              <Pressable
-                key={item.id}
-                onPress={() => alternarSelecao(item.id)}
-                className="flex-row items-center p-3 rounded-2xl active:bg-white/5"
-              >
-                {item.capa_url ? (
-                  <Image source={{ uri: item.capa_url }} className="w-10 h-10 rounded-xl mr-3" />
-                ) : (
-                  <View className="w-10 h-10 rounded-xl bg-surface items-center justify-center mr-3">
-                    <Music size={16} color={colors.muted} />
-                  </View>
-                )}
-                <Text numberOfLines={1} className="text-white font-medium flex-1 text-sm">
-                  {item.nome}
-                </Text>
-                <View
-                  className={`w-6 h-6 rounded-full items-center justify-center border ${
-                    marcada ? "bg-primary border-primary" : "border-border/80 bg-transparent"
-                  }`}
-                >
-                  {marcada && <Check color="#fff" size={14} />}
+          
+          <View className="flex-row gap-4 items-end pointer-events-none opacity-90 mb-4">
+            <View className="w-32 h-32 rounded-lg bg-[#0a0e16] border border-white/10 overflow-hidden shadow-2xl">
+              {capaUri ? (
+                <Image source={{ uri: capaUri }} className="w-full h-full" resizeMode="cover" />
+              ) : (
+                <View className="w-full h-full items-center justify-center">
+                  <Disc size={40} color="#64748B" />
                 </View>
-              </Pressable>
-            );
-          })}
+              )}
+            </View>
+            <View className="flex-1 pb-1">
+              <Text className="text-[10px] text-[#A855F7] font-bold uppercase tracking-widest mb-1">Álbum</Text>
+              <Text className="text-2xl font-black text-white" numberOfLines={2}>
+                {nome || "Novo Álbum"}
+              </Text>
+              <Text className="text-sm text-[#94A3B8] mt-1">{selecionadas.size} faixa(s) selecionada(s)</Text>
+            </View>
+          </View>
         </View>
-      )}
-
-      {erro && <Text className="text-red-400 mb-4 text-center font-medium text-xs">{erro}</Text>}
-      {sucesso && <Text className="text-emerald-400 mb-4 text-center font-medium text-xs">Álbum criado com sucesso!</Text>}
-
-      <Pressable
-        onPress={criarAlbum}
-        disabled={enviando}
-        className="bg-primary rounded-2xl py-4 items-center   active:opacity-90"
-      >
-        {enviando ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold text-sm">Criar Álbum</Text>}
-      </Pressable>
-    </ScrollView>
+      </View>
+    </View>
   );
 }
 
@@ -540,13 +858,16 @@ function FormEvento({ usuarioId }: { usuarioId: string }) {
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [sucesso, setSucesso] = useState(false);
-
-  const [mostrarCalendario, setMostrarCalendario] = useState(false);
-  const [mostrarRelogio, setMostrarRelogio] = useState(false);
-
+  
   // Convites
   const [musicos, setMusicos] = useState<any[]>([]);
   const [convidados, setConvidados] = useState<string[]>([]);
+
+  const [buscaArtista, setBuscaArtista] = useState("");
+  const artistasFiltrados = buscaArtista.trim().length > 0 ? musicos.filter((m) => (m.apelido || "Sem Nome").toLowerCase().includes(buscaArtista.toLowerCase())) : [];
+
+  const [mostrarCalendario, setMostrarCalendario] = useState(false);
+  const [mostrarRelogio, setMostrarRelogio] = useState(false);
 
   useEffect(() => {
     supabase
@@ -584,10 +905,27 @@ function FormEvento({ usuarioId }: { usuarioId: string }) {
     setEnviando(true);
     
     try {
-      // 1. Criar Evento
+      // 1. Fazer upload da foto primeiro
+      let fotoUrl: string | null = null;
+      if (capaUri) {
+        try {
+          fotoUrl = await enviarArquivoParaStorage({
+            bucket: "eventos",
+            uri: capaUri,
+            nomeArquivo: `${usuarioId}-evento-${Date.now()}.jpg`,
+            contentType: "image/jpeg",
+          });
+        } catch (storageError: any) {
+          throw new Error("Erro no upload do bucket 'eventos': " + storageError.message);
+        }
+      }
+
+      // 2. Criar Evento
       const { data: novoEvento, error } = await supabase.from("evento").insert({
         organizador_id: usuarioId,
         nome,
+        descricao,
+        capa_url: fotoUrl,
         data: data ? parseDateToDB(data) : null,
         horario: horario || null,
         localizacao: localizacao || null,
@@ -596,26 +934,19 @@ function FormEvento({ usuarioId }: { usuarioId: string }) {
         status: comoRascunho ? "rascunho" : "aberto",
       }).select().single();
 
-      if (error) throw error;
-      // 2. Fazer upload da foto
-      let fotoUrl: string | null = null;
-      if (capaUri) {
-        fotoUrl = await enviarArquivoParaStorage({
-          bucket: "capa_musica",
-          uri: capaUri,
-          nomeArquivo: `${usuarioId}-evento-${Date.now()}.jpg`,
-          contentType: "image/jpeg",
-        });
+      if (error) {
+        throw new Error("Erro ao salvar o evento na tabela: " + error.message);
       }
 
       // 3. Criar Publicacao
-      await supabase.from("publicacao").insert({
+      const { error: errorPub } = await supabase.from("publicacao").insert({
         usuario_id: usuarioId,
         evento_id: novoEvento.id,
         foto_url: fotoUrl,
         descricao,
         status: comoRascunho ? "rascunho" : "ativo",
       });
+      if (errorPub) throw new Error("Erro ao criar publicação: " + errorPub.message);
 
       let redirecionarConversaId = null;
 
@@ -697,127 +1028,290 @@ function FormEvento({ usuarioId }: { usuarioId: string }) {
 
   return (
     <Fragment>
-      <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, paddingTop: 12, paddingBottom, maxWidth: 800, width: '100%', alignSelf: 'center' }} showsVerticalScrollIndicator={false}>
-      <Text className="text-2xl font-black text-white mb-5">Novo evento</Text>
-
-      <Pressable onPress={escolherFoto} className="w-full h-48 bg-white/5 border border-white/10 rounded-2xl mb-5 overflow-hidden border-dashed">
-        {capaUri ? (
-          <ImageBackground
-            source={{ uri: capaUri }}
-            resizeMode="cover"
-            className="w-full h-full items-end justify-end p-3"
-          >
-            <View className="bg-black/60 px-3 py-1.5 rounded-full flex-row items-center">
-              <ImageIcon size={12} color="#fff" />
-              <Text className="text-white text-[10px] font-bold ml-1.5">Trocar foto</Text>
+      <View className="flex-col-reverse lg:flex-row gap-8 items-start w-full">
+        {/* LEFT COLUMN: FORM SECTION */}
+        <View className="flex-col gap-5 w-full lg:flex-[7]">
+          <View className="bg-[#141a24]/70 rounded-2xl p-6 flex-col gap-6 shadow-2xl border border-white/5 backdrop-blur-xl">
+            <View className="flex-row items-center justify-between pb-2 border-b border-white/5">
+              <View className="flex-row items-center gap-2.5">
+                <View className="w-8 h-8 rounded-lg bg-emerald-500/10 items-center justify-center">
+                  <Calendar size={18} color="#34d399" />
+                </View>
+                <View>
+                  <Text className="text-white text-lg font-bold">Criar Evento</Text>
+                  <Text className="text-xs text-[#94A3B8]">Organize shows e festivais</Text>
+                </View>
+              </View>
+              <View className="px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                <Text className="text-[10px] text-emerald-300 font-bold uppercase tracking-wider">EVENTO • AO VIVO</Text>
+              </View>
             </View>
-          </ImageBackground>
-        ) : (
-          <View className="w-full h-full items-center justify-center">
-            <View className="w-12 h-12 bg-white/5 rounded-full items-center justify-center mb-2">
-              <Upload color="#94A3B8" size={24} />
+
+            {/* Capa */}
+            <View className="flex-col gap-2">
+              <View className="flex-row items-center justify-between">
+                <Text className="text-sm font-semibold text-white">Banner / Foto do Evento</Text>
+                <Text className="text-xs text-[#94A3B8]">Proporção quadrada 1:1</Text>
+              </View>
+              <Pressable
+                onPress={escolherFoto}
+                className="group overflow-hidden rounded-xl bg-[#0a0e16]/80 border border-dashed border-white/15 p-6 flex-col items-center justify-center text-center hover:border-emerald-500/50 hover:bg-[#12162a]/60 transition-all"
+              >
+                {capaUri ? (
+                  <ImageBackground source={{ uri: capaUri }} className="w-full aspect-square rounded-xl shadow-lg" resizeMode="cover" />
+                ) : (
+                  <>
+                    <View className="w-12 h-12 rounded-full bg-[#182030] items-center justify-center mb-2 group-hover:scale-110 group-hover:bg-emerald-600 transition-all shadow-md">
+                      <Upload size={24} color="#34d399" />
+                    </View>
+                    <Text className="text-white font-medium text-sm mb-0.5">Toque para selecionar o banner</Text>
+                    <Text className="text-xs text-[#8D90A0] max-w-sm mb-3 text-center">Imagem em formato quadrado para destaque no feed.</Text>
+                  </>
+                )}
+              </Pressable>
             </View>
-            <Text className="text-gray-400 font-medium text-sm">Toque para adicionar o Banner / Foto do Evento</Text>
-          </View>
-        )}
-      </Pressable>
 
-      <CampoTexto label="Nome do Evento" placeholder="Ex: Festival de Verão" value={nome} onChangeText={setNome} />
-      
-      <View className="mb-4">
-        <Text className="text-white/60 text-xs font-bold mb-1.5 ml-1 uppercase tracking-wider">Descrição (Para o Feed)</Text>
-        <TextInput
-          value={descricao}
-          onChangeText={setDescricao}
-          placeholder="Conte um pouco sobre o evento..."
-          placeholderTextColor="#64748B"
-          multiline
-          className="bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 text-white text-[15px] min-h-[100px]"
-          style={{ textAlignVertical: "top" }}
-        />
-      </View>
+            {/* Informações Básicas */}
+            <View className="flex-col sm:flex-row gap-4">
+              <View className="flex-col gap-1.5 flex-[2]">
+                <Text className="text-sm font-semibold text-white">Nome do Evento</Text>
+                <TextInput
+                  className="bg-[#0a0e16]/75 border border-white/10 w-full text-white text-sm px-4 py-3 rounded-xl focus:border-emerald-500"
+                  placeholder="Ex: Festival de Inverno"
+                  placeholderTextColor="#64748B"
+                  value={nome}
+                  onChangeText={setNome}
+                />
+              </View>
+              <View className="flex-col gap-1.5 flex-1">
+                <Text className="text-sm font-semibold text-white">Capacidade</Text>
+                <TextInput
+                  className="bg-[#0a0e16]/75 border border-white/10 w-full text-white text-sm px-4 py-3 rounded-xl focus:border-emerald-500"
+                  placeholder="Ex: 500"
+                  placeholderTextColor="#64748B"
+                  value={capacidade}
+                  onChangeText={setCapacidade}
+                  keyboardType="numeric"
+                />
+              </View>
+            </View>
 
-      <CampoSelecionavel
-        label="Data"
-        placeholder="Selecionar data"
-        valor={data}
-        icone={<Calendar size={16} color={colors.muted} />}
-        onPress={() => setMostrarCalendario(true)}
-      />
-      <CampoSelecionavel
-        label="Horário"
-        placeholder="Selecionar horário"
-        valor={horario}
-        icone={<Clock size={16} color={colors.muted} />}
-        onPress={() => setMostrarRelogio(true)}
-      />
-      <CampoTexto label="Localização" placeholder="Ex: Av. Paulista, 1000 - SP" value={localizacao} onChangeText={setLocalizacao} />
-      <CampoTexto label="Gênero Principal" placeholder="Ex: Indie / Rock" value={generoMusical} onChangeText={setGeneroMusical} />
-      <CampoTexto label="Capacidade de Público" placeholder="Ex: 500" value={capacidade} onChangeText={setCapacidade} keyboardType="numeric" />
+            <View className="flex-col sm:flex-row gap-4">
+              <View className="flex-col gap-1.5 flex-1">
+                <Text className="text-sm font-semibold text-white">Localização</Text>
+                <TextInput
+                  className="bg-[#0a0e16]/75 border border-white/10 w-full text-white text-sm px-4 py-3 rounded-xl focus:border-emerald-500"
+                  placeholder="Ex: Av. Paulista, 1000 - SP"
+                  placeholderTextColor="#64748B"
+                  value={localizacao}
+                  onChangeText={setLocalizacao}
+                />
+              </View>
+              <View className="flex-col gap-1.5 flex-1">
+                <Text className="text-sm font-semibold text-white">Gênero Principal</Text>
+                <TextInput
+                  className="bg-[#0a0e16]/75 border border-white/10 w-full text-white text-sm px-4 py-3 rounded-xl focus:border-emerald-500"
+                  placeholder="Ex: Indie / Rock"
+                  placeholderTextColor="#64748B"
+                  value={generoMusical}
+                  onChangeText={setGeneroMusical}
+                />
+              </View>
+            </View>
 
-      {musicos.length > 0 && (
-        <View className="mb-6 bg-white/5 border border-white/10 rounded-2xl p-4">
-          <Text className="text-white/60 text-xs font-bold mb-3 uppercase tracking-wider">Convidar Artistas</Text>
-          <View className="flex-row flex-wrap gap-2">
-            {musicos.map((m) => {
-              const selecionado = convidados.includes(m.usuario_id);
-              return (
+            <View className="flex-col sm:flex-row gap-4">
+              <View className="flex-col gap-1.5 flex-1">
+                <Text className="text-sm font-semibold text-white">Data</Text>
                 <Pressable
-                  key={m.usuario_id}
-                  onPress={() => toggleConvidado(m.usuario_id)}
-                  className={`px-3 py-1.5 rounded-full border ${
-                    selecionado ? "bg-primary border-primary" : "bg-white/5 border-white/10"
-                  }`}
+                  onPress={() => setMostrarCalendario(true)}
+                  className="bg-[#0a0e16]/75 border border-white/10 w-full px-4 py-3 rounded-xl flex-row items-center justify-between"
                 >
-                  <Text className={`text-xs font-medium ${selecionado ? "text-white" : "text-white/70"}`}>
-                    {m.apelido || "Sem Nome"}
+                  <Text className={`text-sm ${data ? "text-white" : "text-[#64748B]"}`}>
+                    {data || "Selecionar data"}
                   </Text>
+                  <Calendar size={16} color="#64748B" />
                 </Pressable>
-              );
-            })}
+              </View>
+              <View className="flex-col gap-1.5 flex-1">
+                <Text className="text-sm font-semibold text-white">Horário</Text>
+                <Pressable
+                  onPress={() => setMostrarRelogio(true)}
+                  className="bg-[#0a0e16]/75 border border-white/10 w-full px-4 py-3 rounded-xl flex-row items-center justify-between"
+                >
+                  <Text className={`text-sm ${horario ? "text-white" : "text-[#64748B]"}`}>
+                    {horario || "Selecionar horário"}
+                  </Text>
+                  <Clock size={16} color="#64748B" />
+                </Pressable>
+              </View>
+            </View>
+
+            <View className="flex-col gap-1.5">
+              <Text className="text-sm font-semibold text-white">Descrição do Evento</Text>
+              <TextInput
+                className="bg-[#0a0e16]/75 border border-white/10 w-full text-white text-sm px-4 py-3 rounded-xl focus:border-emerald-500 min-h-[100px]"
+                placeholder="Conte um pouco sobre o evento..."
+                placeholderTextColor="#64748B"
+                value={descricao}
+                onChangeText={setDescricao}
+                multiline
+                textAlignVertical="top"
+              />
+            </View>
+
+            {/* Convidar Artistas */}
+            <View className="flex-col gap-3 pt-2 border-t border-white/5">
+              <View className="flex-col gap-1">
+                <Text className="text-sm font-semibold text-white flex-row items-center gap-1.5"><UserSearch size={16} color="#34d399" /> Convidar Artistas da Cena</Text>
+                <Text className="text-xs text-[#94A3B8]">Eles receberão um convite no chat para confirmar a participação.</Text>
+              </View>
+
+              <View className="relative z-50">
+                <TextInput
+                  className="bg-[#0a0e16]/75 border border-white/10 w-full text-white text-sm px-4 py-3 rounded-xl focus:border-emerald-500"
+                  placeholder="Digite o nome do artista para buscar..."
+                  placeholderTextColor="#64748B"
+                  value={buscaArtista}
+                  onChangeText={setBuscaArtista}
+                />
+                
+                {/* Search Results */}
+                {buscaArtista.trim().length > 0 && (
+                  <View className="absolute top-full mt-2 w-full bg-[#182030] border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden max-h-48">
+                    <ScrollView nestedScrollEnabled>
+                      {artistasFiltrados.length === 0 ? (
+                        <Text className="text-[#94A3B8] text-sm text-center py-4">Nenhum artista encontrado.</Text>
+                      ) : (
+                        artistasFiltrados.map((m) => {
+                          const selecionado = convidados.includes(m.usuario_id);
+                          return (
+                            <Pressable
+                              key={m.usuario_id}
+                              onPress={() => {
+                                toggleConvidado(m.usuario_id);
+                                setBuscaArtista("");
+                              }}
+                              className={`flex-row items-center gap-3 p-3 border-b border-white/5 active:bg-white/5 ${selecionado ? "bg-emerald-500/10" : ""}`}
+                            >
+                              {m.foto_url ? (
+                                <Image source={{ uri: m.foto_url }} className="w-8 h-8 rounded-full" />
+                              ) : (
+                                <View className="w-8 h-8 rounded-full bg-white/10 items-center justify-center">
+                                  <UserSearch size={14} color="#94A3B8" />
+                                </View>
+                              )}
+                              <Text className={`text-sm font-medium flex-1 ${selecionado ? "text-emerald-400" : "text-white"}`}>{m.apelido || "Sem Nome"}</Text>
+                              {selecionado && <CheckCircle2 size={16} color="#34d399" />}
+                            </Pressable>
+                          );
+                        })
+                      )}
+                    </ScrollView>
+                  </View>
+                )}
+              </View>
+
+              {/* Selected Chips */}
+              {convidados.length > 0 && (
+                <View className="flex-row flex-wrap gap-2 mt-2">
+                  {convidados.map(id => {
+                    const musico = musicos.find(m => m.usuario_id === id);
+                    if (!musico) return null;
+                    return (
+                      <Pressable 
+                        key={id}
+                        onPress={() => toggleConvidado(id)}
+                        className="flex-row items-center gap-2 pl-1.5 pr-3 py-1.5 bg-emerald-500/20 border border-emerald-500/30 rounded-full"
+                      >
+                        {musico.foto_url ? (
+                          <Image source={{ uri: musico.foto_url }} className="w-5 h-5 rounded-full" />
+                        ) : (
+                          <View className="w-5 h-5 rounded-full bg-white/20" />
+                        )}
+                        <Text className="text-emerald-300 text-xs font-semibold">{musico.apelido}</Text>
+                        <Text className="text-emerald-400/50 text-[10px] ml-1 font-bold">×</Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              )}
+            </View>
+
+            {erro && <Text className="text-red-400 text-center font-medium text-xs">{erro}</Text>}
+            {sucesso && <Text className="text-emerald-400 text-center font-medium text-xs">Evento salvo com sucesso!</Text>}
+
+            {/* Ações */}
+            <View className="flex-row items-center justify-end gap-3 pt-2 border-t border-white/5">
+              <Pressable
+                onPress={() => publicar(true)}
+                disabled={enviando}
+                className="px-5 py-3 rounded-xl border border-white/10 hover:bg-white/5 transition-all"
+              >
+                <Text className="text-white text-sm font-semibold">Salvar Rascunho</Text>
+              </Pressable>
+
+              <Pressable
+                onPress={() => publicar(false)}
+                disabled={enviando}
+                className="px-7 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 flex-row items-center gap-2 shadow-[0_0_24px_rgba(16,185,129,0.4)] transition-all"
+              >
+                {enviando ? <ActivityIndicator size="small" color="#fff" /> : (
+                  <Text className="text-white text-sm font-semibold">Publicar Evento</Text>
+                )}
+              </Pressable>
+            </View>
           </View>
         </View>
-      )}
 
-      {erro && <Text className="text-red-400 mb-4 text-center font-medium text-xs">{erro}</Text>}
-      {sucesso && (
-        <Text className="text-emerald-400 mb-4 text-center font-medium text-xs">
-          Evento salvo!
-        </Text>
-      )}
+        {/* RIGHT COLUMN: PREVIEW */}
+        <View className="hidden lg:flex flex-col gap-5 w-full lg:flex-[5] lg:sticky top-8">
+          <View className="bg-[#141a24]/70 rounded-2xl p-6 flex-col gap-4 shadow-2xl border border-white/5 backdrop-blur-xl relative overflow-hidden">
+            <View className="flex-row items-center justify-between pb-1">
+              <View className="flex-row items-center gap-1.5">
+                <View className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                <Text className="text-[10px] uppercase tracking-wider text-emerald-400 font-bold">Preview do Evento</Text>
+              </View>
+              <Text className="text-xs text-[#94A3B8]">Feed Principal</Text>
+            </View>
 
-      <View className="flex-row gap-3 mt-2">
-        <Pressable
-          onPress={() => publicar(true)}
-          disabled={enviando}
-          className="flex-1 bg-white/10 rounded-2xl py-4 items-center active:opacity-70 border border-white/10"
-        >
-          <Text className="text-white font-bold text-sm">Salvar Rascunho</Text>
-        </Pressable>
+            {/* Artwork */}
+            <View className="relative w-full aspect-square rounded-2xl bg-[#101520] overflow-hidden border border-white/10 items-center justify-center shadow-2xl">
+              {capaUri ? (
+                <ImageBackground source={{ uri: capaUri }} className="w-full h-full" resizeMode="cover" />
+              ) : (
+                <View className="items-center opacity-30">
+                  <Calendar size={48} color="#fff" />
+                </View>
+              )}
+            </View>
 
-        <Pressable
-          onPress={() => publicar(false)}
-          disabled={enviando}
-          className="flex-1 bg-primary rounded-2xl py-4 items-center active:opacity-90"
-        >
-          {enviando ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold text-sm">Publicar Evento</Text>}
-        </Pressable>
+            {/* Info */}
+            <View className="flex-col gap-0.5 mt-2">
+              <Text className="text-lg font-bold text-white truncate">{nome || "Nome do Evento"}</Text>
+              <Text className="text-xs text-emerald-400 font-medium">
+                {data ? `${data} ${horario ? `• ${horario}` : ""}` : "Data a definir"}
+              </Text>
+              <Text className="text-xs text-[#94A3B8] mt-1" numberOfLines={2}>
+                {localizacao || "Localização a definir"} • {convidados.length} artista{convidados.length !== 1 && "s"} convidado{convidados.length !== 1 && "s"}
+              </Text>
+            </View>
+          </View>
+        </View>
       </View>
-    </ScrollView>
 
-    <DatePickerModal
-      visible={mostrarCalendario}
-      valor={data}
-      onFechar={() => setMostrarCalendario(false)}
-      onSelecionar={setData}
-      dataMinima={new Date()}
-    />
-    <TimePickerModal
-      visible={mostrarRelogio}
-      valor={horario}
-      onFechar={() => setMostrarRelogio(false)}
-      onSelecionar={setHorario}
-    />
+      <DatePickerModal
+        visible={mostrarCalendario}
+        valor={data}
+        onFechar={() => setMostrarCalendario(false)}
+        onSelecionar={setData}
+        dataMinima={new Date()}
+      />
+      <TimePickerModal
+        visible={mostrarRelogio}
+        valor={horario}
+        onFechar={() => setMostrarRelogio(false)}
+        onSelecionar={setHorario}
+      />
     </Fragment>
   );
 }
@@ -839,8 +1333,9 @@ function FormPublicacaoMusico({ usuarioId }: { usuarioId: string }) {
   }, [usuarioId]);
 
   function escolher(tipo: "musica" | "album", item: any) {
-    setItemEscolhido({ tipo, id: item.id, nome: item.nome, capa_url: item.capa_url });
-    setCapaUri(null);
+    setItemEscolhido((atual) =>
+      atual?.id === item.id ? null : { tipo, id: item.id, nome: item.nome, capa_url: item.capa_url }
+    );
     setDescricao((atual) => atual || `Confira ${tipo === "musica" ? "minha música" : "meu álbum"} "${item.nome}"!`);
   }
 
@@ -860,16 +1355,16 @@ function FormPublicacaoMusico({ usuarioId }: { usuarioId: string }) {
   async function publicar(comoRascunho: boolean) {
     setErro(null);
     setSucesso(false);
-    if (!descricao && !capaUri && !itemEscolhido?.capa_url) {
-      setErro("Escreva uma descrição ou escolha uma foto.");
+    if (!descricao && !capaUri && !itemEscolhido) {
+      setErro("Escreva uma descrição, anexe uma mídia ou selecione uma música/álbum.");
       return;
     }
     setEnviando(true);
     try {
-      let fotoUrl: string | null = itemEscolhido?.capa_url ?? null;
+      let uploadedCapaUrl: string | null = null;
       if (capaUri) {
-        fotoUrl = await enviarArquivoParaStorage({
-          bucket: "capa_musica",
+        uploadedCapaUrl = await enviarArquivoParaStorage({
+          bucket: "publicacao_midia",
           uri: capaUri,
           nomeArquivo: `${usuarioId}-post-${Date.now()}.jpg`,
           contentType: "image/jpeg",
@@ -878,8 +1373,10 @@ function FormPublicacaoMusico({ usuarioId }: { usuarioId: string }) {
 
       const { error } = await supabase.from("publicacao").insert({
         usuario_id: usuarioId,
-        foto_url: fotoUrl,
+        foto_url: uploadedCapaUrl,
         descricao: descricao || null,
+        musica_id: itemEscolhido?.tipo === "musica" ? itemEscolhido.id : null,
+        album_id: itemEscolhido?.tipo === "album" ? itemEscolhido.id : null,
         status: comoRascunho ? "rascunho" : "ativo",
       });
       if (error) throw error;
@@ -896,76 +1393,232 @@ function FormPublicacaoMusico({ usuarioId }: { usuarioId: string }) {
     }
   }
 
-  const fotoPreview = capaUri ?? itemEscolhido?.capa_url ?? null;
+  const fotoPreview = capaUri;
 
   return (
-    <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, paddingTop: 12, paddingBottom, maxWidth: 800, width: '100%', alignSelf: 'center' }} showsVerticalScrollIndicator={false}>
-      <Text className="text-2xl font-black text-white mb-5">Nova publicação</Text>
-
-      {/* Card da Imagem do Post no estilo do Feed */}
-      <Pressable
-        onPress={escolherFoto}
-        className="w-full h-56 rounded-3xl bg-[#121829] border border-dashed border-border/80 items-center justify-center mb-6 overflow-hidden relative"
-      >
-        {fotoPreview ? (
-          <Image source={{ uri: fotoPreview }} className="w-full h-full" resizeMode="contain" />
-        ) : (
-          <View className="items-center px-4">
-            <View className="w-12 h-12 rounded-full bg-surface items-center justify-center mb-2">
-              <ImageIcon size={22} color={colors.primary} />
+    <View className="flex-col-reverse lg:flex-row gap-6 items-start w-full">
+      {/* LEFT COLUMN */}
+      <View className="flex-col gap-0 w-full lg:flex-[7] bg-[#141a24]/80 rounded-2xl border border-white/5 shadow-2xl overflow-hidden">
+        {/* Card Header */}
+        <View className="flex-row items-center justify-between px-5 py-4 border-b border-white/5">
+          <View className="flex-row items-center gap-3">
+            <View className="w-8 h-8 rounded-lg bg-emerald-500/10 items-center justify-center">
+              <Sparkles size={16} color="#34d399" />
             </View>
-            <Text className="text-white font-semibold text-sm">Selecione uma imagem</Text>
-            <Text className="text-muted text-xs mt-1 text-center">Ou escolha um item abaixo para importar a foto</Text>
+            <View>
+              <Text className="text-white text-sm font-bold">Nova Publicação na Cena</Text>
+              <Text className="text-[11px] text-[#64748B]">Atualizações para fãs, bastidores e novidades</Text>
+            </View>
           </View>
-        )}
-      </Pressable>
-
-      <CampoTexto label="Legenda" placeholder="O que você deseja compartilhar hoje?" value={descricao} onChangeText={setDescricao} multiline numberOfLines={4} />
-
-      {(minhasMusicas.length > 0 || meusAlbuns.length > 0) && (
-        <View className="mt-2 mb-6">
-          <Text className="text-white font-bold text-sm mb-1">Divulgar item do seu catálogo (opcional)</Text>
-          <Text className="text-muted text-xs mb-3">
-            Selecionar preenche o texto e a foto com as informações do item.
-          </Text>
-          <View>
-            {meusAlbuns.map((a) => (
-              <ItemEscolha key={`album-${a.id}`} nome={a.nome} tag="Álbum" selecionado={itemEscolhido?.id === a.id} onPress={() => escolher("album", a)} />
-            ))}
-            {minhasMusicas.map((m) => (
-              <ItemEscolha key={`musica-${m.id}`} nome={m.nome} tag="Música" selecionado={itemEscolhido?.id === m.id} onPress={() => escolher("musica", m)} />
-            ))}
+          <View className="px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+            <Text className="text-[10px] text-emerald-300 font-bold uppercase tracking-wider">FEED DA CENA</Text>
           </View>
         </View>
-      )}
 
-      {erro && <Text className="text-red-400 mb-4 text-center font-medium text-xs">{erro}</Text>}
-      {sucesso && (
-        <Text className="text-emerald-400 mb-4 text-center font-medium text-xs">
-          Publicação salva!
-        </Text>
-      )}
+        <View className="p-5 flex-col gap-5">
+          {/* Legenda */}
+          <View className="flex-col gap-1.5">
+            <Text className="text-sm font-semibold text-white">Legenda da Publicação</Text>
+            <TextInput
+              className="bg-[#0a0e16] border border-white/10 w-full text-white text-sm px-4 py-3 rounded-xl min-h-[100px]"
+              placeholder="O que você deseja compartilhar hoje com a cena?"
+              placeholderTextColor="#4B5563"
+              value={descricao}
+              onChangeText={setDescricao}
+              multiline
+              textAlignVertical="top"
+            />
+          </View>
 
-      <View className="flex-row gap-3 mt-2">
-        <Pressable
-          onPress={() => publicar(true)}
-          disabled={enviando}
-          className="flex-1 bg-white/10 rounded-2xl py-4 items-center active:opacity-70 border border-white/10"
-        >
-          <Text className="text-white font-bold text-sm">Salvar Rascunho</Text>
-        </Pressable>
+          {/* Mídia */}
+          <View className="flex-col gap-2">
+            <View className="flex-row items-center justify-between">
+              <Text className="text-sm font-semibold text-white">Mídia da Publicação</Text>
+              <Text className="text-[11px] text-[#64748B]">Opcional</Text>
+            </View>
+            {capaUri ? (
+              <View className="relative rounded-xl overflow-hidden">
+                <Image source={{ uri: capaUri }} className="w-full aspect-square rounded-xl" resizeMode="cover" />
+                <Pressable
+                  onPress={() => setCapaUri(null)}
+                  className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/70 border border-white/20 items-center justify-center"
+                >
+                  <X size={16} color="white" />
+                </Pressable>
+              </View>
+            ) : (
+              <Pressable
+                onPress={escolherFoto}
+                className="rounded-xl bg-[#0a0e16] border border-dashed border-white/10 p-8 flex-col items-center justify-center overflow-hidden"
+              >
+                <View className="w-12 h-12 rounded-xl bg-[#1a2035] items-center justify-center mb-3">
+                  <ImageIcon size={22} color="#34d399" />
+                </View>
+                <Text className="text-white font-semibold text-sm mb-1">Selecione uma imagem</Text>
+                <Text className="text-xs text-[#64748B] text-center mb-4">Ou escolha um item do catálogo abaixo para importar a arte automaticamente.</Text>
+                <View className="flex-row items-center gap-2 bg-[#1a2035] border border-white/10 rounded-lg px-4 py-2">
+                  <Upload size={14} color="#94A3B8" />
+                  <Text className="text-[#94A3B8] text-xs font-medium">Anexar foto</Text>
+                </View>
+              </Pressable>
+            )}
+          </View>
 
-        <Pressable
-          onPress={() => publicar(false)}
-          disabled={enviando}
-          className="flex-1 bg-primary rounded-2xl py-4 items-center active:opacity-90"
-        >
-          {enviando ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold text-sm">Postar</Text>}
-        </Pressable>
+          {/* Divulgar catálogo */}
+          {(minhasMusicas.length > 0 || meusAlbuns.length > 0) && (
+            <View className="flex-col gap-2 pt-2 border-t border-white/5">
+              <View>
+                <Text className="text-sm font-semibold text-white">Divulgar item do seu catálogo (opcional)</Text>
+                <Text className="text-xs text-[#64748B] mt-0.5">Selecionar preenche o post com as informações do item.</Text>
+              </View>
+              <View className="flex-col gap-2 pt-1">
+                {meusAlbuns.map((a) => {
+                  const sel = itemEscolhido?.id === a.id;
+                  return (
+                    <Pressable
+                      key={`album-${a.id}`}
+                      onPress={() => escolher("album", a)}
+                      className={`flex-row items-center justify-between p-3.5 rounded-xl border transition-all ${sel ? "bg-[#3B82F6]/10 border-[#3B82F6]/40" : "bg-[#0a0e16]/80 border-white/10"}`}
+                    >
+                      <View className="flex-row items-center gap-3">
+                        <View className={`w-10 h-10 rounded-lg items-center justify-center ${sel ? "bg-blue-900/30 border border-blue-500/30" : "bg-white/5"}`}>
+                          <Disc size={18} color={sel ? "#3B82F6" : "#94A3B8"} />
+                        </View>
+                        <View>
+                          <Text className="text-sm font-semibold text-white">{a.nome}</Text>
+                          <Text className="text-[11px] text-[#94A3B8] uppercase tracking-wider font-bold">ÁLBUM</Text>
+                        </View>
+                      </View>
+                      <View className={`w-5 h-5 rounded-full border items-center justify-center ${sel ? "bg-[#3B82F6] border-[#3B82F6]" : "border-white/20"}`}>
+                        {sel && <Check size={12} color="#fff" />}
+                      </View>
+                    </Pressable>
+                  );
+                })}
+                {minhasMusicas.map((m) => {
+                  const sel = itemEscolhido?.id === m.id;
+                  return (
+                    <Pressable
+                      key={`musica-${m.id}`}
+                      onPress={() => escolher("musica", m)}
+                      className={`flex-row items-center justify-between p-3.5 rounded-xl border transition-all ${sel ? "bg-emerald-500/10 border-emerald-500/40" : "bg-[#0a0e16]/80 border-white/10"}`}
+                    >
+                      <View className="flex-row items-center gap-3">
+                        <View className={`w-10 h-10 rounded-lg items-center justify-center ${sel ? "bg-emerald-900/30 border border-emerald-500/30" : "bg-white/5"}`}>
+                          <Music size={18} color={sel ? "#34d399" : "#94A3B8"} />
+                        </View>
+                        <View>
+                          <Text className="text-sm font-semibold text-white">{m.nome}</Text>
+                          <Text className="text-[11px] text-[#94A3B8] uppercase tracking-wider font-bold">MÚSICA • SINGLE</Text>
+                        </View>
+                      </View>
+                      <View className={`w-5 h-5 rounded-full border items-center justify-center ${sel ? "bg-emerald-500 border-emerald-500" : "border-white/20"}`}>
+                        {sel && <Check size={12} color="#fff" />}
+                      </View>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </View>
+          )}
+
+          {/* Ações */}
+          <View className="flex-row items-center justify-between pt-4 border-t border-white/5">
+            {erro && <Text className="text-red-400 text-xs font-medium mb-3">{erro}</Text>}
+            {sucesso && <Text className="text-emerald-400 text-xs font-medium mb-3">Publicação salva!</Text>}
+
+            <View className="flex-row items-center justify-between w-full">
+              <Pressable
+                onPress={() => publicar(true)}
+                disabled={enviando}
+                className="flex-row items-center gap-1.5 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 active:opacity-70"
+              >
+                <Text className="text-white text-xs font-semibold">Salvar Rascunho</Text>
+              </Pressable>
+
+              <Pressable
+                onPress={() => publicar(false)}
+                disabled={enviando}
+                className="flex-row items-center gap-2 px-7 py-2.5 rounded-xl bg-[#3B82F6] hover:bg-blue-500 shadow-[0_0_24px_rgba(37,99,235,0.4)] active:opacity-90"
+              >
+                {enviando ? <ActivityIndicator size="small" color="#fff" /> : (
+                  <>
+                    <Sparkles size={15} color="white" />
+                    <Text className="text-white font-semibold text-sm">Postar no Feed</Text>
+                  </>
+                )}
+              </Pressable>
+            </View>
+          </View>
+        </View>
       </View>
-    </ScrollView>
+
+      {/* RIGHT COLUMN: PREVIEW */}
+      <View className="flex w-full lg:flex-[5] flex-col gap-4 lg:sticky top-4">
+        <View className="bg-[#141a24]/80 border border-white/5 rounded-2xl overflow-hidden shadow-2xl">
+          <View className="flex-row items-center justify-between px-5 py-3 border-b border-white/5">
+            <View className="flex-row items-center gap-2">
+              <View className="w-2 h-2 rounded-full bg-emerald-400" />
+              <Text className="text-white text-xs font-bold uppercase tracking-wider">Como aparecerá no Feed</Text>
+            </View>
+            <Text className="text-[11px] text-[#64748B]">Feed da Cena</Text>
+          </View>
+
+          {/* Feed card mockup */}
+          <View className="p-5 flex-col gap-3">
+            {/* User header */}
+            <View className="flex-row items-center gap-2.5">
+              <View className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-500 items-center justify-center">
+                <Text className="text-white font-bold text-sm">M</Text>
+              </View>
+              <View>
+                <View className="flex-row items-center gap-1.5">
+                  <Text className="text-sm font-bold text-white">Seu Perfil</Text>
+                  <View className="px-1.5 py-0.5 rounded bg-[#3B82F6]/20">
+                    <Text className="text-[10px] text-[#3B82F6] font-bold">MÚSICO</Text>
+                  </View>
+                </View>
+                <Text className="text-[11px] text-[#64748B]">Agora mesmo</Text>
+              </View>
+            </View>
+
+            {/* Post text */}
+            <Text className="text-xs text-[#CBD5E1] leading-relaxed" numberOfLines={4}>
+              {descricao || "Sua legenda aparecerá aqui para os fãs no feed..."}
+            </Text>
+
+            {/* Attached item */}
+            {itemEscolhido && (
+              <View className="p-3 rounded-xl bg-[#0a0e16] border border-[#3B82F6]/30 flex-row items-center justify-between gap-3">
+                <View className="flex-row items-center gap-3 flex-1">
+                  <View className="w-12 h-12 rounded-lg bg-gradient-to-tr from-blue-800 to-indigo-700 items-center justify-center">
+                    {itemEscolhido.tipo === "album"
+                      ? <Disc size={20} color="white" />
+                      : <Music size={20} color="white" />}
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-xs font-semibold text-white" numberOfLines={1}>{itemEscolhido.nome}</Text>
+                    <Text className="text-[11px] text-[#3B82F6] font-bold">
+                      {itemEscolhido.tipo === "album" ? "Álbum" : "Música • Single"}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            )}
+
+            {/* Photo preview */}
+            {capaUri && (
+              <View className="w-full aspect-square rounded-xl overflow-hidden">
+                <Image source={{ uri: capaUri }} className="w-full h-full" resizeMode="cover" />
+              </View>
+            )}
+          </View>
+        </View>
+      </View>
+    </View>
   );
 }
+
 
 function FormPublicacaoOrganizador({ usuarioId }: { usuarioId: string }) {
   const paddingBottom = usePlayerAwarePadding(140);
@@ -1041,73 +1694,190 @@ function FormPublicacaoOrganizador({ usuarioId }: { usuarioId: string }) {
 
   if (meusEventos.length === 0) {
     return (
-      <View className="flex-1 bg-[#0B101E] items-center justify-center px-8">
-        <View className="bg-[#121829] border border-border/60 p-6 rounded-3xl items-center w-full">
-          <Calendar size={32} color={colors.primary} className="mb-3" />
-          <Text className="text-white font-bold text-center mb-1">Nenhum evento encontrado</Text>
-          <Text className="text-muted text-center text-xs">
-            Crie um evento na aba "Evento" primeiro para poder divulgá-lo no feed.
+      <View className="flex-1 bg-[#0B101E] items-center justify-center px-8 py-20">
+        <View className="bg-[#141a24]/80 border border-white/5 p-8 rounded-3xl items-center w-full max-w-md shadow-2xl backdrop-blur-xl">
+          <View className="w-16 h-16 rounded-full bg-emerald-500/10 items-center justify-center mb-4">
+            <Calendar size={32} color="#34d399" />
+          </View>
+          <Text className="text-white text-lg font-bold text-center mb-2">Nenhum evento ativo</Text>
+          <Text className="text-[#94A3B8] text-center text-sm leading-relaxed">
+            Crie um evento na aba "Evento" primeiro para poder divulgá-lo no feed para o público da sua cidade.
           </Text>
         </View>
       </View>
     );
   }
 
+  const eventoSelecionadoObj = meusEventos.find(e => e.id === eventoId);
+
   return (
-    <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, paddingTop: 12, paddingBottom, maxWidth: 800, width: '100%', alignSelf: 'center' }} showsVerticalScrollIndicator={false}>
-      <Text className="text-2xl font-black text-white mb-5">Nova publicação</Text>
-
-      <Text className="text-white font-bold text-sm mb-2">Evento a divulgar</Text>
-      <View className="mb-4">
-        {meusEventos.map((e) => (
-          <ItemEscolha key={e.id} nome={`${e.nome} - ${e.data}`} tag="Evento" selecionado={eventoId === e.id} onPress={() => setEventoId(e.id)} />
-        ))}
-      </View>
-
-      <Pressable
-        onPress={escolherFoto}
-        className="w-full h-56 rounded-3xl bg-[#121829] border border-dashed border-border/80 items-center justify-center mb-6 overflow-hidden relative"
-      >
-        {fotoUri ? (
-          <Image source={{ uri: fotoUri }} className="w-full h-full" resizeMode="contain" />
-        ) : (
-          <View className="items-center px-4">
-            <View className="w-12 h-12 rounded-full bg-surface items-center justify-center mb-2">
-              <ImageIcon size={22} color={colors.primary} />
+    <View className="flex-col-reverse lg:flex-row gap-8 items-start w-full">
+      {/* LEFT COLUMN: FORM SECTION */}
+      <View className="flex-col gap-5 w-full lg:flex-[7]">
+        <View className="bg-[#141a24]/70 rounded-2xl p-6 flex-col gap-6 shadow-2xl border border-white/5 backdrop-blur-xl">
+          <View className="flex-row items-center justify-between pb-2 border-b border-white/5">
+            <View className="flex-row items-center gap-2.5">
+              <View className="w-8 h-8 rounded-lg bg-emerald-500/10 items-center justify-center">
+                <Sparkles size={18} color="#34d399" />
+              </View>
+              <View>
+                <Text className="text-white text-lg font-bold">Publicação</Text>
+                <Text className="text-xs text-[#94A3B8]">Feed do Organizador</Text>
+              </View>
             </View>
-            <Text className="text-white font-semibold text-sm">Imagem do evento</Text>
-            <Text className="text-muted text-xs mt-1 text-center">Toque para selecionar da galeria</Text>
+            <View className="px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+              <Text className="text-[10px] text-emerald-300 font-bold uppercase tracking-wider">POST • FEED</Text>
+            </View>
           </View>
-        )}
-      </Pressable>
 
-      <CampoTexto label="Legenda" placeholder="Escreva sobre o evento..." value={descricao} onChangeText={setDescricao} multiline numberOfLines={4} />
+          {/* Event Selection */}
+          <View className="flex-col gap-2">
+            <Text className="text-sm font-semibold text-white">Vincular a um Evento (Obrigatório)</Text>
+            <View className="flex-col gap-2">
+              {meusEventos.map((e) => {
+                const selecionado = eventoId === e.id;
+                return (
+                  <Pressable
+                    key={e.id}
+                    onPress={() => setEventoId(e.id)}
+                    className={`bg-[#0a0e16]/80 p-3.5 rounded-xl flex-row items-center justify-between gap-3 border transition-all ${selecionado ? "border-emerald-500/50" : "border-white/5 hover:border-white/20"}`}
+                  >
+                    <View className="flex-row items-center gap-3 flex-1">
+                      <View className={`w-10 h-10 rounded-lg items-center justify-center ${selecionado ? "bg-emerald-500/20" : "bg-white/5"}`}>
+                        <Calendar size={18} color={selecionado ? "#34d399" : "#94A3B8"} />
+                      </View>
+                      <View className="flex-1">
+                        <Text className={`text-sm font-bold truncate ${selecionado ? "text-emerald-400" : "text-white"}`}>{e.nome}</Text>
+                        <Text className="text-[11px] text-[#94A3B8] font-medium mt-0.5">{e.data}</Text>
+                      </View>
+                    </View>
+                    {selecionado ? (
+                      <View className="w-5 h-5 rounded-full bg-emerald-500 items-center justify-center shadow-[0_0_10px_rgba(16,185,129,0.5)]">
+                        <Check size={12} color="#fff" />
+                      </View>
+                    ) : (
+                      <View className="w-5 h-5 rounded-full border border-white/20" />
+                    )}
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
 
-      {erro && <Text className="text-red-400 mb-4 text-center font-medium text-xs">{erro}</Text>}
-      {sucesso && (
-        <Text className="text-emerald-400 mb-4 text-center font-medium text-xs">
-          Publicação salva!
-        </Text>
-      )}
+          {/* Custom Banner Upload */}
+          <View className="flex-col gap-2 pt-2 border-t border-white/5">
+            <View className="flex-row items-center justify-between">
+              <Text className="text-sm font-semibold text-white">Capa Alternativa (Opcional)</Text>
+            </View>
+            <Pressable
+              onPress={escolherFoto}
+              className="group overflow-hidden rounded-xl bg-[#0a0e16]/80 border border-dashed border-white/15 p-6 flex-col items-center justify-center text-center hover:border-emerald-500/50 hover:bg-[#101726]/60 transition-all"
+            >
+              {fotoUri ? (
+                <ImageBackground source={{ uri: fotoUri }} className="w-full aspect-square rounded-xl shadow-lg" resizeMode="cover" />
+              ) : (
+                <>
+                  <View className="w-12 h-12 rounded-full bg-[#182030] items-center justify-center mb-2 group-hover:scale-110 group-hover:bg-emerald-600 transition-all shadow-md">
+                    <ImageIcon size={24} color="#34d399" />
+                  </View>
+                  <Text className="text-white font-medium text-sm mb-0.5">Substituir capa no feed</Text>
+                  <Text className="text-xs text-[#8D90A0] max-w-[200px] mb-3">Opcional. Se não enviar, usaremos a capa original do evento.</Text>
+                </>
+              )}
+            </Pressable>
+          </View>
 
-      <View className="flex-row gap-3 mt-2">
-        <Pressable
-          onPress={() => publicar(true)}
-          disabled={enviando}
-          className="flex-1 bg-white/10 rounded-2xl py-4 items-center active:opacity-70 border border-white/10"
-        >
-          <Text className="text-white font-bold text-sm">Salvar Rascunho</Text>
-        </Pressable>
+          {/* Post Description */}
+          <View className="flex-col gap-1.5 pt-2 border-t border-white/5">
+            <Text className="text-sm font-semibold text-white">Legenda do Post</Text>
+            <TextInput
+              className="bg-[#0a0e16]/75 border border-white/10 w-full text-white text-sm px-4 py-3 rounded-xl focus:border-emerald-500 min-h-[100px]"
+              placeholder="Escreva sobre o evento, atualizações, line-up..."
+              placeholderTextColor="#64748B"
+              value={descricao}
+              onChangeText={setDescricao}
+              multiline
+              textAlignVertical="top"
+            />
+          </View>
 
-        <Pressable
-          onPress={() => publicar(false)}
-          disabled={enviando}
-          className="flex-1 bg-primary rounded-2xl py-4 items-center active:opacity-90"
-        >
-          {enviando ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold text-sm">Postar</Text>}
-        </Pressable>
+          {erro && <Text className="text-red-400 text-center font-medium text-xs">{erro}</Text>}
+          {sucesso && <Text className="text-emerald-400 text-center font-medium text-xs">Publicação salva com sucesso!</Text>}
+
+          {/* Actions */}
+          <View className="flex-row items-center justify-end gap-3 pt-2 border-t border-white/5">
+            <Pressable
+              onPress={() => publicar(true)}
+              disabled={enviando}
+              className="px-5 py-3 rounded-xl border border-white/10 hover:bg-white/5 transition-all"
+            >
+              <Text className="text-white text-sm font-semibold">Salvar Rascunho</Text>
+            </Pressable>
+
+            <Pressable
+              onPress={() => publicar(false)}
+              disabled={enviando}
+              className="px-7 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 flex-row items-center gap-2 shadow-[0_0_24px_rgba(16,185,129,0.4)] transition-all"
+            >
+              {enviando ? <ActivityIndicator size="small" color="#fff" /> : (
+                <Text className="text-white text-sm font-semibold">Postar</Text>
+              )}
+            </Pressable>
+          </View>
+        </View>
       </View>
-    </ScrollView>
+
+      {/* RIGHT COLUMN: PREVIEW */}
+      <View className="flex flex-col gap-5 w-full lg:flex-[5] lg:sticky top-8">
+        <View className="bg-[#141a24]/70 rounded-2xl p-6 flex-col gap-4 shadow-2xl border border-white/5 backdrop-blur-xl relative overflow-hidden">
+          <View className="flex-row items-center justify-between pb-1">
+            <View className="flex-row items-center gap-1.5">
+              <View className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              <Text className="text-[10px] uppercase tracking-wider text-emerald-400 font-bold">Preview do Post</Text>
+            </View>
+            <Text className="text-xs text-[#94A3B8]">Feed Principal</Text>
+          </View>
+
+          {/* User Header */}
+          <View className="flex-row items-center gap-3">
+            <View className="w-10 h-10 rounded-full bg-white/10 items-center justify-center">
+              <UserSearch size={16} color="#fff" />
+            </View>
+            <View>
+              <Text className="text-white font-bold text-sm">Seu Perfil</Text>
+              <Text className="text-emerald-400 text-[10px] font-bold tracking-wider">ORGANIZADOR</Text>
+            </View>
+          </View>
+
+          <Text className="text-sm text-white/90 leading-relaxed">
+            {descricao || "Sua legenda aparecerá aqui..."}
+          </Text>
+
+          {/* Attachment Preview */}
+          <View className="mt-1 bg-[#101520] rounded-2xl overflow-hidden border border-white/5">
+            {fotoUri ? (
+              <ImageBackground source={{ uri: fotoUri }} className="w-full aspect-square" resizeMode="cover" />
+            ) : (
+              <View className="w-full aspect-square bg-white/5 items-center justify-center">
+                <ImageIcon size={32} color="#ffffff20" />
+                <Text className="text-[#ffffff40] text-xs font-semibold mt-2">Capa do Evento</Text>
+              </View>
+            )}
+            
+            {eventoId && eventoSelecionadoObj && (
+              <View className="p-4 bg-[#141a24]">
+                <View className="flex-row items-center gap-1.5 mb-1">
+                  <Calendar size={12} color="#34d399" />
+                  <Text className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">Evento Vinculado</Text>
+                </View>
+                <Text className="text-white font-bold text-sm">{eventoSelecionadoObj.nome}</Text>
+                <Text className="text-[#94A3B8] text-xs">{eventoSelecionadoObj.data}</Text>
+              </View>
+            )}
+          </View>
+        </View>
+      </View>
+    </View>
   );
 }
 

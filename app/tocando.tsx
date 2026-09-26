@@ -46,7 +46,7 @@ export default function TocandoAgora() {
 function LayoutMobile({ corDinamica }: { corDinamica: ReturnType<typeof useCorDinamica> }) {
   const { musicaAtual } = usePlayerStore();
   const [mostrarFila, setMostrarFila] = useState(false);
-  const { curtido, totalCurtidas, alternarCurtida } = useCurtidaMusica(musicaAtual.id);
+  const { curtido, totalCurtidas, alternarCurtida } = useCurtidaMusica(musicaAtual?.id);
 
   if (!musicaAtual) return null;
 

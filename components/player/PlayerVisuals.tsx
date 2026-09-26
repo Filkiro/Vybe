@@ -152,7 +152,7 @@ export function BarraProgressoLinha({ corDinamica }: { corDinamica: CorAnimada }
       : 0;
 
   return (
-    <View className="w-full my-2">
+    <View className="w-full mt-0">
       <Pressable
         onPress={aoTocarNaBarra}
         onLayout={(e) => {

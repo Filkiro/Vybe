@@ -1,5 +1,4 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
-import { BlurView } from "expo-blur";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, usePathname } from "expo-router";
 import { Home, Compass, Plus, MessageCircle, ShieldCheck, Settings, User, LogOut } from "lucide-react-native";
@@ -8,7 +7,6 @@ import { supabase } from "../lib/supabase";
 import { useAuthStore, ehContaComum, ehModerador, ehAdministrador } from "../store/authStore";
 import { useUnreadStore } from "../store/unreadStore";
 import { usePlayerStore } from "../store/playerStore";
-import { colors } from "../constants/theme";
 
 type ItemNav = {
   rota: string;
@@ -17,9 +15,6 @@ type ItemNav = {
   badge?: number;
 };
 
-// Mesma navegação das abas mobile (app/(tabs)/_layout.tsx), só que em
-// formato de lista vertical fixa — a existência das rotas e as regras de
-// quem pode ver cada uma (comum/moderador/admin) são exatamente as mesmas.
 export function SidebarNavDesktop() {
   const insets = useSafeAreaInsets();
   const usuario = useAuthStore((s) => s.usuario);
@@ -51,73 +46,59 @@ export function SidebarNavDesktop() {
     <View
       style={{
         width: 240,
-        paddingTop: Math.max(insets.top, 14),
-        paddingBottom: Math.max(insets.bottom, 14),
-        paddingLeft: 14,
-        paddingRight: 6,
+        paddingTop: Math.max(insets.top, 24),
+        paddingBottom: 96, // espaço para o player
       }}
+      className="bg-transparent flex-col justify-between h-full relative"
     >
-      <View
-        style={{
-          flex: 1,
-          borderRadius: 28,
-          overflow: "hidden",
-          borderWidth: 1,
-          borderColor: "rgba(255, 255, 255, 0.14)",
-          backgroundColor: "rgba(15, 22, 38, 0.75)",
-        }}
-      >
-        <BlurView
-          experimentalBlurMethod="dimezisBlurView"
-          intensity={80}
-          tint="dark"
-          style={StyleSheet.absoluteFillObject}
-        />
-
-        <View className="flex-1 px-4 py-5">
-          <View className="items-center">
-            <AppLogo />
-          </View>
-
-          <View className="gap-1">
-            {itens.map((item) => {
-              const ativo = pathname === item.rota || pathname.endsWith(item.rota.replace("/(tabs)", ""));
-              return (
-                <Pressable
-                  key={item.rota}
-                  onPress={() => router.push(item.rota as any)}
-                  className="flex-row items-center gap-3 px-3 py-3 rounded-2xl active:opacity-80"
-                  style={{ backgroundColor: ativo ? colors.primary : "transparent" }}
-                >
-                  <item.Icone color={ativo ? "#FFFFFF" : colors.muted} size={20} />
-                  <Text
-                    className="text-sm font-semibold flex-1"
-                    style={{ color: ativo ? "#FFFFFF" : colors.muted }}
-                  >
-                    {item.rotulo}
-                  </Text>
-                  {!!item.badge && (
-                    <View className="bg-white/90 rounded-full min-w-[20px] h-5 items-center justify-center px-1">
-                      <Text className="text-[#0B101E] text-xs font-bold">{item.badge}</Text>
-                    </View>
-                  )}
-                </Pressable>
-              );
-            })}
-          </View>
-
-          <View className="flex-1" />
-
-          {usuario && (
-            <Pressable
-              onPress={handleSair}
-              className="flex-row items-center gap-3 px-3 py-3 rounded-2xl active:opacity-80"
-            >
-              <LogOut color={colors.muted} size={20} />
-              <Text className="text-muted text-sm font-semibold">Sair</Text>
-            </Pressable>
-          )}
+      {/* Top Section */}
+      <View className="flex-col gap-10 px-4">
+        {/* Logo */}
+        <View className="items-center mt-2 w-full pr-8">
+          <AppLogo />
         </View>
+
+        {/* Nav Items */}
+        <View className="flex-col gap-1">
+          {itens.map((item) => {
+            const ativo = pathname === item.rota || pathname.endsWith(item.rota.replace("/(tabs)", ""));
+            return (
+              <Pressable
+                key={item.rota}
+                onPress={() => router.push(item.rota as any)}
+                className={`flex-row items-center gap-4 px-4 py-2.5 rounded-lg transition-all ${
+                  ativo ? "bg-[#2563EB]" : "hover:bg-white/5 active:opacity-80"
+                }`}
+                style={ativo ? { shadowColor: "#2563EB", shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.35, shadowRadius: 24 } : undefined}
+              >
+                <item.Icone color={ativo ? "#EEEFFF" : "#C3C6D7"} size={20} />
+                <Text
+                  className={`text-sm flex-1 ${ativo ? "font-medium text-[#EEEFFF]" : "text-[#C3C6D7]"}`}
+                >
+                  {item.rotulo}
+                </Text>
+                {!!item.badge && (
+                  <View className="bg-white/90 rounded-full min-w-[20px] h-5 items-center justify-center px-1">
+                    <Text className="text-[#0B101E] text-xs font-bold">{item.badge}</Text>
+                  </View>
+                )}
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+
+      {/* Bottom Section */}
+      <View className="px-4 mb-4">
+        {usuario && (
+          <Pressable
+            onPress={handleSair}
+            className="flex-row items-center gap-4 px-4 py-2.5 rounded-lg text-gray-400 hover:bg-red-500/20 hover:text-red-300 transition-all active:opacity-80 group"
+          >
+            <LogOut size={20} color="#C3C6D7" className="group-hover:text-red-300" />
+            <Text className="text-sm text-[#C3C6D7] group-hover:text-red-300 transition-colors">Sair</Text>
+          </Pressable>
+        )}
       </View>
     </View>
   );

@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { View, Text, Pressable, Image, TextInput, ActivityIndicator, Modal } from "react-native";
-import { Heart, MoreVertical, Flag } from "lucide-react-native";
+import { Heart, MoreVertical, Flag, Play, Music, Calendar, Disc } from "lucide-react-native";
+import { router } from "expo-router";
 import { supabase } from "../lib/supabase";
 import { useAuthStore } from "../store/authStore";
+import { usePlayerStore } from "../store/playerStore";
 import { useRequireAuth } from "../store/authPromptStore";
 import { useAbrirPerfil } from "../store/perfilModalStore";
 import { colors, rotulosTipoConta } from "../constants/theme";
@@ -14,6 +16,8 @@ export type PublicacaoFeedItem = {
   descricao: string | null;
   criado_em: string;
   evento_id: string | null;
+  musica_id: string | null;
+  album_id: string | null;
   usuario: {
     nome: string;
     tipo_conta: "musico" | "organizador" | "moderador" | "adm";
@@ -23,6 +27,8 @@ export type PublicacaoFeedItem = {
   total_curtidas: number;
   curtido_por_mim: boolean;
   evento?: { nome: string; data: string; localizacao: string | null } | null;
+  musica?: { id: string; nome: string; capa_url: string | null; arquivo_url: string } | null;
+  album?: { id: string; nome: string; capa_url: string | null } | null;
 };
 
 export function PublicacaoCard({ item }: { item: PublicacaoFeedItem }) {
@@ -35,239 +41,312 @@ export function PublicacaoCard({ item }: { item: PublicacaoFeedItem }) {
 
   const [mostrarOpcoes, setMostrarOpcoes] = useState(false);
   const [denunciaAberta, setDenunciaAberta] = useState(false);
-  const [motivoEscolhido, setMotivoEscolhido] = useState<string | null>(null);
+  const [motivoDenuncia, setMotivoDenuncia] = useState("");
   const [descricaoDenuncia, setDescricaoDenuncia] = useState("");
-  const [erroDenuncia, setErroDenuncia] = useState<string | null>(null);
   const [enviandoDenuncia, setEnviandoDenuncia] = useState(false);
-  const [artistasConfirmados, setArtistasConfirmados] = useState<any[]>([]);
 
-  useEffect(() => {
-    if (item.evento_id) {
-      supabase
-        .from("evento_convite")
-        .select("musico_id")
-        .eq("evento_id", item.evento_id)
-        .eq("status", "aceito")
-        .then(async ({ data }) => {
-          if (data && data.length > 0) {
-            const ids = data.map((d: any) => d.musico_id);
-            const { data: perfis } = await supabase
-              .from("perfil_musico")
-              .select("usuario_id, apelido, foto_url")
-              .in("usuario_id", ids);
-            setArtistasConfirmados(perfis ?? []);
-          }
-        });
-    }
-  }, [item.evento_id]);
-
-  async function alternarCurtida() {
-    requireAuth(async () => {
-      if (enviando || !usuarioLogado) return;
-      setEnviando(true);
-
-      const novoEstado = !curtido;
-      setCurtido(novoEstado);
-      setTotalCurtidas((atual) => atual + (novoEstado ? 1 : -1));
-
-      if (novoEstado) {
-        const { error } = await supabase
-          .from("curtida")
-          .insert({ publicacao_id: item.id, usuario_id: usuarioLogado.id });
-        if (error) {
-          setCurtido(!novoEstado);
-          setTotalCurtidas((atual) => atual - 1);
-        }
-      } else {
-        const { error } = await supabase
-          .from("curtida")
-          .delete()
-          .eq("publicacao_id", item.id)
-          .eq("usuario_id", usuarioLogado.id);
-        if (error) {
-          setCurtido(!novoEstado);
-          setTotalCurtidas((atual) => atual + 1);
-        }
-      }
-      setEnviando(false);
-    });
+  let realFotoUrl = item.foto_url;
+  let linkedItem: { tipo: string; id: string; nome: string; capa_url: string | null; arquivo_url?: string } | null = null;
+  
+  // Backward compatibility with legacy description hacks (if the new DB columns are empty)
+  if (!item.musica_id && !item.album_id && item.descricao && item.foto_url) {
+    const matchM = item.descricao.match(/Confira minha música "(.*)"!/);
+    if (matchM) linkedItem = { tipo: "musica", id: "", nome: matchM[1], capa_url: item.foto_url };
+    const matchA = item.descricao.match(/Confira meu álbum "(.*)"!/);
+    if (matchA) linkedItem = { tipo: "album", id: "", nome: matchA[1], capa_url: item.foto_url };
+    if (linkedItem) realFotoUrl = null;
   }
 
-  async function enviarDenuncia() {
-    requireAuth(async () => {
-      if (!motivoEscolhido) {
-        setErroDenuncia("Escolha um motivo.");
-        return;
-      }
-      if (motivoEscolhido === "Outro motivo" && !descricaoDenuncia.trim()) {
-        setErroDenuncia("Descreva o motivo da denúncia.");
-        return;
-      }
+  // Use the new proper DB columns
+  if (item.musica) {
+    linkedItem = { tipo: "musica", id: item.musica.id, nome: item.musica.nome, capa_url: item.musica.capa_url, arquivo_url: item.musica.arquivo_url };
+  } else if (item.album) {
+    linkedItem = { tipo: "album", id: item.album.id, nome: item.album.nome, capa_url: item.album.capa_url };
+  }
 
-      setErroDenuncia(null);
-      setEnviandoDenuncia(true);
+  useEffect(() => {
+    setCurtido(item.curtido_por_mim);
+    setTotalCurtidas(item.total_curtidas);
+  }, [item]);
 
+async function alternarCurtida() {
+  requireAuth(async () => {
+    if (!usuarioLogado || enviando) return;
+    setEnviando(true);
+
+    const curtidoAtual = curtido;
+    const totalAtual = totalCurtidas;
+
+    if (curtidoAtual) {
+      setCurtido(false);
+      setTotalCurtidas((t) => Math.max(0, t - 1));
       const { error } = await supabase
-        .from("denuncia")
-        .insert({
-          denunciante_id: usuarioLogado!.id,
-          tipo_alvo: "publicacao",
-          alvo_id: item.id,
-          motivo: motivoEscolhido,
-          descricao: motivoEscolhido === "Outro motivo" ? descricaoDenuncia.trim() : null
-        });
+        .from("curtida_publicacao")
+        .delete()
+        .eq("usuario_id", usuarioLogado.id)
+        .eq("publicacao_id", item.id);
 
-      setEnviandoDenuncia(false);
-      
-      if (!error) {
-        setDenunciaAberta(false);
-        setMotivoEscolhido(null);
-        setDescricaoDenuncia("");
-        alert("Denúncia enviada com sucesso. A moderação vai analisar.");
-      } else {
-        setErroDenuncia(error.message);
+      if (error) {
+        setCurtido(curtidoAtual);
+        setTotalCurtidas(totalAtual);
       }
+    } else {
+      setCurtido(true);
+      setTotalCurtidas((t) => t + 1);
+      const { error } = await supabase
+        .from("curtida_publicacao")
+        .insert({ usuario_id: usuarioLogado.id, publicacao_id: item.id });
+
+      if (error) {
+        setCurtido(curtidoAtual);
+        setTotalCurtidas(totalAtual);
+      }
+    }
+    setEnviando(false);
+  });
+}
+
+  async function enviarDenuncia() {
+    if (!usuarioLogado) {
+      setDenunciaAberta(false);
+      requireAuth(() => setDenunciaAberta(true));
+      return;
+    }
+    if (!motivoDenuncia) return;
+
+    setEnviandoDenuncia(true);
+    await supabase.from("denuncia").insert({
+      denunciante_id: usuarioLogado.id,
+      tipo_alvo: "post",
+      alvo_id: item.id,
+      motivo: motivoDenuncia,
+      descricao: descricaoDenuncia,
     });
+    setEnviandoDenuncia(false);
+    setDenunciaAberta(false);
+    setMotivoDenuncia("");
+    setDescricaoDenuncia("");
+  }
+
+  function getLetrasIniciais(nome: string | null | undefined) {
+    if (!nome) return "??";
+    return nome.substring(0, 2).toUpperCase();
+  }
+
+  function formatarTempoPassado(dataIso: string) {
+    const passado = new Date(dataIso);
+    const agora = new Date();
+    const dif = agora.getTime() - passado.getTime();
+
+    const min = Math.floor(dif / 60000);
+    const hr = Math.floor(min / 60);
+    const dia = Math.floor(hr / 24);
+
+    if (min < 60) return `Há ${Math.max(1, min)} min`;
+    if (hr < 24) return `Há ${hr} ${hr === 1 ? 'hora' : 'horas'}`;
+    return `Há ${dia} ${dia === 1 ? 'dia' : 'dias'}`;
   }
 
   return (
-    <View className="bg-[#121829] rounded-3xl mb-4 overflow-hidden border border-white/5  ">
-      <View className="flex-row items-center px-4 pt-4 pb-3">
+    <View className="bg-[#121724] rounded-2xl mb-6 shadow-xl border border-white/5 overflow-hidden w-full">
+      {/* Header */}
+      <View className="flex-row items-center justify-between p-5">
         <Pressable onPress={() => abrirPerfil(item.usuario_id)} className="flex-row items-center flex-1">
-          {item.foto_perfil_url ? (
-            <Image source={{ uri: item.foto_perfil_url }} className="w-10 h-10 rounded-full mr-3 border border-white/10" />
-          ) : (
-            <View className="w-10 h-10 rounded-full bg-[#1A2235] mr-3 border border-white/10" />
-          )}
-          <View className="flex-1">
-            <Text className="font-bold text-white">{item.apelido ?? item.usuario?.nome ?? "Usuário"}</Text>
-            <Text className="text-gray-400 text-xs">
-              {item.usuario ? rotulosTipoConta[item.usuario.tipo_conta] ?? item.usuario.tipo_conta : ""}
+          <View className="relative mr-3">
+            <View className="w-11 h-11 rounded-full p-0.5 border-2 border-[#3b82f6]/40 overflow-hidden items-center justify-center bg-[#2563eb]/20">
+              {item.foto_perfil_url ? (
+                <Image source={{ uri: item.foto_perfil_url }} className="w-full h-full rounded-full" />
+              ) : (
+                <Text className="text-white font-bold text-xs">{getLetrasIniciais(item.apelido || item.usuario?.nome)}</Text>
+              )}
+            </View>
+            <View className="absolute bottom-0 right-0 w-3 h-3 bg-[#3b82f6] rounded-full border-2 border-[#121724]" />
+          </View>
+
+          <View className="flex-col justify-center flex-1 pr-2">
+            <View className="flex-row items-center gap-2 mb-0.5">
+              <Text className="font-bold text-white text-[14px]" numberOfLines={1}>
+                {item.apelido || item.usuario?.nome || "Usuário"}
+              </Text>
+              <View className="px-2 py-[2px] rounded-full bg-[#3b82f6]/10 border border-[#3b82f6]/20">
+                <Text className="text-[10px] font-semibold text-[#60a5fa] uppercase tracking-wider">
+                  {rotulosTipoConta[item.usuario?.tipo_conta || "musico"]}
+                </Text>
+              </View>
+            </View>
+            <Text className="text-[11px] text-[#64748b]">
+              {formatarTempoPassado(item.criado_em)} {item.evento?.localizacao ? `• ${item.evento.localizacao}` : ""}
             </Text>
           </View>
         </Pressable>
 
-        <View>
-          <Pressable onPress={() => setMostrarOpcoes(true)} className="w-8 h-8 items-center justify-center rounded-full active:bg-white/5">
-            <MoreVertical size={20} color="#94A3B8" />
+        <View className="relative">
+          <Pressable onPress={() => setMostrarOpcoes(!mostrarOpcoes)} className="p-1.5 rounded-lg active:bg-white/5">
+            <MoreVertical color="#94a3b8" size={20} />
           </Pressable>
 
-          <Modal transparent visible={mostrarOpcoes} animationType="fade" onRequestClose={() => setMostrarOpcoes(false)}>
-            <Pressable className="flex-1 bg-black/50 justify-center items-center" onPress={() => setMostrarOpcoes(false)}>
-              <Pressable className="w-64 bg-[#1A2235] border border-white/10 rounded-2xl overflow-hidden " onPress={(e) => e.stopPropagation()}>
-                <Pressable 
-                  onPress={() => {
-                    setMostrarOpcoes(false);
-                    setDenunciaAberta(true);
-                  }} 
-                  className="flex-row items-center px-5 py-4 active:bg-white/5"
-                >
-                  <Flag size={18} color={colors.danger} />
-                  <Text className="text-red-500 font-bold text-base ml-3">Denunciar publicação</Text>
-                </Pressable>
+          {mostrarOpcoes && (
+            <View className="absolute right-0 top-10 w-44 bg-[#1f293d] rounded-xl shadow-2xl p-1 z-50 border border-white/5">
+              <Pressable
+                onPress={() => { setMostrarOpcoes(false); setDenunciaAberta(true); }}
+                className="flex-row items-center p-3 rounded-lg active:bg-white/5"
+              >
+                <Flag color="#cbd5e1" size={16} />
+                <Text className="text-[#cbd5e1] font-medium ml-3 text-sm">Denunciar post</Text>
               </Pressable>
-            </Pressable>
-          </Modal>
+            </View>
+          )}
         </View>
       </View>
 
-      {item.descricao && (
-        <Text className="text-gray-200 px-4 pb-3 leading-tight">{item.descricao}</Text>
-      )}
-
-      {item.evento && (
-        <View className="mx-4 mb-3 bg-[#1A2235] rounded-xl px-3 py-2.5 border border-white/5">
-          <Text className="text-primary font-bold text-sm">{item.evento.nome}</Text>
-          <Text className="text-gray-400 text-xs mt-0.5">
-            {item.evento.data} {item.evento.localizacao ? `· ${item.evento.localizacao}` : ""}
+      {/* Descrição */}
+      {item.descricao ? (
+        <View className="px-5 pb-4">
+          <Text className="text-[#e2e8f0] text-[14px] leading-relaxed font-normal">
+            {item.descricao}
           </Text>
         </View>
-      )}
+      ) : null}
 
-      {item.foto_url && (
-        <Image source={{ uri: item.foto_url }} className="w-full bg-[#0B101E]" style={{ aspectRatio: 1 }} resizeMode="contain" />
-      )}
-
-      {artistasConfirmados.length > 0 && (
-        <View className="px-4 py-3 bg-[#161C2C] border-t border-white/5">
-          <Text className="text-white/60 text-[10px] font-bold uppercase tracking-wider mb-2">Artistas Confirmados</Text>
-          <View className="flex-row flex-wrap gap-2">
-            {artistasConfirmados.map((a: any) => (
-              <Pressable
-                key={a.usuario_id}
-                onPress={() => abrirPerfil(a.usuario_id)}
-                className="flex-row items-center bg-white/5 border border-white/10 rounded-full pr-3 py-1 overflow-hidden"
-              >
-                {a.foto_url ? (
-                  <Image source={{ uri: a.foto_url }} className="w-5 h-5 rounded-full mr-2" />
-                ) : (
-                  <View className="w-5 h-5 rounded-full bg-[#3B82F6] items-center justify-center mr-2">
-                    <Text className="text-white text-[10px] font-bold">{a.apelido?.[0] ?? "A"}</Text>
-                  </View>
-                )}
-                <Text className="text-white text-xs font-medium">{a.apelido}</Text>
-              </Pressable>
-            ))}
+      {/* Linked Event Box (If Organizer linked an event) */}
+      {item.evento_id && item.evento && (
+        <View className="px-5 pb-4">
+          <View className="p-3 rounded-xl bg-[#0a0e16] border border-[#3b82f6]/30 flex-row items-center justify-between gap-3">
+             <View className="flex-row items-center gap-3 flex-1">
+               <View className="w-10 h-10 rounded-lg bg-gradient-to-tr from-blue-800 to-indigo-700 items-center justify-center">
+                 <Calendar size={18} color="white" />
+               </View>
+               <View className="flex-1">
+                 <Text className="text-xs font-semibold text-white" numberOfLines={1}>{item.evento.nome}</Text>
+                 <Text className="text-[11px] text-[#3B82F6] font-bold">
+                   Evento Oficial
+                 </Text>
+               </View>
+             </View>
+             <View className="px-2 py-1 bg-[#3b82f6]/10 rounded border border-[#3b82f6]/20">
+               <Text className="text-[#3b82f6] text-[10px] font-bold">VER MAIS</Text>
+             </View>
           </View>
         </View>
       )}
 
-      <View className="flex-row items-center px-4 py-3 border-t border-white/5 bg-[#121829]">
-        <Pressable onPress={alternarCurtida} disabled={enviando} className="flex-row items-center gap-2 active:opacity-70">
-          <Heart size={22} color={curtido ? colors.danger : "#64748B"} fill={curtido ? colors.danger : "transparent"} />
-          <Text className={curtido ? "text-red-500 font-semibold" : "text-gray-400 font-medium"}>{totalCurtidas}</Text>
-        </Pressable>
+      {/* Linked Item Box (Music/Album) */}
+      {linkedItem && (
+        <View className="px-5 pb-4">
+          <Pressable 
+            onPress={() => {
+              if (linkedItem?.tipo === 'album' && linkedItem.id) {
+                router.push(`/album/${linkedItem.id}`);
+              } else if (linkedItem?.tipo === 'musica' && linkedItem.id) {
+                if (linkedItem.arquivo_url) {
+                  usePlayerStore.getState().tocarMusica({
+                    id: linkedItem.id,
+                    nome: linkedItem.nome,
+                    arquivoUrl: linkedItem.arquivo_url,
+                    capaUrl: linkedItem.capa_url,
+                    autorApelido: item.apelido || item.usuario?.nome || 'Artista Desconhecido'
+                  });
+                }
+              }
+            }}
+            className="p-3 rounded-xl bg-[#0a0e16] border border-[#3b82f6]/30 flex-row items-center justify-between gap-3"
+          >
+             <View className="flex-row items-center gap-4 flex-1">
+               <View className="w-12 h-12 rounded-lg bg-[#3b82f6] items-center justify-center overflow-hidden">
+                 {linkedItem.capa_url && !linkedItem.capa_url.startsWith('vybe_item') ? (
+                   <Image source={{ uri: linkedItem.capa_url }} className="w-full h-full object-cover" />
+                 ) : (
+                   linkedItem.tipo === "album" ? <Disc size={20} color="white" /> : <Music size={20} color="white" />
+                 )}
+               </View>
+               <View className="flex-1">
+                 <Text className="text-sm font-bold text-white" numberOfLines={1}>{linkedItem.nome}</Text>
+                 <Text className="text-[11px] text-[#3B82F6] font-bold">
+                   {linkedItem.tipo === "album" ? "Álbum" : "Música • Single"}
+                 </Text>
+               </View>
+             </View>
+          </Pressable>
+        </View>
+      )}
+
+      {/* Imagem / Midia (Opcional) */}
+      {realFotoUrl && (
+        <View className="px-5 pb-4">
+          <View className="relative w-full aspect-square rounded-xl overflow-hidden bg-black border border-white/5 shadow-2xl">
+            <Image source={{ uri: realFotoUrl }} className="w-full h-full object-cover" />
+          </View>
+        </View>
+      )}
+
+      {/* Footer Engajamento */}
+      <View className="px-5 pb-4">
+        <View className="pt-3 border-t border-white/5 flex-row items-center justify-between">
+          <View className="flex-row items-center gap-6">
+            <Pressable onPress={alternarCurtida} className="flex-row items-center gap-2 group">
+              <Heart
+                color={curtido ? "#f43f5e" : "#94a3b8"}
+                fill={curtido ? "#f43f5e" : "transparent"}
+                size={22}
+                className="group-active:scale-110"
+              />
+              <Text className="font-medium text-[#cbd5e1] text-xs">{totalCurtidas}</Text>
+            </Pressable>
+          </View>
+
+          
+        </View>
       </View>
 
-      {/* Área de Denúncia Expandida */}
-      {denunciaAberta && (
-        <View className="p-4 bg-[#1A2235] border-t border-white/5">
-          <Text className="text-white font-bold mb-3">Por que está denunciando esta postagem?</Text>
-          {["Conteúdo ofensivo", "Spam ou golpe", "Mídia inapropriada", "Outro motivo"].map((motivo) => (
-            <Pressable
-              key={motivo}
-              onPress={() => setMotivoEscolhido(motivo)}
-              className="py-2.5 border-b border-white/5 flex-row items-center"
-            >
-              <View className={`w-4 h-4 rounded-full border mr-3 items-center justify-center ${motivoEscolhido === motivo ? "border-primary" : "border-gray-500"}`}>
-                {motivoEscolhido === motivo && <View className="w-2 h-2 rounded-full bg-primary" />}
-              </View>
-              <Text className={motivoEscolhido === motivo ? "text-primary font-bold" : "text-gray-300"}>
-                {motivo}
-              </Text>
-            </Pressable>
-          ))}
-
-          {motivoEscolhido === "Outro motivo" && (
-            <TextInput
-              placeholder="Descreva o motivo da denúncia..."
-              placeholderTextColor="#64748B"
-              value={descricaoDenuncia}
-              onChangeText={setDescricaoDenuncia}
-              multiline
-              className="bg-[#0B101E] text-white border border-white/10 rounded-xl px-3 py-2 mt-3 min-h-[80px]"
-              style={{ textAlignVertical: "top" }}
-            />
-          )}
-
-          {erroDenuncia && (
-            <Text className="text-red-500 text-sm mt-2">{erroDenuncia}</Text>
-          )}
-
-          <View className="flex-row gap-3 mt-4">
-            <Pressable onPress={() => { setDenunciaAberta(false); setErroDenuncia(null); }} className="flex-1 py-2.5 items-center rounded-xl border border-white/10">
-              <Text className="text-gray-300 font-medium">Cancelar</Text>
-            </Pressable>
-            <Pressable onPress={enviarDenuncia} disabled={enviandoDenuncia} className="flex-1 py-2.5 items-center rounded-xl bg-red-600">
-              {enviandoDenuncia ? (
-                <ActivityIndicator color="#fff" size="small" />
-              ) : (
-                <Text className="text-white font-bold">Enviar</Text>
-              )}
-            </Pressable>
+      {/* Modal de Denúncia */}
+      <Modal visible={denunciaAberta} transparent animationType="fade" onRequestClose={() => setDenunciaAberta(false)}>
+        <View className="flex-1 bg-black/70 justify-center items-center px-4">
+          <View className="bg-[#121724] w-full max-w-sm rounded-3xl p-6 border border-white/5 shadow-2xl">
+            <Text className="text-xl font-bold text-white mb-2">Denunciar Publicação</Text>
+            <Text className="text-[#94a3b8] text-sm mb-6">Por que você está denunciando este conteúdo?</Text>
+            
+            <View className="bg-[#0a0e17] rounded-xl mb-4 border border-white/5 p-2">
+              <TextInput
+                placeholder="Ex: Spam, Ofensa, Violência..."
+                placeholderTextColor="#64748b"
+                value={motivoDenuncia}
+                onChangeText={setMotivoDenuncia}
+                className="text-white p-3 font-medium text-sm"
+              />
+            </View>
+            
+            <View className="bg-[#0a0e17] rounded-xl mb-6 border border-white/5 p-2 min-h-[100px]">
+              <TextInput
+                placeholder="Detalhes adicionais (opcional)"
+                placeholderTextColor="#64748b"
+                value={descricaoDenuncia}
+                onChangeText={setDescricaoDenuncia}
+                multiline
+                className="text-white p-3 text-sm h-full"
+                textAlignVertical="top"
+              />
+            </View>
+            
+            <View className="flex-row gap-3">
+              <Pressable onPress={() => setDenunciaAberta(false)} className="flex-1 bg-white/5 py-4 rounded-xl items-center active:bg-white/10">
+                <Text className="text-white font-medium">Cancelar</Text>
+              </Pressable>
+              <Pressable
+                onPress={enviarDenuncia}
+                disabled={!motivoDenuncia || enviandoDenuncia}
+                className="flex-1 bg-red-500 py-4 rounded-xl items-center active:bg-red-600"
+                style={{ opacity: !motivoDenuncia || enviandoDenuncia ? 0.5 : 1 }}
+              >
+                {enviandoDenuncia ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text className="text-white font-medium">Enviar</Text>
+                )}
+              </Pressable>
+            </View>
           </View>
         </View>
-      )}
+      </Modal>
     </View>
   );
 }

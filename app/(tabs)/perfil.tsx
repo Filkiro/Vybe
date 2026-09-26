@@ -10,9 +10,11 @@ import {
   StyleSheet,
   Modal,
   Pressable,
+  Share,
 } from "react-native";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
+import { ModalEventoDetalhes, EventoDetalhado } from "../../components/ModalEventoDetalhes";
 import {
   Camera,
   LogOut,
@@ -25,6 +27,17 @@ import {
   ShieldCheck,
   UserCheck,
   Sparkles,
+  Play,
+  Heart,
+  MoreVertical,
+  Calendar,
+  Disc,
+  Plus,
+  MapPin,
+  Clock,
+  Settings,
+  Rss,
+  Info
 } from "lucide-react-native";
 import { BlurView } from "expo-blur";
 import { supabase, PerfilMusico, PerfilOrganizador } from "../../lib/supabase";
@@ -89,36 +102,42 @@ export default function Perfil() {
         {temBiblioteca ? (
           <View className="px-4 mt-2">
             {/* Seletor de Abas Estilo Segmented Control */}
-            <View className="bg-card/80 border border-border p-1.5 rounded-2xl flex-row mb-6">
-              <Pressable
-                onPress={() => setAba("biblioteca")}
-                className={`flex-1 py-3 rounded-xl items-center justify-center transition-all ${
-                  aba === "biblioteca" ? "bg-primary " : "bg-transparent"
-                }`}
-              >
-                <Text
-                  className={`font-bold text-xs ${
-                    aba === "biblioteca" ? "text-white" : "text-muted"
+            <View className="flex-row items-center justify-between gap-4 mb-6 z-10">
+              <View className="flex-row p-1.5 rounded-full bg-white/5 border border-white/10">
+                <Pressable
+                  onPress={() => setAba("biblioteca")}
+                  className={`flex-row items-center gap-2 px-6 py-2 rounded-full transition-all ${
+                    aba === "biblioteca" ? "bg-[#3B82F6]" : "bg-transparent"
                   }`}
+                  style={aba === "biblioteca" ? { shadowColor: "#3B82F6", shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.45, shadowRadius: 16 } : undefined}
                 >
-                  Sua Biblioteca
-                </Text>
-              </Pressable>
+                  <Music size={16} color={aba === "biblioteca" ? "white" : "#94A3B8"} />
+                  <Text
+                    className={`font-bold text-xs ${
+                      aba === "biblioteca" ? "text-white" : "text-gray-400"
+                    }`}
+                  >
+                    Sua Biblioteca
+                  </Text>
+                </Pressable>
 
-              <Pressable
-                onPress={() => setAba("dados")}
-                className={`flex-1 py-3 rounded-xl items-center justify-center transition-all ${
-                  aba === "dados" ? "bg-primary " : "bg-transparent"
-                }`}
-              >
-                <Text
-                  className={`font-bold text-xs ${
-                    aba === "dados" ? "text-white" : "text-muted"
+                <Pressable
+                  onPress={() => setAba("dados")}
+                  className={`flex-row items-center gap-2 px-6 py-2 rounded-full transition-all ${
+                    aba === "dados" ? "bg-[#3B82F6]" : "bg-transparent"
                   }`}
+                  style={aba === "dados" ? { shadowColor: "#3B82F6", shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.45, shadowRadius: 16 } : undefined}
                 >
-                  Dados Pessoais
-                </Text>
-              </Pressable>
+                  <UserCheck size={16} color={aba === "dados" ? "white" : "#94A3B8"} />
+                  <Text
+                    className={`font-bold text-xs ${
+                      aba === "dados" ? "text-white" : "text-gray-400"
+                    }`}
+                  >
+                    Dados Pessoais
+                  </Text>
+                </Pressable>
+              </View>
             </View>
 
             {/* Conteúdo da Aba */}
@@ -155,44 +174,16 @@ export default function Perfil() {
           </View>
         )}
 
-        {/* SEÇÃO DE AÇÕES E ATALHOS */}
-        <View className="px-4 mt-6">
-          <Text className="text-muted text-[11px] font-bold uppercase tracking-wider mb-3 px-1">
-            Navegação Rápida
-          </Text>
-          <View className="bg-card border border-border/60 rounded-3xl overflow-hidden ">
-            {usuario.tipo_conta === "musico" && (
-              <ItemMenu
-                icone={<BarChart3 color={colors.primary} size={18} />}
-                titulo="Dashboard de Desempenho"
-                subtitulo="Estatísticas e métricas do seu perfil"
-                onPress={() => router.push("/dashboard")}
-              />
-            )}
-            <ItemMenu
-              icone={<Music color={colors.primary} size={18} />}
-              titulo="Minhas Publicações"
-              subtitulo="Gerencie lançamentos e faixas"
-              onPress={() => router.push("/minhas-publicacoes")}
-            />
-            <ItemMenu
-              icone={<LifeBuoy color={colors.primary} size={18} />}
-              titulo="Central de Suporte"
-              subtitulo="Ajuda e termos da plataforma"
-              onPress={() => router.push("/suporte")}
-              ultimo
-            />
-          </View>
-        </View>
+
 
         {/* BOTÃO DE SAIR */}
-        <View className="px-4 mt-6">
+        <View className="px-4 mt-8 pb-8 items-center justify-center">
           <Pressable
             onPress={handleLogout}
-            className="bg-red-500/10 border border-red-500/20 rounded-2xl py-4 flex-row items-center justify-center gap-2.5 active:bg-red-500/20"
+            className="bg-red-500/10 hover:bg-red-500/20 rounded-full px-8 py-3 flex-row items-center justify-center gap-2 transition-colors"
           >
-            <LogOut color={colors.danger} size={18} />
-            <Text className="text-red-500 font-bold text-sm">Encerrar Sessão</Text>
+            <LogOut color="#EF4444" size={18} />
+            <Text className="text-red-500 font-bold text-sm">Encerrar Sessão da Conta</Text>
           </Pressable>
         </View>
       </ScrollView>
@@ -207,6 +198,8 @@ function CabecalhoPerfil({ usuario }: { usuario: any }) {
   const [disponivel, setDisponivel] = useState<boolean | null>(null);
   const [enviandoFoto, setEnviandoFoto] = useState(false);
   const [enviandoBanner, setEnviandoBanner] = useState(false);
+  const [totalMusicas, setTotalMusicas] = useState(0);
+  const [totalShows, setTotalShows] = useState(0);
   const ehMusico = usuario.tipo_conta === "musico";
   const ehOrganizador = usuario.tipo_conta === "organizador";
   const tabelaPerfil = ehMusico ? "perfil_musico" : ehOrganizador ? "perfil_organizador" : null;
@@ -223,6 +216,8 @@ function CabecalhoPerfil({ usuario }: { usuario: any }) {
           setFotoUrl((data as any)?.foto_url ?? null);
           setDisponivel((data as any)?.disponivel ?? null);
           setApelido((data as any)?.apelido ?? null);
+          supabase.from("musica").select("id", { count: "exact" }).eq("usuario_id", usuario.id).eq("status", "ativo").then(({ count }) => setTotalMusicas(count || 0));
+          supabase.from("evento_convite").select("id", { count: "exact" }).eq("musico_id", usuario.id).eq("status", "aceito").then(({ count }) => setTotalShows(count || 0));
         }
         setBannerUrl((data as any)?.banner_url ?? null);
       });
@@ -298,13 +293,8 @@ function CabecalhoPerfil({ usuario }: { usuario: any }) {
 
   return (
     <View className="mb-4 relative">
-      {/* Banner: se o usuário já definiu um, ele vira o fundo aqui —
-          o mesmo banner que aparece no modal de prévia e no perfil
-          público dele. Sem banner, cai no gradiente com blur de antes.
-          O overflow-hidden fica só nessa camada de fundo — o botão vive
-          fora dela, como irmão, pra nada (BlurView incluso) poder
-          interceptar o toque nele. */}
-      <View pointerEvents="none" className="h-36 w-full overflow-hidden bg-surface">
+      {/* Banner */}
+      <View pointerEvents="none" className="h-64 sm:h-72 w-full overflow-hidden bg-surface relative">
         {bannerUrl ? (
           <Image source={{ uri: bannerUrl }} className="w-full h-full" resizeMode="cover" />
         ) : (
@@ -314,8 +304,12 @@ function CabecalhoPerfil({ usuario }: { usuario: any }) {
             <BlurView intensity={30} tint="dark" experimentalBlurMethod="dimezisBlurView" style={StyleSheet.absoluteFillObject} />
           </>
         )}
+        
+        {/* Camada de escurecimento suave geral */}
+        <View className="absolute inset-0 bg-black/10" />
 
-        {bannerUrl && <View className="absolute inset-0 bg-black/25" />}
+        {/* Gradiente inferior para mesclar com o background do app (#0B101E) */}
+        <View className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-[#0B101E] via-[#0B101E]/60 to-transparent" />
       </View>
 
       {tabelaPerfil && (
@@ -323,67 +317,111 @@ function CabecalhoPerfil({ usuario }: { usuario: any }) {
           onPress={trocarBanner}
           disabled={enviandoBanner}
           hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
-          style={{ position: "absolute", top: 96, right: 12, zIndex: 20, elevation: 20 }}
+          style={{ position: "absolute", top: 16, right: 16, zIndex: 20, elevation: 20 }}
           className="bg-black/60 rounded-full p-2 border border-white/20 flex-row items-center gap-1.5 px-3 active:bg-black/80"
         >
           <Camera color="white" size={14} />
-          <Text className="text-white text-[11px] font-semibold">
+          <Text className="text-white text-[11px] font-semibold uppercase tracking-wide">
             {enviandoBanner ? "Enviando..." : bannerUrl ? "Trocar banner" : "Adicionar banner"}
           </Text>
         </Pressable>
       )}
 
-      {/* Foto de Perfil (Voltou à lógica estável anterior) */}
-      <View className="items-center -mt-14 px-4">
-        <Pressable onPress={ehMusico ? trocarFoto : undefined} disabled={!ehMusico || enviandoFoto}>
-          <View
-            className="rounded-full items-center justify-center bg-surface relative "
-            style={{ width: 108, height: 108, borderWidth: 4, borderColor: "#0B101E" }}
-          >
-            {fotoUrl ? (
-              <Image source={{ uri: fotoUrl }} style={{ width: 100, height: 100, borderRadius: 50 }} />
-            ) : (
-              <View className="w-full h-full rounded-full bg-surface items-center justify-center">
-                <Text className="text-4xl font-extrabold text-muted">
-                  {usuario.nome.charAt(0).toUpperCase()}
+      {/* Overlay com detalhes (Avatar, Nome, Badges, Botões e Métricas) */}
+      <View className="px-4 -mt-20 relative z-10">
+        <View className="flex-col xl:flex-row xl:items-end justify-between gap-4">
+          {/* Esquerda: Avatar e Info */}
+          <View className="flex-col sm:flex-row items-center sm:items-end gap-4 text-center sm:text-left flex-1 shrink min-w-0">
+            {/* Avatar com borda */}
+            <Pressable onPress={ehMusico ? trocarFoto : undefined} disabled={!ehMusico || enviandoFoto}>
+              <View className="relative">
+                <View className="w-36 h-36 rounded-full p-1 bg-primary/20">
+                  <View className="w-full h-full rounded-full overflow-hidden bg-[#0B101E] border-4 border-[#0B101E]">
+                    {fotoUrl ? (
+                      <Image source={{ uri: fotoUrl }} className="w-full h-full" resizeMode="cover" />
+                    ) : (
+                      <View className="w-full h-full bg-surface items-center justify-center">
+                        <Text className="text-4xl font-extrabold text-muted">
+                          {usuario.nome.charAt(0).toUpperCase()}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
+                {/* Ícone de Verificado */}
+                <View className="absolute bottom-2 right-4 w-6 h-6 rounded-full bg-[#3B82F6] items-center justify-center border-2 border-[#0B101E]">
+                  <UserCheck color="white" size={12} />
+                </View>
+                
+                {ehMusico && (
+                  <View className="absolute inset-0 bg-black/40 rounded-full items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                    <Camera color="white" size={28} />
+                  </View>
+                )}
+              </View>
+            </Pressable>
+
+            {/* Nome e Tags */}
+            <View className="items-center sm:items-start mb-2">
+              <View className="flex-row items-center gap-2">
+                <Text className="text-3xl sm:text-4xl font-black text-textDark tracking-tight">
+                  {usuario.nome}
                 </Text>
+                {apelido && <Text className="text-muted font-medium text-sm">(@{apelido})</Text>}
               </View>
-            )}
 
-            {ehMusico && (
-              <View className="absolute bottom-0 right-0 bg-primary rounded-full p-2 border-2 border-[#0B101E] ">
-                <Camera color="white" size={14} />
+              <View className="flex-row flex-wrap items-center justify-center sm:justify-start gap-2 mt-2">
+                <View className="flex-row items-center gap-1.5 px-3 py-1 rounded-full bg-white/10">
+                  {usuario.tipo_conta === "musico" && <Sparkles size={12} color={colors.primary} />}
+                  {usuario.tipo_conta === "organizador" && <UserCheck size={12} color={colors.primary} />}
+                  {(usuario.tipo_conta === "adm" || usuario.tipo_conta === "moderador") && (
+                    <ShieldCheck size={12} color={colors.primary} />
+                  )}
+                  <Text className="text-primary text-xs font-semibold capitalize">
+                    {rotulosTipoConta[usuario.tipo_conta]}
+                  </Text>
+                </View>
+
+                {usuario.tipo_conta === "musico" && disponivel !== null && (
+                  <View className="flex-row items-center gap-1.5 px-3 py-1 rounded-full bg-white/10">
+                    <View className={`w-2 h-2 rounded-full ${disponivel ? "bg-green-500" : "bg-red-500"}`} />
+                    <Text className="text-textDark text-xs font-semibold">
+                      {disponivel ? "Disponível para contratar" : "Indisponível"}
+                    </Text>
+                  </View>
+                )}
               </View>
-            )}
-          </View>
-        </Pressable>
-
-        <Text className="text-2xl font-black text-textDark mt-3 tracking-tight text-center">
-          {usuario.nome}
-        </Text>
-        {apelido && <Text className="text-muted font-medium mt-1">@{apelido}</Text>}
-
-        <View className="flex-row items-center justify-center gap-2 mt-2">
-          <View className="flex-row items-center gap-1.5 bg-card border border-border/80 px-3 py-1 rounded-full">
-            {usuario.tipo_conta === "musico" && <Sparkles size={12} color={colors.primary} />}
-            {usuario.tipo_conta === "organizador" && <UserCheck size={12} color={colors.primary} />}
-            {(usuario.tipo_conta === "adm" || usuario.tipo_conta === "moderador") && (
-              <ShieldCheck size={12} color={colors.primary} />
-            )}
-            <Text className="text-xs font-semibold text-muted capitalize">
-              {rotulosTipoConta[usuario.tipo_conta]}
-              {enviandoFoto ? " · Enviando foto..." : ""}
-            </Text>
-          </View>
-
-          {usuario.tipo_conta === "musico" && disponivel !== null && (
-            <View className={`rounded-full px-3 py-1 ${disponivel ? "bg-green-500/10" : "bg-red-500/10"}`}>
-              <Text className={`text-xs font-medium ${disponivel ? "text-green-500" : "text-red-500"}`}>
-                {disponivel ? "Disponível para contratar" : "Indisponível"}
-              </Text>
             </View>
-          )}
+          </View>
+
+          {/* Direita: Botões */}
+          <View className="flex-row flex-wrap items-center justify-center gap-2 mb-2">
+            <Pressable
+              onPress={() => {
+                Share.share({
+                  message: `Confira meu perfil no Vybe: https://vybe.app/usuario/${usuario.id}`,
+                });
+              }}
+              className="flex-row items-center gap-2 px-4 py-2.5 rounded-full bg-white/10 active:bg-white/20"
+            >
+              <Text className="text-textDark text-xs font-bold">Compartilhar</Text>
+            </Pressable>
+          </View>
         </View>
+
+        {/* Faixa de Métricas */}
+        {ehMusico && (
+          <View className="flex-row items-center gap-8 mt-6 pt-4 border-t border-white/10 bg-black/20 p-4 rounded-xl">
+            <View className="flex-col items-center sm:items-start px-2">
+              <Text className="text-2xl font-black text-textDark">{totalMusicas}</Text>
+              <Text className="text-[10px] text-muted font-bold uppercase tracking-wider mt-1">Faixas lançadas</Text>
+            </View>
+            <View className="flex-col items-center sm:items-start px-2">
+              <Text className="text-2xl font-black text-primary">{totalShows} {totalShows === 1 ? "Show" : "Shows"}</Text>
+              <Text className="text-[10px] text-muted font-bold uppercase tracking-wider mt-1">Confirmados</Text>
+            </View>
+          </View>
+        )}
       </View>
     </View>
   );
@@ -438,13 +476,7 @@ function BibliotecaMusico({ usuarioId }: { usuarioId: string }) {
   const [eventos, setEventos] = useState<any[]>([]);
   const tocarMusica = usePlayerStore((s) => s.tocarMusica);
   const router = useRouter();
-  const { width } = useWindowDimensions();
-
-  const PADDING_HORIZONTAL = 0;
-  const GAP = 12;
-  const larguraUtil = width - 32;
-  const numColunas = Math.min(MAX_COLUNAS, Math.max(2, Math.floor(larguraUtil / LARGURA_IDEAL_CARD)));
-  const larguraCard = (larguraUtil - GAP * (numColunas - 1)) / numColunas;
+  const [eventoSelecionado, setEventoSelecionado] = useState<any>(null);
 
   useEffect(() => {
     supabase
@@ -470,169 +502,260 @@ function BibliotecaMusico({ usuarioId }: { usuarioId: string }) {
   }, [usuarioId]);
 
   return (
-    <View style={{ paddingHorizontal: PADDING_HORIZONTAL }}>
-      <SecaoBiblioteca
-        titulo="Minhas Músicas"
-        itens={musicas}
-        larguraCard={larguraCard}
-        gap={GAP}
-        limite={LIMITE_PREVIA}
-        verTudoHref="/biblioteca/musicas"
-        vazio='Você ainda não publicou nenhuma música. Toque em "Criar" para começar.'
-        renderItem={(item) => (
-          <Pressable
-            key={item.id}
-            onPress={() => {
-              const fila = musicas.map((m) => ({
-                id: m.id,
-                nome: m.nome,
-                autorApelido: null,
-                arquivoUrl: m.arquivo_url,
-                capaUrl: m.capa_url,
-              }));
-              tocarMusica(
-                { id: item.id, nome: item.nome, autorApelido: null, arquivoUrl: item.arquivo_url, capaUrl: item.capa_url },
-                fila
-              );
-              router.push("/tocando");
-            }}
-            style={{ width: larguraCard }}
-            className="bg-card border border-border/80 rounded-2xl p-2.5 active:scale-95"
-          >
-            {item.capa_url ? (
-              <Image source={{ uri: item.capa_url }} className="w-full aspect-square rounded-xl mb-2.5" />
-            ) : (
-              <View className="w-full aspect-square rounded-xl bg-surface mb-2.5 items-center justify-center">
-                <Music color={colors.muted} size={24} />
-              </View>
-            )}
-            <Text numberOfLines={1} className="font-bold text-textDark text-xs">
-              {item.nome}
-            </Text>
-            <Text numberOfLines={1} className="text-muted text-[10px] uppercase font-semibold mt-0.5">
-              {item.status}
-            </Text>
-          </Pressable>
-        )}
-      />
-
-      <SecaoBiblioteca
-        titulo="Meus Álbuns"
-        itens={albuns}
-        larguraCard={larguraCard}
-        gap={GAP}
-        limite={LIMITE_PREVIA}
-        verTudoHref="/biblioteca/albuns"
-        vazio="Você ainda não criou nenhum álbum. Toque em “Criar” para começar."
-        renderItem={(item) => (
-          <Pressable
-            key={item.id}
-            onPress={() => router.push(`/album/${item.id}`)}
-            style={{ width: larguraCard }}
-            className="bg-card border border-border/80 rounded-2xl p-2.5 active:scale-95"
-          >
-            {item.capa_url ? (
-              <Image source={{ uri: item.capa_url }} className="w-full aspect-square rounded-xl mb-2.5" />
-            ) : (
-              <View className="w-full aspect-square rounded-xl bg-surface mb-2.5 items-center justify-center">
-                <Music color={colors.muted} size={24} />
-              </View>
-            )}
-            <Text numberOfLines={1} className="font-bold text-textDark text-xs">
-              {item.nome}
-            </Text>
-          </Pressable>
-        )}
-      />
-
-      <SecaoBiblioteca
-        titulo="Eventos Contratados"
-        itens={eventos}
-        larguraCard={larguraCard}
-        gap={GAP}
-        limite={LIMITE_PREVIA}
-        verTudoHref="/meus-eventos"
-        vazio="Nenhum evento contratado ainda."
-        renderItem={(item) => (
-          <Pressable
-            key={item.id}
-            style={{ width: larguraCard }}
-            className="bg-card border border-border/80 rounded-2xl p-2.5"
-          >
-            <View className="w-full aspect-square rounded-xl bg-primary/20 mb-2.5 items-center justify-center">
-              <Text className="text-primary font-bold text-[10px] text-center px-1 uppercase">{item.data}</Text>
+    <View className="pb-10 pt-4 flex-col gap-10">
+      
+      {/* SECTION: Minhas Músicas */}
+      <View className="flex-col gap-4">
+        <View className="flex-row items-center justify-between">
+          <View className="flex-row items-center gap-2">
+            <Music color="#3B82F6" size={22} />
+            <Text className="text-lg font-semibold text-textDark">Minhas Músicas</Text>
+            <View className="px-2 py-0.5 rounded-full bg-white/10 ml-1">
+              <Text className="text-[#3B82F6] font-bold text-xs">{musicas.length}</Text>
             </View>
-            <Text numberOfLines={1} className="font-bold text-textDark text-xs">
-              {item.nome}
-            </Text>
-            <Text numberOfLines={1} className="text-muted text-[10px] uppercase font-semibold mt-0.5">
-              Aceito
-            </Text>
+          </View>
+          <Pressable onPress={() => router.push("/biblioteca/musicas")} className="flex-row items-center gap-1">
+            <Text className="text-xs text-[#3B82F6] uppercase font-bold tracking-wider hover:text-blue-400">Gerenciar Tudo</Text>
+            <ChevronRight color="#3B82F6" size={16} />
           </Pressable>
-        )}
-      />
-    </View>
-  );
-}
-
-function SecaoBiblioteca({
-  titulo,
-  itens,
-  larguraCard,
-  gap,
-  limite,
-  verTudoHref,
-  vazio,
-  renderItem,
-}: {
-  titulo: string;
-  itens: any[];
-  larguraCard: number;
-  gap: number;
-  limite: number;
-  verTudoHref: string;
-  vazio: string;
-  renderItem: (item: any) => React.ReactNode;
-}) {
-  const router = useRouter();
-  const excedente = itens.length - limite;
-  const visiveis = excedente > 0 ? itens.slice(0, limite) : itens;
-
-  return (
-    <View className="mb-6">
-      <View className="flex-row items-center justify-between mb-3">
-        <Text className="text-sm font-bold text-textDark tracking-wide">{titulo}</Text>
-        {itens.length > 0 && (
-          <Pressable onPress={() => router.push(verTudoHref as any)} hitSlop={8}>
-            <Text className="text-primary text-xs font-bold">Gerenciar Tudo</Text>
-          </Pressable>
-        )}
-      </View>
-
-      {itens.length === 0 ? (
-        <View className="bg-card/40 border border-border/50 rounded-2xl p-4 items-center">
-          <Text className="text-muted text-center text-xs">{vazio}</Text>
         </View>
-      ) : (
-        <View style={{ flexDirection: "row", flexWrap: "wrap", gap }}>
-          {visiveis.map((item) => renderItem(item))}
 
-          {excedente > 0 && (
+        <View className="flex-col gap-3">
+          {musicas.slice(0, 4).map((m, idx) => (
             <Pressable
-              onPress={() => router.push(verTudoHref as any)}
-              style={{ width: larguraCard }}
-              className="bg-card border border-border/80 rounded-2xl p-2.5 items-center justify-center"
+              key={m.id || idx}
+              onPress={() => {
+                const fila = musicas.map((mu) => ({
+                  id: mu.id,
+                  nome: mu.nome,
+                  autorApelido: null,
+                  arquivoUrl: mu.arquivo_url,
+                  capaUrl: mu.capa_url,
+                }));
+                tocarMusica(
+                  { id: m.id, nome: m.nome, autorApelido: null, arquivoUrl: m.arquivo_url, capaUrl: m.capa_url },
+                  fila
+                );
+                router.push("/tocando");
+              }}
+              className="flex-row items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors group"
             >
-              <View className="w-full aspect-square rounded-xl bg-surface items-center justify-center mb-2">
-                <Text className="text-primary text-xl font-black">+{excedente}</Text>
+              <View className="flex-row items-center gap-4 flex-1">
+                <View className="w-14 h-14 rounded-lg overflow-hidden bg-white/10 relative">
+                  {m.capa_url ? (
+                    <Image source={{ uri: m.capa_url }} className="w-full h-full" />
+                  ) : (
+                    <View className="w-full h-full items-center justify-center">
+                      <Music size={20} color="#94A3B8" />
+                    </View>
+                  )}
+                  {/* Hover Overlay */}
+                  <View className="absolute inset-0 bg-black/50 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <View className="w-8 h-8 rounded-full bg-[#3B82F6] items-center justify-center shadow-lg">
+                      <Play color="white" size={16} fill="white" />
+                    </View>
+                  </View>
+                </View>
+                <View className="flex-1 justify-center">
+                  <View className="flex-row items-center gap-2">
+                    <Text className="text-sm font-bold text-textDark group-hover:text-[#3B82F6] transition-colors">{m.nome}</Text>
+                    <View className="px-2 py-0.5 rounded-full bg-[#3B82F6]/20">
+                      <Text className="text-[#3B82F6] text-[10px] font-bold">{m.status || "Ativo"}</Text>
+                    </View>
+                  </View>
+                  <Text className="text-xs text-gray-400 mt-1">{m.genero || "Original"}</Text>
+                </View>
               </View>
-              <Text numberOfLines={1} className="font-bold text-primary text-xs">
-                Ver todos
-              </Text>
+              <View className="flex-row items-center gap-2">
+                <Pressable className="p-2 rounded-full hover:bg-white/10">
+                  <Heart size={20} color="#94A3B8" />
+                </Pressable>
+                <Pressable className="p-2 rounded-full hover:bg-white/10">
+                  <MoreVertical size={20} color="#94A3B8" />
+                </Pressable>
+              </View>
             </Pressable>
+          ))}
+          {musicas.length === 0 && (
+            <Text className="text-muted text-xs text-center p-4">Você ainda não publicou nenhuma música.</Text>
           )}
         </View>
-      )}
+      </View>
+
+      {/* SECTION: Meus Álbuns */}
+      <View className="flex-col gap-4">
+        <View className="flex-row items-center justify-between">
+          <View className="flex-row items-center gap-2">
+            <Disc color="#3B82F6" size={22} />
+            <Text className="text-lg font-semibold text-textDark">Meus Álbuns & EPs</Text>
+          </View>
+          <View className="flex-row items-center gap-3">
+            <Pressable onPress={() => router.push("/biblioteca/albuns")} className="flex-row items-center gap-1">
+              <Text className="text-xs text-[#3B82F6] uppercase font-bold tracking-wider hover:text-blue-400">Ver Todos</Text>
+              <ChevronRight color="#3B82F6" size={16} />
+            </Pressable>
+          </View>
+        </View>
+
+        <View className="flex-row flex-wrap gap-4">
+          {albuns.slice(0, 3).map((item) => (
+            <Pressable
+              key={item.id}
+              onPress={() => router.push(`/album/${item.id}`)}
+              style={{ width: "31%", minWidth: 150 }}
+              className="group rounded-2xl bg-white/5 border border-white/5 p-4 flex-col justify-between hover:bg-white/10 shadow-lg"
+            >
+              <View className="w-full aspect-square rounded-xl overflow-hidden mb-4 relative">
+                {item.capa_url ? (
+                  <Image source={{ uri: item.capa_url }} className="w-full h-full group-hover:scale-105 transition-transform duration-500" />
+                ) : (
+                  <View className="w-full h-full bg-white/10 items-center justify-center">
+                    <Disc color="#94A3B8" size={32} />
+                  </View>
+                )}
+                {/* Play Button Overlay */}
+                <View className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
+                  <View className="w-10 h-10 rounded-full bg-[#3B82F6] items-center justify-center shadow-lg">
+                    <Play color="white" size={20} fill="white" style={{ marginLeft: 2 }} />
+                  </View>
+                </View>
+              </View>
+              <View>
+                <Text numberOfLines={1} className="font-semibold text-textDark text-sm group-hover:text-[#3B82F6] transition-colors">
+                  {item.nome}
+                </Text>
+                <Text numberOfLines={1} className="text-xs text-gray-400 mt-1">
+                  Álbum • {new Date(item.criado_em).getFullYear()}
+                </Text>
+              </View>
+            </Pressable>
+          ))}
+          {albuns.length === 0 && (
+            <Text className="text-muted text-xs p-4">Nenhum álbum criado.</Text>
+          )}
+        </View>
+      </View>
+
+      {/* SECTION: Eventos Contratados */}
+      <View className="flex-col gap-4">
+        <View className="flex-row items-center justify-between">
+          <View className="flex-row items-center gap-2">
+            <Calendar color="#3B82F6" size={22} />
+            <Text className="text-lg font-semibold text-textDark">Shows Confirmados & Contratos</Text>
+          </View>
+          <Pressable onPress={() => router.push("/meus-eventos")} className="flex-row items-center gap-1">
+            <Text className="text-xs text-[#3B82F6] uppercase font-bold tracking-wider hover:text-blue-400">Agenda Completa</Text>
+            <ChevronRight color="#3B82F6" size={16} />
+          </Pressable>
+        </View>
+
+        <View className="flex-col gap-4">
+          {eventos.slice(0, 1).map((item) => {
+            const dataObj = item.data ? new Date(item.data + "T12:00:00Z") : new Date();
+            const mes = dataObj.toLocaleString('pt-BR', { month: 'short' }).toUpperCase();
+            const dia = dataObj.getDate();
+            const ano = dataObj.getFullYear();
+            
+            return (
+              <View key={item.id} className="relative overflow-hidden rounded-2xl bg-white/5 border border-white/10 p-5 flex-col md:flex-row md:items-center justify-between gap-4 shadow-xl">
+                <View className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-[#3B82F6]/10 rounded-full blur-3xl" />
+                
+                <View className="flex-row items-center gap-4 flex-1">
+                  {/* Calendar Badge */}
+                  <View className="flex-col items-center justify-center w-16 h-16 rounded-xl bg-white/10 shadow-inner">
+                    <Text className="text-[10px] text-[#3B82F6] uppercase font-black tracking-widest">{mes}</Text>
+                    <Text className="text-xl font-bold text-textDark leading-tight">{dia}</Text>
+                    <Text className="text-[8px] text-gray-400">{ano}</Text>
+                  </View>
+
+                  {/* Event Details */}
+                  <View className="flex-col gap-1">
+                    <View className="flex-row items-center gap-2">
+                      <Text className="font-semibold text-textDark text-sm">{item.nome}</Text>
+                      <View className="flex-row items-center gap-1 px-2 py-0.5 rounded-full bg-green-500/20">
+                        <View className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                        <Text className="text-green-500 text-[10px] font-bold">Participando</Text>
+                      </View>
+                    </View>
+                    <View className="flex-row items-center gap-4 mt-1">
+                      <View className="flex-row items-center gap-1">
+                        <MapPin color="#3B82F6" size={14} />
+                        <Text className="text-gray-400 text-xs">{item.localizacao || "Local a definir"}</Text>
+                      </View>
+                      <View className="flex-row items-center gap-1">
+                        <Clock color="#94A3B8" size={14} />
+                        <Text className="text-gray-400 text-xs">{item.horario || "Não definido"}</Text>
+                      </View>
+                    </View>
+                  </View>
+                </View>
+
+                {/* Actions */}
+                <View className="flex-row items-center gap-2">
+                  <Pressable onPress={() => setEventoSelecionado(item)} className="px-4 py-2 rounded-full bg-[#3B82F6] hover:scale-105 transition-transform">
+                    <Text className="text-white text-xs font-bold">Mostrar Detalhes</Text>
+                  </Pressable>
+                </View>
+              </View>
+            );
+          })}
+          {eventos.length === 0 && (
+             <Text className="text-muted text-xs p-4">Nenhum show confirmado.</Text>
+          )}
+        </View>
+      </View>
+
+      {/* SECTION: Navegação Rápida */}
+      <View className="flex-col gap-4">
+        <Text className="text-lg font-semibold text-textDark">Navegação Rápida do Artista</Text>
+        <View className="flex-row flex-wrap gap-4">
+          
+          <Pressable onPress={() => router.push("/dashboard")} style={{ width: "31%", minWidth: 200 }} className="group rounded-2xl bg-white/5 border border-white/5 p-5 flex-col justify-between hover:bg-white/10 transition-colors">
+            <View className="flex-col gap-3">
+              <View className="w-12 h-12 rounded-xl bg-white/10 items-center justify-center group-hover:bg-[#3B82F6] transition-colors">
+                <BarChart3 color="white" size={24} />
+              </View>
+              <Text className="font-semibold text-textDark text-sm group-hover:text-[#3B82F6] transition-colors">Dashboard de Desempenho</Text>
+              <Text className="text-xs text-gray-400">Acompanhe ouvintes únicos diários, royalties e mais.</Text>
+            </View>
+            <View className="flex-row items-center gap-1 mt-4">
+              <Text className="text-xs text-[#3B82F6] font-bold group-hover:translate-x-1 transition-transform">Abrir métricas</Text>
+              <ChevronRight color="#3B82F6" size={14} className="group-hover:translate-x-1 transition-transform" />
+            </View>
+          </Pressable>
+
+          <Pressable onPress={() => router.push("/minhas-publicacoes")} style={{ width: "31%", minWidth: 200 }} className="group rounded-2xl bg-white/5 border border-white/5 p-5 flex-col justify-between hover:bg-white/10 transition-colors">
+            <View className="flex-col gap-3">
+              <View className="w-12 h-12 rounded-xl bg-white/10 items-center justify-center group-hover:bg-[#3B82F6] transition-colors">
+                <Rss color="white" size={24} />
+              </View>
+              <Text className="font-semibold text-textDark text-sm group-hover:text-[#3B82F6] transition-colors">Minhas Publicações & Feed</Text>
+              <Text className="text-xs text-gray-400">Gerencie postagens na timeline e atualizações.</Text>
+            </View>
+            <View className="flex-row items-center gap-1 mt-4">
+              <Text className="text-xs text-[#3B82F6] font-bold group-hover:translate-x-1 transition-transform">Criar publicação</Text>
+              <ChevronRight color="#3B82F6" size={14} className="group-hover:translate-x-1 transition-transform" />
+            </View>
+          </Pressable>
+
+          <Pressable onPress={() => router.push("/suporte")} style={{ width: "31%", minWidth: 200 }} className="group rounded-2xl bg-white/5 border border-white/5 p-5 flex-col justify-between hover:bg-white/10 transition-colors">
+            <View className="flex-col gap-3">
+              <View className="w-12 h-12 rounded-xl bg-white/10 items-center justify-center group-hover:bg-[#3B82F6] transition-colors">
+                <LifeBuoy color="white" size={24} />
+              </View>
+              <Text className="font-semibold text-textDark text-sm group-hover:text-[#3B82F6] transition-colors">Central de Ajuda & Termos</Text>
+              <Text className="text-xs text-gray-400">Políticas de contratação, faturamento e suporte.</Text>
+            </View>
+            <View className="flex-row items-center gap-1 mt-4">
+              <Text className="text-xs text-[#3B82F6] font-bold group-hover:translate-x-1 transition-transform">Falar com o suporte</Text>
+              <ChevronRight color="#3B82F6" size={14} className="group-hover:translate-x-1 transition-transform" />
+            </View>
+          </Pressable>
+
+        </View>
+      </View>
+      <ModalEventoDetalhes eventoSelecionado={eventoSelecionado as any} onFechar={() => setEventoSelecionado(null)} />
+
     </View>
   );
 }
@@ -842,41 +965,67 @@ function FormularioMusico({ usuarioId }: { usuarioId: string }) {
     setSalvo(true);
   }
 
-  if (!perfil) return <Text className="text-muted text-xs">Carregando dados...</Text>;
+  if (!perfil) return <Text className="text-muted text-xs p-4">Carregando dados...</Text>;
 
   return (
-    <View>
-      <CampoTexto label="Apelido / Nome Artístico" value={apelido} onChangeText={setApelido} />
-      <CampoTexto label="Gênero Musical Principal" value={generoMusical} onChangeText={setGeneroMusical} />
-      <CampoTexto label="Localização Atual" value={localizacao} onChangeText={setLocalizacao} />
-      <CampoTexto label="Bio / Descrição do Artista" value={descricao} onChangeText={setDescricao} multiline />
-      <CampoTexto label="Contato Externo (Social / E-mail)" value={contatoExterno} onChangeText={setContatoExterno} />
+    <View className="flex-col md:flex-row gap-6 pb-10">
+      {/* Coluna Esquerda: Dados Pessoais */}
+      <View className="flex-1 space-y-4">
+        <View className="bg-white/5 border border-white/10 rounded-2xl p-5 shadow-lg">
+          <View className="flex-row items-center justify-between mb-4">
+            <Text className="text-lg font-semibold text-textDark">Identidade do Músico</Text>
+            <Text className="text-xs text-[#3B82F6] font-medium">Informações Públicas</Text>
+          </View>
 
-      <View className="flex-row items-center justify-between my-2 bg-card border border-border/70 rounded-2xl p-4">
-        <View className="pr-2 flex-1">
-          <Text className="text-xs font-bold text-textDark">Disponível para shows</Text>
-          <Text className="text-[10px] text-muted mt-0.5">Exibe status ativo no seu perfil público</Text>
+          <View className="flex-col gap-3">
+            <CampoTexto label="Apelido / Nome Artístico" value={apelido} onChangeText={setApelido} />
+            <CampoTexto label="Gênero Musical Principal" value={generoMusical} onChangeText={setGeneroMusical} />
+            <CampoTexto label="Localização Atual" value={localizacao} onChangeText={setLocalizacao} />
+            <CampoTexto label="Bio / Descrição do Artista" value={descricao} onChangeText={setDescricao} multiline />
+          </View>
         </View>
-        <Switch
-          value={disponivel}
-          onValueChange={setDisponivel}
-          trackColor={{ false: "#1E293B", true: colors.primary }}
-        />
       </View>
 
-      {salvo && <Text className="text-green-500 text-xs font-bold text-center my-2">Alterações salvas com sucesso!</Text>}
+      {/* Coluna Direita: Configurações de Show */}
+      <View className="flex-1 space-y-4 md:max-w-sm">
+        <View className="bg-white/5 border border-white/10 rounded-2xl p-5 shadow-lg">
+          <Text className="text-lg font-semibold text-textDark mb-4">Configuração de Shows</Text>
 
-      <Pressable
-        onPress={salvar}
-        disabled={salvando}
-        className="bg-primary rounded-2xl py-4 items-center mt-3   active:opacity-90"
-      >
-        <Text className="text-white font-bold text-sm">
-          {salvando ? "Salvando alterações..." : "Salvar Alterações"}
-        </Text>
-      </Pressable>
+          {/* Toggle de Disponibilidade */}
+          <View className="bg-black/20 rounded-xl p-4 flex-row items-center justify-between mb-4">
+            <View className="flex-1 pr-4">
+              <Text className="text-sm font-semibold text-textDark">Disponível para contratação</Text>
+              <Text className="text-xs text-gray-400 mt-1">Exibe o selo de contratação no perfil público</Text>
+            </View>
+            <Switch
+              value={disponivel}
+              onValueChange={setDisponivel}
+              trackColor={{ false: "#1E293B", true: "#3B82F6" }}
+              thumbColor="white"
+            />
+          </View>
 
-      <BotaoExcluirConta />
+          <View className="flex-col gap-3">
+            <CampoTexto label="Contato Profissional / Assessoria" value={contatoExterno} onChangeText={setContatoExterno} />
+          </View>
+
+          {salvo && <Text className="text-green-500 text-xs font-bold text-center mt-4">Alterações salvas com sucesso!</Text>}
+
+          <Pressable
+            onPress={salvar}
+            disabled={salvando}
+            className="bg-[#3B82F6] rounded-full py-3.5 items-center mt-6 active:opacity-90 transition-opacity shadow-lg shadow-[#3B82F6]/30"
+          >
+            <Text className="text-white font-bold text-sm">
+              {salvando ? "Salvando alterações..." : "Salvar Alterações"}
+            </Text>
+          </Pressable>
+
+          <View className="mt-8">
+            <BotaoExcluirConta />
+          </View>
+        </View>
+      </View>
     </View>
   );
 }

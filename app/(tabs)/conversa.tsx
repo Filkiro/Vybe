@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { View, Text, FlatList, Pressable, Image, Modal, TextInput, ActivityIndicator } from "react-native";
+import { View, Text, FlatList, Pressable, Image, Modal, TextInput, ActivityIndicator, useWindowDimensions, Platform } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 import { MessageCircle, MoreVertical, Flag } from "lucide-react-native";
 import { supabase } from "../../lib/supabase";
 import { useAuthStore } from "../../store/authStore";
 import { colors } from "../../constants/theme";
 import { usePlayerAwarePadding } from "../../hooks/usePlayerAwarePadding";
+import { ChatPanel } from "../../components/ChatPanel";
 
 type ConversaComContato = {
   id: string;
@@ -25,6 +26,9 @@ export default function Conversa() {
   const [conversas, setConversas] = useState<ConversaComContato[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [filtro, setFiltro] = useState<"todos" | "musico" | "organizador">("todos");
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 1024;
+  const [conversaAtiva, setConversaAtiva] = useState<ConversaComContato | null>(null);
   const paddingBottom = usePlayerAwarePadding(140);
 
   const [mostrarOpcoes, setMostrarOpcoes] = useState(false);
@@ -186,114 +190,164 @@ export default function Conversa() {
   });
 
   return (
-    <View className="flex-1 bg-[#0B101E]">
-      {/* Abas de Filtro */}
-      <View className="flex-row px-4 pt-4 pb-2 gap-2">
-        <Pressable
-          onPress={() => setFiltro("todos")}
-          className={`px-4 py-2 rounded-full border ${filtro === "todos" ? "bg-primary border-primary" : "bg-white/5 border-white/10"}`}
-        >
-          <Text className={`font-semibold text-sm ${filtro === "todos" ? "text-white" : "text-gray-400"}`}>Tudo</Text>
-        </Pressable>
-        <Pressable
-          onPress={() => setFiltro("musico")}
-          className={`px-4 py-2 rounded-full border ${filtro === "musico" ? "bg-primary border-primary" : "bg-white/5 border-white/10"}`}
-        >
-          <Text className={`font-semibold text-sm ${filtro === "musico" ? "text-white" : "text-gray-400"}`}>Músicos</Text>
-        </Pressable>
-        <Pressable
-          onPress={() => setFiltro("organizador")}
-          className={`px-4 py-2 rounded-full border ${filtro === "organizador" ? "bg-primary border-primary" : "bg-white/5 border-white/10"}`}
-        >
-          <Text className={`font-semibold text-sm ${filtro === "organizador" ? "text-white" : "text-gray-400"}`}>Organizadores</Text>
-        </Pressable>
-      </View>
-
-      {carregando ? (
-        <View className="flex-1 items-center justify-center">
-          <Text className="text-muted text-center">Carregando mensagens...</Text>
-        </View>
-      ) : (
-        <FlatList
-          showsVerticalScrollIndicator={false}
-          data={conversasFiltradas}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom }}
-          ListEmptyComponent={
-            <View className="items-center mt-20 px-8">
-              <MessageCircle color={colors.muted} size={48} strokeWidth={1.5} />
-              <Text className="text-muted text-center mt-4 text-base">
-                Nenhuma conversa ainda.{"\n"}Vá ao perfil de alguém e toque em "Contatar" para começar.
-              </Text>
+    <View className="flex-1 bg-[#0B101E] pt-4 lg:pt-0">
+      <View className="flex-1 flex-col lg:flex-row w-full max-w-[1440px] mx-auto lg:p-4 lg:gap-4">
+        
+        {/* LEFT PANE (LIST) */}
+        <View className={`flex-1 lg:max-w-[420px] flex-col lg:bg-[#141a24]/80 lg:border border-white/5 lg:rounded-2xl overflow-hidden ${conversaAtiva ? 'hidden lg:flex' : 'flex'}`}>
+          {/* Header Desktop Only */}
+          <View className="hidden lg:flex px-5 pt-5 pb-2">
+            <View className="flex-row items-center gap-3">
+              <Text className="text-white text-xl font-bold tracking-tight">Conversas</Text>
             </View>
-          }
-          renderItem={({ item }) => (
-            <View className="flex-row items-center border-b border-border/30 pr-2">
-              <Pressable
-                onPress={() =>
-                  router.push(
-                    `/chat/${item.id}?contatoNome=${encodeURIComponent(item.contatoNome)}&contatoFotoUrl=${
-                      item.contatoFotoUrl ? encodeURIComponent(item.contatoFotoUrl) : ""
-                    }&contatoId=${item.contatoId}`
-                  )
-                }
-                className={`flex-1 flex-row items-center py-4 active:opacity-60 transition-opacity`}
-              >
-                {item.contatoFotoUrl ? (
-                  <Image
-                    source={{ uri: item.contatoFotoUrl }}
-                    className="w-14 h-14 rounded-full mr-4 border border-white/5"
-                  />
-                ) : (
-                  <View className="w-14 h-14 rounded-full bg-surface mr-4 items-center justify-center border border-white/5">
-                    <Text className="text-muted font-bold text-xl">{item.contatoNome.charAt(0).toUpperCase()}</Text>
-                  </View>
-                )}
-                
-                <View className="flex-1 mr-3 justify-center">
-                  <View className="flex-row justify-between items-center mb-1">
-                    <Text className="font-semibold text-textDark text-base" numberOfLines={1}>
-                      {item.contatoNome}
-                    </Text>
-                    {item.ultimaMensagemData && (
-                      <Text className="text-[11px] text-muted font-medium">
-                        {new Date(item.ultimaMensagemData).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                      </Text>
-                    )}
-                  </View>
-                  
-                  <Text
-                    numberOfLines={1}
-                    className={`text-[13px] ${item.naoLida ? "text-primaryLight font-medium" : "text-muted"}`}
-                  >
-                    {item.ultimaMensagem
-                      ? `${item.ultimaMensagemEhMinha ? "Você: " : ""}${item.ultimaMensagem}`
-                      : "Nenhuma mensagem ainda"}
+          </View>
+
+          {/* Abas de Filtro */}
+          <View className="flex-row px-4 pt-2 pb-3 gap-2 border-b border-white/5">
+            <Pressable
+              onPress={() => setFiltro("todos")}
+              className={`px-3.5 py-1.5 rounded-full transition-all ${filtro === "todos" ? "bg-[#3B82F6] shadow-[0_0_14px_rgba(37,99,235,0.4)]" : "bg-white/5 hover:bg-white/10"}`}
+            >
+              <Text className={`font-semibold text-xs ${filtro === "todos" ? "text-white" : "text-[#94A3B8]"}`}>Tudo</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => setFiltro("musico")}
+              className={`px-3.5 py-1.5 rounded-full transition-all ${filtro === "musico" ? "bg-[#3B82F6] shadow-[0_0_14px_rgba(37,99,235,0.4)]" : "bg-white/5 hover:bg-white/10"}`}
+            >
+              <Text className={`font-semibold text-xs ${filtro === "musico" ? "text-white" : "text-[#94A3B8]"}`}>Músicos</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => setFiltro("organizador")}
+              className={`px-3.5 py-1.5 rounded-full transition-all ${filtro === "organizador" ? "bg-[#3B82F6] shadow-[0_0_14px_rgba(37,99,235,0.4)]" : "bg-white/5 hover:bg-white/10"}`}
+            >
+              <Text className={`font-semibold text-xs ${filtro === "organizador" ? "text-white" : "text-[#94A3B8]"}`}>Organizadores</Text>
+            </Pressable>
+          </View>
+
+          {carregando ? (
+            <View className="flex-1 items-center justify-center">
+              <ActivityIndicator color="#3B82F6" />
+            </View>
+          ) : (
+            <FlatList
+              showsVerticalScrollIndicator={false}
+              data={conversasFiltradas}
+              keyExtractor={(item) => item.id}
+              contentContainerStyle={{ padding: 12, paddingBottom }}
+              ListEmptyComponent={
+                <View className="items-center mt-20 px-8">
+                  <MessageCircle color="#475569" size={48} strokeWidth={1.5} />
+                  <Text className="text-[#64748B] text-center mt-4 text-sm">
+                    Nenhuma conversa ainda.{"\n"}Vá ao perfil de alguém e toque em "Contatar" para começar.
                   </Text>
                 </View>
+              }
+              renderItem={({ item }) => {
+                const isActive = conversaAtiva?.id === item.id;
+                return (
+                  <View className="flex-row items-center mb-1">
+                    <Pressable
+                      onPress={() => {
+                        if (isDesktop) {
+                          setConversaAtiva(item);
+                        } else {
+                          router.push(
+                            `/chat/${item.id}?contatoNome=${encodeURIComponent(item.contatoNome)}&contatoFotoUrl=${
+                              item.contatoFotoUrl ? encodeURIComponent(item.contatoFotoUrl) : ""
+                            }&contatoId=${item.contatoId}`
+                          );
+                        }
+                      }}
+                      className={`flex-1 flex-row items-center p-2.5 rounded-lg transition-all relative ${isActive ? 'bg-[#3B82F6]/15' : 'hover:bg-white/5 active:opacity-70'}`}
+                    >
+                      {isActive && (
+                        <View className="absolute left-0 top-2 bottom-2 w-1 bg-[#3B82F6] rounded-r shadow-[0_0_10px_rgba(37,99,235,0.8)]" />
+                      )}
+                      
+                      {item.contatoFotoUrl ? (
+                        <Image
+                          source={{ uri: item.contatoFotoUrl }}
+                          className="w-11 h-11 rounded-full mr-3 border border-white/5 bg-[#1A2235]"
+                        />
+                      ) : (
+                        <View className="w-11 h-11 rounded-full bg-[#1A2235] mr-3 items-center justify-center border border-white/5">
+                          <Text className="text-[#94A3B8] font-bold text-lg">{item.contatoNome.charAt(0).toUpperCase()}</Text>
+                        </View>
+                      )}
+                      
+                      <View className="flex-1 mr-2 justify-center">
+                        <View className="flex-row justify-between items-center mb-0.5">
+                          <View className="flex-row items-center flex-1 mr-2 gap-1.5">
+                            <Text className="font-semibold text-white text-[14px]" numberOfLines={1}>
+                              {item.contatoNome}
+                            </Text>
+                            <View className="px-1.5 py-0.5 rounded bg-white/10">
+                              <Text className="text-[9px] text-[#94A3B8] uppercase font-bold tracking-wider">
+                                {item.contatoTipo}
+                              </Text>
+                            </View>
+                          </View>
+                          {item.ultimaMensagemData && (
+                            <Text className="text-[10px] text-[#64748B] font-medium">
+                              {new Date(item.ultimaMensagemData).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                            </Text>
+                          )}
+                        </View>
+                        
+                        <Text
+                          numberOfLines={1}
+                          className={`text-[12px] ${item.naoLida ? "text-white font-medium" : "text-[#94A3B8]"}`}
+                        >
+                          {item.ultimaMensagem
+                            ? <><Text className="text-[#64748B]">{item.ultimaMensagemEhMinha ? "Você: " : ""}</Text>{item.ultimaMensagem}</>
+                            : "Nenhuma mensagem ainda"}
+                        </Text>
+                      </View>
 
-                {item.naoLidasContagem > 0 && (
-                  <View className="bg-primary rounded-full min-w-[24px] h-[24px] px-1.5 items-center justify-center  mr-2">
-                    <Text className="text-white text-[11px] font-bold">
-                      {item.naoLidasContagem > 9 ? "9+" : item.naoLidasContagem}
-                    </Text>
+                      {item.naoLidasContagem > 0 && (
+                        <View className="bg-[#3B82F6] rounded-full min-w-[20px] h-[20px] px-1.5 items-center justify-center shadow-[0_0_8px_rgba(37,99,235,0.6)] mr-1">
+                          <Text className="text-white text-[10px] font-bold">
+                            {item.naoLidasContagem > 9 ? "9+" : item.naoLidasContagem}
+                          </Text>
+                        </View>
+                      )}
+                    </Pressable>
+
+                    <Pressable
+                      onPress={() => {
+                        setConversaSelecionada(item);
+                        setMostrarOpcoes(true);
+                      }}
+                      className="p-2 ml-1 rounded-full hover:bg-white/5 active:opacity-60"
+                    >
+                      <MoreVertical size={16} color="#64748B" />
+                    </Pressable>
                   </View>
-                )}
-              </Pressable>
+                );
+              }}
+            />
+          )}
+        </View>
 
-              <Pressable
-                onPress={() => {
-                  setConversaSelecionada(item);
-                  setMostrarOpcoes(true);
-                }}
-                className="p-2 ml-1 rounded-full active:bg-white/5"
-              >
-                <MoreVertical size={20} color="#94A3B8" />
-              </Pressable>
+        {/* RIGHT PANE (CHAT) */}
+        <View className={`flex-[2] flex-col lg:bg-[#0B101E] lg:border border-white/5 lg:rounded-2xl overflow-hidden shadow-2xl ${conversaAtiva ? 'flex' : 'hidden lg:flex'}`}>
+          {conversaAtiva ? (
+            <ChatPanel
+              conversaId={conversaAtiva.id}
+              contatoNome={conversaAtiva.contatoNome}
+              contatoFotoUrl={conversaAtiva.contatoFotoUrl ?? undefined}
+              contatoId={conversaAtiva.contatoId}
+              onVoltar={() => setConversaAtiva(null)}
+            />
+          ) : (
+            <View className="flex-1 items-center justify-center bg-[#141a24]/40">
+              <MessageCircle size={48} color="#1e293b" />
+              <Text className="text-[#475569] mt-4 font-semibold text-sm">Selecione uma conversa para começar</Text>
             </View>
           )}
-        />
-      )}
+        </View>
+
+      </View>
 
       {/* Modal de Opções */}
       <Modal transparent visible={mostrarOpcoes} animationType="fade" onRequestClose={() => setMostrarOpcoes(false)}>

@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { View, Text, Pressable, Image, StyleSheet, ScrollView, Share, TextInput, useWindowDimensions } from "react-native";
 import { BlurView } from "expo-blur";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ChevronLeft, Flag, Share2 } from "lucide-react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { ChevronLeft, Flag, Share2, ShieldCheck, UserCheck, Sparkles, MessageCircle } from "lucide-react-native";
 import { supabase, Usuario } from "../../lib/supabase";
 import { useAuthStore } from "../../store/authStore";
 import { usePlayerStore } from "../../store/playerStore";
@@ -148,11 +149,9 @@ export default function PerfilPublico() {
 
   return (
     <ScrollView className="flex-1 bg-background" contentContainerStyle={{ paddingBottom: 60 }}>
-      {/* Banner definido pelo próprio usuário no perfil dele — o
-          mesmo que aparece no modal de prévia. Sem banner, cai na
-          cor sólida de antes. */}
+      {/* Banner definido pelo usuário */}
       <View className="mb-4 relative">
-        <View pointerEvents="none" className="h-36 w-full overflow-hidden bg-surface">
+        <View pointerEvents="none" className="h-64 sm:h-72 w-full overflow-hidden bg-surface relative">
           {dadosPerfil?.banner_url ? (
             <Image source={{ uri: dadosPerfil.banner_url }} className="w-full h-full" resizeMode="cover" />
           ) : (
@@ -162,7 +161,9 @@ export default function PerfilPublico() {
               <BlurView intensity={30} tint="dark" experimentalBlurMethod="dimezisBlurView" style={StyleSheet.absoluteFillObject} />
             </>
           )}
-          {dadosPerfil?.banner_url && <View className="absolute inset-0 bg-black/25" />}
+          
+          <View className="absolute inset-0 bg-black/10" />
+          <View className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-[#0B101E] via-[#0B101E]/60 to-transparent" />
         </View>
 
         <Pressable
@@ -177,60 +178,93 @@ export default function PerfilPublico() {
           <Share2 color="white" size={18} />
         </Pressable>
 
-        <View className="items-center -mt-14 px-4">
-          <View
-            className="rounded-full items-center justify-center bg-surface relative "
-            style={{ width: 108, height: 108, borderWidth: 4, borderColor: "#0B101E" }}
-          >
-            {dadosPerfil?.foto_url ? (
-              <Image source={{ uri: dadosPerfil.foto_url }} style={{ width: 100, height: 100, borderRadius: 50 }} />
-            ) : (
-              <View className="w-full h-full rounded-full bg-surface items-center justify-center">
-                <Text className="text-4xl font-extrabold text-muted">
-                  {usuario.nome.charAt(0).toUpperCase()}
-                </Text>
+        {/* Overlay com detalhes (Avatar, Nome, Badges, Botões) */}
+        <View className="px-4 -mt-20 relative z-10">
+          <View className="flex-col xl:flex-row xl:items-end justify-between gap-4">
+            {/* Esquerda: Avatar e Info */}
+            <View className="flex-col sm:flex-row items-center sm:items-end gap-4 text-center sm:text-left flex-1 shrink min-w-0">
+              <View className="relative">
+                <View className="w-36 h-36 rounded-full p-1 bg-primary/20">
+                  <View className="w-full h-full rounded-full overflow-hidden bg-[#0B101E] border-4 border-[#0B101E]">
+                    {dadosPerfil?.foto_url ? (
+                      <Image source={{ uri: dadosPerfil.foto_url }} className="w-full h-full" resizeMode="cover" />
+                    ) : (
+                      <View className="w-full h-full bg-surface items-center justify-center">
+                        <Text className="text-4xl font-extrabold text-muted">
+                          {usuario.nome.charAt(0).toUpperCase()}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
+                {/* Ícone de Verificado */}
+                <View className="absolute bottom-2 right-4 w-6 h-6 rounded-full bg-[#3B82F6] items-center justify-center border-2 border-[#0B101E]">
+                  <UserCheck color="white" size={12} />
+                </View>
               </View>
-            )}
+
+              {/* Nome e Tags */}
+              <View className="items-center sm:items-start mb-2">
+                <View className="flex-row items-center gap-2">
+                  <Text className="text-3xl sm:text-4xl font-black text-textDark tracking-tight">
+                    {usuario.nome}
+                  </Text>
+                  {dadosPerfil?.apelido && <Text className="text-muted font-medium text-sm">(@{dadosPerfil.apelido})</Text>}
+                </View>
+
+                <View className="flex-row flex-wrap items-center justify-center sm:justify-start gap-2 mt-2">
+                  <View className="flex-row items-center gap-1.5 px-3 py-1 rounded-full bg-white/10">
+                    {usuario.tipo_conta === "musico" && <Sparkles size={12} color={colors.primary} />}
+                    {usuario.tipo_conta === "organizador" && <UserCheck size={12} color={colors.primary} />}
+                    {(usuario.tipo_conta === "adm" || usuario.tipo_conta === "moderador") && (
+                      <ShieldCheck size={12} color={colors.primary} />
+                    )}
+                    <Text className="text-primary text-xs font-semibold capitalize">
+                      {rotulosTipoConta[usuario.tipo_conta]}
+                    </Text>
+                  </View>
+
+                  {usuario.tipo_conta === "musico" && dadosPerfil?.disponivel !== undefined && (
+                    <View className="flex-row items-center gap-1.5 px-3 py-1 rounded-full bg-white/10">
+                      <View className={`w-2 h-2 rounded-full ${dadosPerfil.disponivel ? "bg-green-500" : "bg-red-500"}`} />
+                      <Text className="text-textDark text-xs font-semibold">
+                        {dadosPerfil.disponivel ? "Disponível para contratar" : "Indisponível"}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              </View>
+            </View>
+
+            {/* Direita: Botões (Contatar) */}
+            <View className="flex-row flex-wrap items-center justify-center gap-2 mb-2">
+              <Pressable onPress={contatar} disabled={contatando} className="flex-row items-center gap-2 px-6 py-3 rounded-full bg-primary active:bg-primary/80">
+                <MessageCircle color="white" size={16} />
+                <Text className="text-white text-sm font-bold">{contatando ? "Abrindo..." : "Contatar"}</Text>
+              </Pressable>
+            </View>
           </View>
-          <Text className="text-2xl font-black text-textDark mt-3 tracking-tight text-center">{usuario.nome}</Text>
-          {dadosPerfil?.apelido && <Text className="text-muted font-medium mt-1">@{dadosPerfil.apelido}</Text>}
         </View>
       </View>
 
-      <View className="items-center px-4">
-        <View className="flex-row items-center justify-center gap-2 mt-2">
-          <View className="bg-surface rounded-full px-3 py-1">
-            <Text className="text-xs font-medium text-muted">{rotulosTipoConta[usuario.tipo_conta]}</Text>
-          </View>
-          {usuario.tipo_conta === "musico" && dadosPerfil?.disponivel !== undefined && (
-            <View className={`rounded-full px-3 py-1 ${dadosPerfil.disponivel ? "bg-green-500/10" : "bg-red-500/10"}`}>
-              <Text className={`text-xs font-medium ${dadosPerfil.disponivel ? "text-green-500" : "text-red-500"}`}>
-                {dadosPerfil.disponivel ? "Disponível para contratar" : "Indisponível"}
-              </Text>
-            </View>
-          )}
-        </View>
-
-        {dadosPerfil?.descricao && (
-          <Text className="text-textDark text-center px-8 mt-3">{dadosPerfil.descricao}</Text>
-        )}
-
-        <View className="flex-row gap-2 mt-3">
+      <View className="px-6 mt-2">
+        {/* Info Tags */}
+        <View className="flex-row flex-wrap gap-2 mt-2 justify-center sm:justify-start">
           {[dadosPerfil?.genero_musical, dadosPerfil?.nicho_trabalho, dadosPerfil?.localizacao]
             .filter(Boolean)
             .map((info: string) => (
-              <View key={info} className="bg-primary/10 rounded-full px-3 py-1">
-                <Text className="text-primary text-xs font-medium">{info}</Text>
+              <View key={info} className="bg-primary/10 rounded-full px-3 py-1.5 border border-primary/20">
+                <Text className="text-primary text-xs font-semibold">{info}</Text>
               </View>
             ))}
         </View>
 
-        <View className="flex-row gap-3 mt-5 w-full">
-          <Pressable onPress={contatar} disabled={contatando} className="flex-1 bg-primary rounded-full py-3 items-center">
-            <Text className="text-white font-bold">{contatando ? "Abrindo..." : "Contatar"}</Text>
-          </Pressable>
-        </View>
+        {dadosPerfil?.descricao && (
+          <Text className="text-gray-300 leading-relaxed mt-4 text-center sm:text-left">{dadosPerfil.descricao}</Text>
+        )}
+      </View>
 
+      <View className="items-center px-4">
         {!denunciaAberta ? (
           <Pressable onPress={() => setDenunciaAberta(true)} className="flex-row items-center mt-3 py-1">
             <Flag color={colors.muted} size={13} />
