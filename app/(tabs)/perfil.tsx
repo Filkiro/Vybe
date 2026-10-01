@@ -62,7 +62,7 @@ export default function Perfil() {
 
   if (!usuario) {
     return (
-      <View className="flex-1 bg-[#0B101E] items-center justify-center px-8">
+      <View className="flex-1 bg-[#0a0e16] items-center justify-center px-8">
         <AppLogo />
         <Text className="text-xl font-bold text-textDark text-center mt-6 mb-2">
           Sua jornada musical começa aqui
@@ -89,7 +89,7 @@ export default function Perfil() {
   const temBiblioteca = ehContaComum(usuario);
 
   return (
-    <View className="flex-1 bg-[#0B101E]">
+    <View className="flex-1 bg-[#0a0e16]">
       <ScrollView
         className="flex-1 bg-transparent"
         contentContainerStyle={{ paddingBottom }}
@@ -336,7 +336,7 @@ function CabecalhoPerfil({ usuario }: { usuario: any }) {
             <Pressable onPress={ehMusico ? trocarFoto : undefined} disabled={!ehMusico || enviandoFoto}>
               <View className="relative">
                 <View className="w-36 h-36 rounded-full p-1 bg-primary/20">
-                  <View className="w-full h-full rounded-full overflow-hidden bg-[#0B101E] border-4 border-[#0B101E]">
+                  <View className="w-full h-full rounded-full overflow-hidden bg-[#0a0e16] border-4 border-[#0B101E]">
                     {fotoUrl ? (
                       <Image source={{ uri: fotoUrl }} className="w-full h-full" resizeMode="cover" />
                     ) : (
@@ -505,11 +505,11 @@ function BibliotecaMusico({ usuarioId }: { usuarioId: string }) {
     <View className="pb-10 pt-4 flex-col gap-10">
       
       {/* SECTION: Minhas Músicas */}
-      <View className="flex-col gap-4">
-        <View className="flex-row items-center justify-between">
-          <View className="flex-row items-center gap-2">
+      <View className="flex-col gap-5 items-stretch w-full">
+        <View className="flex-row items-center justify-between w-full">
+          <View className="flex-row items-center gap-2 flex-1 pr-2">
             <Music color="#3B82F6" size={22} />
-            <Text className="text-lg font-semibold text-textDark">Minhas Músicas</Text>
+            <Text className="text-xl font-bold text-white" numberOfLines={1}>Minhas Músicas</Text>
             <View className="px-2 py-0.5 rounded-full bg-white/10 ml-1">
               <Text className="text-[#3B82F6] font-bold text-xs">{musicas.length}</Text>
             </View>
@@ -520,7 +520,7 @@ function BibliotecaMusico({ usuarioId }: { usuarioId: string }) {
           </Pressable>
         </View>
 
-        <View className="flex-col gap-3">
+        <View className="flex-col gap-3 w-full">
           {musicas.slice(0, 4).map((m, idx) => (
             <Pressable
               key={m.id || idx}
@@ -558,8 +558,8 @@ function BibliotecaMusico({ usuarioId }: { usuarioId: string }) {
                 </View>
                 <View className="flex-1 justify-center">
                   <View className="flex-row items-center gap-2">
-                    <Text className="text-sm font-bold text-textDark group-hover:text-[#3B82F6] transition-colors">{m.nome}</Text>
-                    <View className="px-2 py-0.5 rounded-full bg-[#3B82F6]/20">
+                    <Text className="text-sm font-bold text-textDark group-hover:text-[#3B82F6] transition-colors flex-1" numberOfLines={1}>{m.nome}</Text>
+                    <View className="px-2 py-0.5 rounded-full bg-[#3B82F6]/20 shrink-0">
                       <Text className="text-[#3B82F6] text-[10px] font-bold">{m.status || "Ativo"}</Text>
                     </View>
                   </View>
@@ -583,11 +583,11 @@ function BibliotecaMusico({ usuarioId }: { usuarioId: string }) {
       </View>
 
       {/* SECTION: Meus Álbuns */}
-      <View className="flex-col gap-4">
-        <View className="flex-row items-center justify-between">
-          <View className="flex-row items-center gap-2">
+      <View className="flex-col gap-5 items-stretch w-full">
+        <View className="flex-row items-center justify-between w-full">
+          <View className="flex-row items-center gap-2 flex-1 pr-2">
             <Disc color="#3B82F6" size={22} />
-            <Text className="text-lg font-semibold text-textDark">Meus Álbuns & EPs</Text>
+            <Text className="text-xl font-bold text-white flex-1" numberOfLines={1}>Meus Álbuns & EPs</Text>
           </View>
           <View className="flex-row items-center gap-3">
             <Pressable onPress={() => router.push("/biblioteca/albuns")} className="flex-row items-center gap-1">
@@ -597,7 +597,7 @@ function BibliotecaMusico({ usuarioId }: { usuarioId: string }) {
           </View>
         </View>
 
-        <View className="flex-row flex-wrap gap-4">
+        <View className="flex-row flex-wrap justify-start items-stretch gap-5 w-full">
           {albuns.slice(0, 3).map((item) => (
             <Pressable
               key={item.id}
@@ -637,19 +637,19 @@ function BibliotecaMusico({ usuarioId }: { usuarioId: string }) {
       </View>
 
       {/* SECTION: Eventos Contratados */}
-      <View className="flex-col gap-4">
-        <View className="flex-col gap-1">
-          <View className="flex-row items-center gap-2">
+      <View className="flex-col gap-5 items-stretch w-full">
+        <View className="flex-row items-center justify-between w-full mb-4">
+          <View className="flex-row items-center gap-2 flex-1 pr-2">
             <Calendar color="#3B82F6" size={22} />
-            <Text className="text-lg font-semibold text-textDark" numberOfLines={1}>Shows Confirmados</Text>
+            <Text className="text-xl font-bold text-white" numberOfLines={1}>Shows Confirmados</Text>
           </View>
-          <Pressable onPress={() => router.push("/meus-eventos")} className="flex-row items-center gap-1 self-start">
+          <Pressable onPress={() => router.push("/meus-eventos")} className="flex-row items-center gap-1">
             <Text className="text-xs text-[#3B82F6] uppercase font-bold tracking-wider">Agenda Completa</Text>
             <ChevronRight color="#3B82F6" size={16} />
           </Pressable>
         </View>
 
-        <View className="flex-col gap-4">
+        <View className="flex-col gap-5 items-stretch w-full">
           {eventos.slice(0, 1).map((item) => {
             const dataObj = item.data ? new Date(item.data + "T12:00:00Z") : new Date();
             const mes = dataObj.toLocaleString('pt-BR', { month: 'short' }).toUpperCase();
@@ -706,12 +706,12 @@ function BibliotecaMusico({ usuarioId }: { usuarioId: string }) {
       </View>
 
       {/* SECTION: Navegação Rápida */}
-      <View className="flex-col gap-4">
-        <Text className="text-lg font-semibold text-textDark">Navegação Rápida do Artista</Text>
-        <View className="flex-row flex-wrap gap-4">
+      <View className="flex-col gap-5 items-stretch w-full">
+        <Text className="text-xl font-bold text-white w-full text-left">Navegação Rápida do Artista</Text>
+        <View className="flex-row flex-wrap justify-center items-stretch gap-5 w-full">
           
-          <Pressable onPress={() => router.push("/dashboard")} style={{ width: "31%", minWidth: 200 }} className="group rounded-2xl bg-white/5 border border-white/5 p-5 flex-col justify-between hover:bg-white/10 transition-colors">
-            <View className="flex-col gap-3">
+          <Pressable onPress={() => router.push("/dashboard")} className="flex-1 min-w-[280px] group rounded-2xl bg-[#121724] border border-white/5 p-6 flex-col justify-between hover:bg-[#1a2133] active:scale-[0.98] transition-all shadow-xl">
+            <View className="flex-col gap-3 w-full">
               <View className="w-12 h-12 rounded-xl bg-white/10 items-center justify-center group-hover:bg-[#3B82F6] transition-colors">
                 <BarChart3 color="white" size={24} />
               </View>
@@ -724,8 +724,8 @@ function BibliotecaMusico({ usuarioId }: { usuarioId: string }) {
             </View>
           </Pressable>
 
-          <Pressable onPress={() => router.push("/minhas-publicacoes")} style={{ width: "31%", minWidth: 200 }} className="group rounded-2xl bg-white/5 border border-white/5 p-5 flex-col justify-between hover:bg-white/10 transition-colors">
-            <View className="flex-col gap-3">
+          <Pressable onPress={() => router.push("/minhas-publicacoes")} className="flex-1 min-w-[280px] group rounded-2xl bg-[#121724] border border-white/5 p-6 flex-col justify-between hover:bg-[#1a2133] active:scale-[0.98] transition-all shadow-xl">
+            <View className="flex-col gap-3 w-full">
               <View className="w-12 h-12 rounded-xl bg-white/10 items-center justify-center group-hover:bg-[#3B82F6] transition-colors">
                 <Rss color="white" size={24} />
               </View>
@@ -738,8 +738,8 @@ function BibliotecaMusico({ usuarioId }: { usuarioId: string }) {
             </View>
           </Pressable>
 
-          <Pressable onPress={() => router.push("/suporte")} style={{ width: "31%", minWidth: 200 }} className="group rounded-2xl bg-white/5 border border-white/5 p-5 flex-col justify-between hover:bg-white/10 transition-colors">
-            <View className="flex-col gap-3">
+          <Pressable onPress={() => router.push("/suporte")} className="flex-1 min-w-[280px] group rounded-2xl bg-[#121724] border border-white/5 p-6 flex-col justify-between hover:bg-[#1a2133] active:scale-[0.98] transition-all shadow-xl">
+            <View className="flex-col gap-3 w-full">
               <View className="w-12 h-12 rounded-xl bg-white/10 items-center justify-center group-hover:bg-[#3B82F6] transition-colors">
                 <LifeBuoy color="white" size={24} />
               </View>
@@ -973,11 +973,11 @@ function FormularioMusico({ usuarioId }: { usuarioId: string }) {
       <View className="flex-1 space-y-4">
         <View className="bg-white/5 border border-white/10 rounded-2xl p-5 shadow-lg">
           <View className="flex-row items-center justify-between mb-4">
-            <Text className="text-lg font-semibold text-textDark">Identidade do Músico</Text>
+            <Text className="text-xl font-bold text-white">Identidade do Músico</Text>
             <Text className="text-xs text-[#3B82F6] font-medium">Informações Públicas</Text>
           </View>
 
-          <View className="flex-col gap-3">
+          <View className="flex-col gap-3 w-full">
             <CampoTexto label="Apelido / Nome Artístico" value={apelido} onChangeText={setApelido} />
             <CampoTexto label="Gênero Musical Principal" value={generoMusical} onChangeText={setGeneroMusical} />
             <CampoTexto label="Localização Atual" value={localizacao} onChangeText={setLocalizacao} />
@@ -1005,7 +1005,7 @@ function FormularioMusico({ usuarioId }: { usuarioId: string }) {
             />
           </View>
 
-          <View className="flex-col gap-3">
+          <View className="flex-col gap-3 w-full">
             <CampoTexto label="Contato Profissional / Assessoria" value={contatoExterno} onChangeText={setContatoExterno} />
           </View>
 
@@ -1090,3 +1090,4 @@ function FormularioOrganizador({ usuarioId }: { usuarioId: string }) {
     </View>
   );
 }
+

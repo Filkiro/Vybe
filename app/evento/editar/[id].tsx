@@ -181,7 +181,7 @@ function GerenciarEvento() {
 
   if (carregando) {
     return (
-      <View className="flex-1 bg-background items-center justify-center">
+      <View className="flex-1 bg-[#0a0e16] items-center justify-center">
         <Text className="text-muted">Carregando...</Text>
       </View>
     );
@@ -193,14 +193,14 @@ function GerenciarEvento() {
   
   if (!evento || !souDono) {
     return (
-      <View className="flex-1 bg-background items-center justify-center px-8">
+      <View className="flex-1 bg-[#0a0e16] items-center justify-center px-8">
         <Text className="text-muted text-center">Você não tem permissão para gerenciar esse evento.</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView className="flex-1 bg-background" contentContainerStyle={{ padding: 16, paddingTop: 56, paddingBottom: 140 }}>
+    <ScrollView className="flex-1 bg-[#0a0e16]" contentContainerStyle={{ padding: 16, paddingTop: 56, paddingBottom: 140 }}>
       <View className="flex-row items-center mb-6">
         <Pressable
           onPress={voltar}

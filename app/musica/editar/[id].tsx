@@ -11,6 +11,8 @@ import { confirmar } from "../../../lib/alertas";
 import { useAuthStore } from "../../../store/authStore";
 import { colors } from "../../../constants/theme";
 import { maskDate, parseDateToDB, parseDateFromDB } from "../../../lib/dateMask";
+import DatePickerModal from "../../../components/DatePickerModal";
+import GenrePickerModal from "../../../components/GenrePickerModal";
 
 export default function EditarMusica() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -27,6 +29,8 @@ export default function EditarMusica() {
   const [capaUri, setCapaUri] = useState<string | null>(null);
   const [capaTrocada, setCapaTrocada] = useState(false);
   const [arquivo, setArquivo] = useState<{ uri: string; nome: string; tipo: string } | null>(null);
+  const [mostrarGenero, setMostrarGenero] = useState(false);
+  const [mostrarData, setMostrarData] = useState(false);
 
   const [salvando, setSalvando] = useState(false);
   const [excluindo, setExcluindo] = useState(false);
@@ -244,20 +248,24 @@ export default function EditarMusica() {
                 </View>
              </View>
 
-             <View className="flex-col sm:flex-row gap-4">
+             <View className="flex-col md:flex-row gap-4">
                 <View className="flex-1">
                    <Text className="text-[#c3c6d7] text-[13px] font-medium mb-1.5">Gênero / Tag</Text>
-                   <View className="bg-[#1c2028] border border-[#31353e] rounded-lg px-3 py-1 flex-row items-center">
+                   <Pressable onPress={() => setMostrarGenero(true)} className="bg-[#1c2028] border border-[#31353e] rounded-lg px-3 py-4 flex-row items-center">
                       <Tag color="#8d90a0" size={18} />
-                      <TextInput value={genero} onChangeText={setGenero} placeholder="Indie Pop..." placeholderTextColor="#8d90a0" className="flex-1 ml-2 text-[#dfe2ee] text-[14px] py-3" />
-                   </View>
+                      <Text className={`flex-1 ml-2 text-[14px] ${genero ? "text-[#dfe2ee]" : "text-[#8d90a0]"}`}>
+                        {genero || "Indie Pop..."}
+                      </Text>
+                   </Pressable>
                 </View>
                 <View className="flex-1">
                    <Text className="text-[#c3c6d7] text-[13px] font-medium mb-1.5">Data de Lançamento</Text>
-                   <View className="bg-[#1c2028] border border-[#31353e] rounded-lg px-3 py-1 flex-row items-center">
+                   <Pressable onPress={() => setMostrarData(true)} className="bg-[#1c2028] border border-[#31353e] rounded-lg px-3 py-4 flex-row items-center">
                       <Calendar color="#8d90a0" size={18} />
-                      <TextInput keyboardType="numeric" value={dataLancamento} onChangeText={(t) => setDataLancamento(maskDate(t))} placeholder="DD/MM/AAAA" placeholderTextColor="#8d90a0" className="flex-1 ml-2 text-[#dfe2ee] text-[14px] py-3" />
-                   </View>
+                      <Text className={`flex-1 ml-2 text-[14px] ${dataLancamento ? "text-[#dfe2ee]" : "text-[#8d90a0]"}`}>
+                        {dataLancamento || "DD/MM/AAAA"}
+                      </Text>
+                   </Pressable>
                 </View>
              </View>
 
@@ -286,17 +294,17 @@ export default function EditarMusica() {
 
           {/* Footer Actions */}
           <View className="bg-[#181c24] p-4 rounded-xl border border-[#31353e] flex-col gap-3">
-             <View className="flex-row flex-wrap items-center justify-between gap-3">
-               <Pressable onPress={confirmarExclusao} disabled={salvando || excluindo} className="flex-row items-center px-4 py-2 bg-red-900/20 rounded-lg border border-red-900/30 active:bg-red-900/40">
+             <View className="flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+               <Pressable onPress={confirmarExclusao} disabled={salvando || excluindo} className="flex-row items-center justify-center gap-2 px-4 py-3 md:py-2 bg-red-900/20 rounded-lg border border-red-900/30 active:bg-red-900/40">
                  <Trash2 color="#ef4444" size={16} />
                  <Text className="text-red-400 font-medium ml-2 text-[13px]">Excluir música</Text>
                </Pressable>
 
-               <View className="flex-row items-center gap-3 flex-wrap">
-                 <Pressable onPress={voltar} className="px-4 py-2">
+               <View className="flex-col md:flex-row items-stretch md:items-center gap-3 mt-4 md:mt-0">
+                 <Pressable onPress={voltar} className="py-3 md:py-2 items-center justify-center rounded-lg border border-[#31353e] md:border-0">
                    <Text className="text-[#c3c6d7] font-medium text-[13px]">Cancelar</Text>
                  </Pressable>
-                 <Pressable onPress={salvar} disabled={salvando || excluindo} className="flex-row items-center px-6 py-2.5 bg-[#2563eb] rounded-lg shadow-lg active:bg-[#1d4ed8]">
+                 <Pressable onPress={salvar} disabled={salvando || excluindo} className="flex-row items-center justify-center px-6 py-3 md:py-2.5 bg-[#2563eb] rounded-lg shadow-lg active:bg-[#1d4ed8]">
                    {salvando ? <ActivityIndicator color="#fff" size="small" /> : (
                      <>
                        <Save color="#fff" size={16} />
@@ -309,6 +317,8 @@ export default function EditarMusica() {
           </View>
         </View>
       </View>
+      <GenrePickerModal visivel={mostrarGenero} aoFechar={() => setMostrarGenero(false)} aoSelecionar={setGenero} generoAtual={genero} />
+      <DatePickerModal visivel={mostrarData} aoFechar={() => setMostrarData(false)} aoSelecionar={setDataLancamento} />
     </ScrollView>
   );
 }

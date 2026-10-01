@@ -141,14 +141,14 @@ export default function PerfilPublico() {
 
   if (carregando || !usuario) {
     return (
-      <View className="flex-1 bg-background items-center justify-center">
+      <View className="flex-1 bg-[#0a0e16] items-center justify-center">
         <Text className="text-muted">Carregando perfil...</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView className="flex-1 bg-background" contentContainerStyle={{ paddingBottom: 60 }}>
+    <ScrollView className="flex-1 bg-[#0a0e16]" contentContainerStyle={{ paddingBottom: 60 }}>
       {/* Banner definido pelo usuário */}
       <View className="mb-4 relative">
         <View pointerEvents="none" className="h-64 sm:h-72 w-full overflow-hidden bg-surface relative">
@@ -185,7 +185,7 @@ export default function PerfilPublico() {
             <View className="flex-col sm:flex-row items-center sm:items-end gap-4 text-center sm:text-left flex-1 shrink min-w-0">
               <View className="relative">
                 <View className="w-36 h-36 rounded-full p-1 bg-primary/20">
-                  <View className="w-full h-full rounded-full overflow-hidden bg-[#0B101E] border-4 border-[#0B101E]">
+                  <View className="w-full h-full rounded-full overflow-hidden bg-[#0a0e16] border-4 border-[#0B101E]">
                     {dadosPerfil?.foto_url ? (
                       <Image source={{ uri: dadosPerfil.foto_url }} className="w-full h-full" resizeMode="cover" />
                     ) : (

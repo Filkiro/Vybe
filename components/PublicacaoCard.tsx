@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { View, Text, Pressable, Image, TextInput, ActivityIndicator, Modal } from "react-native";
-import { Heart, MoreVertical, Flag, Play, Music, Calendar, Disc } from "lucide-react-native";
+import { View, Text, Pressable, Image, TextInput, ActivityIndicator, Modal, Share } from "react-native";
+import { Heart, MoreVertical, Flag, Play, Music, Calendar, Disc, Share2 } from "lucide-react-native";
 import { router } from "expo-router";
 import { supabase } from "../lib/supabase";
 import { useAuthStore } from "../store/authStore";
@@ -31,7 +31,7 @@ export type PublicacaoFeedItem = {
   album?: { id: string; nome: string; capa_url: string | null } | null;
 };
 
-export function PublicacaoCard({ item }: { item: PublicacaoFeedItem }) {
+export function PublicacaoCard({ item, footer, noMargin, esconderOpcoes }: { item: PublicacaoFeedItem; footer?: React.ReactNode; noMargin?: boolean; esconderOpcoes?: boolean }) {
   const usuarioLogado = useAuthStore((s) => s.usuario);
   const requireAuth = useRequireAuth();
   const abrirPerfil = useAbrirPerfil();
@@ -148,7 +148,7 @@ async function alternarCurtida() {
   }
 
   return (
-    <View className="bg-[#121724] rounded-2xl mb-6 shadow-xl border border-white/5 overflow-hidden w-full">
+    <View className={`bg-[#121724] rounded-2xl ${noMargin ? '' : 'mb-6'} shadow-xl border border-white/5 overflow-hidden w-full`}>
       {/* Header */}
       <View className="flex-row items-center justify-between p-5">
         <Pressable onPress={() => abrirPerfil(item.usuario_id)} className="flex-row items-center flex-1">
@@ -180,23 +180,15 @@ async function alternarCurtida() {
           </View>
         </Pressable>
 
-        <View className="relative">
-          <Pressable onPress={() => setMostrarOpcoes(!mostrarOpcoes)} className="p-1.5 rounded-lg active:bg-white/5">
-            <MoreVertical color="#94a3b8" size={20} />
-          </Pressable>
+        {!esconderOpcoes && (
+          <View className="relative">
+            <Pressable onPress={() => setMostrarOpcoes(!mostrarOpcoes)} className="p-1.5 rounded-lg active:bg-white/5">
+              <MoreVertical color="#94a3b8" size={20} />
+            </Pressable>
 
-          {mostrarOpcoes && (
-            <View className="absolute right-0 top-10 w-44 bg-[#1f293d] rounded-xl shadow-2xl p-1 z-50 border border-white/5">
-              <Pressable
-                onPress={() => { setMostrarOpcoes(false); setDenunciaAberta(true); }}
-                className="flex-row items-center p-3 rounded-lg active:bg-white/5"
-              >
-                <Flag color="#cbd5e1" size={16} />
-                <Text className="text-[#cbd5e1] font-medium ml-3 text-sm">Denunciar post</Text>
-              </Pressable>
-            </View>
-          )}
-        </View>
+            
+          </View>
+        )}
       </View>
 
       {/* Descrição */}
@@ -293,15 +285,58 @@ async function alternarCurtida() {
               <Text className="font-medium text-[#cbd5e1] text-xs">{totalCurtidas}</Text>
             </Pressable>
           </View>
-
-          
         </View>
       </View>
+      
+      {footer}
 
-      {/* Modal de Denúncia */}
+                  {/* Modal de Opcoes */}
+      <Modal visible={mostrarOpcoes} transparent animationType="fade" onRequestClose={() => setMostrarOpcoes(false)}>
+        <Pressable className="flex-1 bg-black/60 justify-center items-center px-4" onPress={() => setMostrarOpcoes(false)}>
+          <Pressable className="bg-[#151a23] w-full max-w-sm rounded-3xl border border-white/10 p-6 shadow-2xl" onPress={() => {}}>
+            <Text className="text-white font-bold text-lg mb-6 text-center">Opções da Publicação</Text>
+            
+            <View className="flex-col gap-3">
+              <Pressable
+                onPress={() => {
+                  setMostrarOpcoes(false);
+                  // O ideal seria usar o Clipboard ou Share do React Native, mas como fallback:
+                  // import { avisar } from '../lib/alertas'; // Se estiver importado
+                  // Mas só fechar o modal e logar por enquanto
+                  Share.share({ message: `Confira essa publicação no Vybe: https://vybe.app/publicacao/${item.id}` });
+                }}
+                className="flex-row items-center p-4 rounded-2xl bg-white/5 active:bg-white/10 border border-white/5"
+              >
+                <View className="w-10 h-10 rounded-full bg-blue-500/10 items-center justify-center mr-4">
+                  <Share2 color="#3b82f6" size={20} />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-[#3b82f6] font-semibold text-base">Compartilhar link</Text>
+                  <Text className="text-[#94a3b8] text-xs mt-0.5">Enviar para amigos</Text>
+                </View>
+              </Pressable>
+
+              <Pressable
+                onPress={() => { setMostrarOpcoes(false); setTimeout(() => setDenunciaAberta(true), 100); }}
+                className="flex-row items-center p-4 rounded-2xl bg-white/5 active:bg-white/10 border border-white/5"
+              >
+                <View className="w-10 h-10 rounded-full bg-red-500/10 items-center justify-center mr-4">
+                  <Flag color="#ef4444" size={20} />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-[#ef4444] font-semibold text-base">Denunciar</Text>
+                  <Text className="text-[#94a3b8] text-xs mt-0.5">Reportar conteúdo inadequado</Text>
+                </View>
+              </Pressable>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
+
+      {/* Modal de Denuncia */}
       <Modal visible={denunciaAberta} transparent animationType="fade" onRequestClose={() => setDenunciaAberta(false)}>
-        <View className="flex-1 bg-black/70 justify-center items-center px-4">
-          <View className="bg-[#121724] w-full max-w-sm rounded-3xl p-6 border border-white/5 shadow-2xl">
+        <Pressable className="flex-1 bg-black/80 justify-center items-center px-4" onPress={() => setDenunciaAberta(false)}>
+          <Pressable className="bg-[#121724] w-full max-w-sm rounded-3xl p-6 border border-white/5 shadow-2xl" onPress={() => {}}>
             <Text className="text-xl font-bold text-white mb-2">Denunciar Publicação</Text>
             <Text className="text-[#94a3b8] text-sm mb-6">Por que você está denunciando este conteúdo?</Text>
             
@@ -344,8 +379,8 @@ async function alternarCurtida() {
                 )}
               </Pressable>
             </View>
-          </View>
-        </View>
+          </Pressable>
+        </Pressable>
       </Modal>
     </View>
   );

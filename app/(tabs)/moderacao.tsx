@@ -216,7 +216,7 @@ export default function ModeracaoScreen() {
   }
 
   return (
-    <View className="flex-1 bg-[#0B101E]">
+    <View className="flex-1 bg-[#0a0e16]">
       <ScrollView contentContainerStyle={{ padding: 24, paddingBottom: paddingBottom + 24 }}>
         <View className="w-full flex-col gap-10 max-w-7xl mx-auto">
           {/* Top Ambient Glow Field */}

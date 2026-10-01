@@ -537,7 +537,7 @@ await Promise.all([
               <View className="flex-row items-center gap-4">
                 <View className="w-14 h-14 rounded-lg bg-[#262A33] overflow-hidden">
                   {musicaEmAlta?.capa_url ? (
-                    <Image source={{ uri: musicaEmAlta.capa_url }} className="w-full h-full" />
+                    <Image importantForAccessibility="yes" accessibilityRole="image" source={{ uri: musicaEmAlta.capa_url }} className="w-full h-full" />
                   ) : (
                     <View className="w-full h-full items-center justify-center">
                       <UserIcon color="#94A3B8" size={20} />
@@ -613,7 +613,7 @@ await Promise.all([
 
           <View className="w-12 h-12 rounded-lg bg-[#262A33] overflow-hidden">
             {item.capa_url ? (
-              <Image source={{ uri: item.capa_url }} className="w-full h-full" />
+              <Image importantForAccessibility="yes" accessibilityRole="image" source={{ uri: item.capa_url }} className="w-full h-full" />
             ) : (
               <View className="w-full h-full items-center justify-center">
                 <UserIcon color="#94A3B8" size={20} />
@@ -659,7 +659,7 @@ await Promise.all([
                 >
                   <View className="relative w-full aspect-square rounded-xl overflow-hidden bg-white/5 mb-3">
                     {album.capa_url ? (
-                      <Image source={{ uri: album.capa_url }} className="w-full h-full group-hover:scale-105 transition-transform duration-500" />
+                      <Image importantForAccessibility="yes" accessibilityRole="image" source={{ uri: album.capa_url }} className="w-full h-full group-hover:scale-105 transition-transform duration-500" />
                     ) : (
                       <View className="w-full h-full bg-surface items-center justify-center">
                         <UserIcon color="#94A3B8" size={32} />
@@ -701,7 +701,7 @@ await Promise.all([
               >
                 <View className="relative w-24 h-24 mb-4">
                   <View className="w-full h-full rounded-full overflow-hidden border-4 border-[#181C24] shadow-xl">
-                    <Image source={{ uri: artista.imagem_url ?? "https://images.unsplash.com/photo-1493225457124-a1a2a5f5f9af?q=80&w=200&auto=format&fit=crop" }} className="w-full h-full" />
+                    <Image importantForAccessibility="yes" accessibilityRole="image" source={{ uri: artista.imagem_url ?? "https://images.unsplash.com/photo-1493225457124-a1a2a5f5f9af?q=80&w=200&auto=format&fit=crop" }} className="w-full h-full" />
                   </View>
                   <View className="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-[#2563EB] border-2 border-[#181C24] items-center justify-center">
                     <Text className="text-white text-[8px] font-black">✓</Text>

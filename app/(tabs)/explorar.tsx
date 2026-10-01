@@ -119,7 +119,7 @@ export default function Explorar() {
     // Fetch Oportunidade
     const { data: ultimosEventos } = await supabase
         .from('evento')
-        .select('id, nome, descricao, data, organizador_id, organizador:organizador_id(nome)')
+        .select('id, nome, descricao, data, organizador_id')
         .order('criado_em', { ascending: false })
         .limit(1);
         

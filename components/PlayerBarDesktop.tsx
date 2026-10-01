@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { View, Text, Image, StyleSheet, Pressable, Animated, GestureResponderEvent } from "react-native";
 import { BlurView } from "expo-blur";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -30,6 +30,8 @@ function formatarTempoRestante(pos: number, dur: number) {
   const dif = Math.max(0, dur - pos);
   return `-${formatarTempo(dif)}`;
 }
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export function PlayerBarDesktop() {
   const insets = useSafeAreaInsets();
@@ -190,16 +192,16 @@ export function PlayerBarDesktop() {
                 <SkipBack size={22} color="#dfe2ee" />
               </Pressable>
 
-              <Pressable
+              <AnimatedPressable
                 onPress={handleTogglePlayPause}
-                className="w-9 h-9 items-center justify-center rounded-full bg-[#2563EB] hover:scale-105 active:scale-95 transition-all shadow-[0_0_16px_rgba(37,99,235,0.45)]"
+                className="w-12 h-12 items-center justify-center hover:scale-105 active:scale-95 transition-all" style={{ backgroundColor: corDinamica || "#2563EB", shadowColor: corDinamica || "#2563EB", shadowOpacity: 0.45, shadowRadius: 16, shadowOffset: { width: 0, height: 0 }, elevation: 10, borderRadius: 9999, padding: 5 }}
               >
                 {estaTocando ? (
-                  <Pause size={18} color="white" fill="white" />
+                  <Pause size={24} color="white" fill="white" />
                 ) : (
-                  <Play size={18} color="white" fill="white" style={{ marginLeft: 2 }} />
+                  <Play size={24} color="white" fill="white" style={{ marginLeft: 2 }} />
                 )}
-              </Pressable>
+              </AnimatedPressable>
 
               <Pressable
                 onPress={proxima}
@@ -235,10 +237,7 @@ export function PlayerBarDesktop() {
                     style={{
                       height: "100%",
                       width: `${progresso * 100}%`,
-                      backgroundColor: corDinamica || "#3B82F6",
-                      borderRadius: 999,
-                    }}
-                    className="group-hover:bg-[#2563eb] transition-colors"
+                      backgroundColor: corDinamica || "#3B82F6", borderRadius: 999 }}
                   />
                 </View>
 
@@ -252,7 +251,7 @@ export function PlayerBarDesktop() {
                     height: 8,
                     borderRadius: 4,
                     backgroundColor: "#ffffff",
-                    shadowColor: "#3B82F6",
+                    shadowColor: corDinamica || "#3B82F6",
                     shadowOpacity: 0.6,
                     shadowRadius: 10,
                   }}
@@ -305,17 +304,14 @@ export function PlayerBarDesktop() {
                 }}
               >
                 <View className="w-full h-1 bg-[#31353e] rounded-full overflow-hidden relative cursor-pointer group">
-                  <View
+                  <Animated.View
                     style={{
                       position: "absolute",
                       top: 0,
                       bottom: 0,
                       left: 0,
                       width: `${(isMuted ? 0 : volume) * 100}%`,
-                      backgroundColor: "#3B82F6",
-                      borderRadius: 4,
-                    }}
-                    className="group-hover:bg-[#2563EB] transition-colors"
+                      backgroundColor: corDinamica || "#3B82F6", borderRadius: 4 }}
                   />
                 </View>
               </View>

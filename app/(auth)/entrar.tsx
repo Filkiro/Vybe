@@ -296,12 +296,12 @@ function FormCadastro() {
         </Pressable>
       </View>
 
-      <Campo icone={User} placeholder="Nome completo" value={nome} onChangeText={setNome} />
+      <Campo icone={User} placeholder="Nome completo" accessibilityLabel="Nome completo" value={nome} onChangeText={setNome} />
 
       {tipoConta === "musico" && (
         <Campo
           icone={AtSign}
-          placeholder="Nome artístico / Apelido"
+          placeholder="Nome artístico / Apelido" accessibilityLabel="Nome artístico / Apelido"
           value={apelido}
           onChangeText={setApelido}
         />
@@ -309,7 +309,7 @@ function FormCadastro() {
 
       <Campo
         icone={Mail}
-        placeholder="Seu melhor e-mail"
+        placeholder="Seu melhor e-mail" accessibilityLabel="Seu melhor e-mail"
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"
@@ -317,14 +317,14 @@ function FormCadastro() {
       />
       <Campo
         icone={Lock}
-        placeholder="Criar senha segura"
+        placeholder="Criar senha segura" accessibilityLabel="Criar senha segura"
         value={senha}
         onChangeText={setSenha}
         isPassword
       />
       <Campo
         icone={Lock}
-        placeholder="Confirmar senha"
+        placeholder="Confirmar senha" accessibilityLabel="Confirmar senha"
         value={confirmarSenha}
         onChangeText={setConfirmarSenha}
         isPassword
@@ -332,7 +332,7 @@ function FormCadastro() {
 
       {erro && (
         <View className="bg-red-500/10 border border-red-500/30 rounded-xl p-3.5 mb-4">
-          <Text className="text-red-400 text-xs font-medium text-center">{erro}</Text>
+          <Text accessibilityLiveRegion="polite" role="alert" className="text-red-400 text-xs font-medium text-center">{erro}</Text>
         </View>
       )}
 
@@ -402,7 +402,7 @@ function FormLogin() {
     <View>
       <Campo
         icone={Mail}
-        placeholder="Seu e-mail"
+        placeholder="Seu e-mail" accessibilityLabel="Seu e-mail"
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"
@@ -410,7 +410,7 @@ function FormLogin() {
       />
       <Campo
         icone={Lock}
-        placeholder="Sua senha"
+        placeholder="Sua senha" accessibilityLabel="Sua senha"
         value={senha}
         onChangeText={setSenha}
         isPassword
@@ -418,7 +418,7 @@ function FormLogin() {
 
       {erro && (
         <View className="bg-red-500/10 border border-red-500/30 rounded-xl p-3.5 mb-4">
-          <Text className="text-red-400 text-xs font-medium text-center">{erro}</Text>
+          <Text accessibilityLiveRegion="polite" role="alert" className="text-red-400 text-xs font-medium text-center">{erro}</Text>
         </View>
       )}
 

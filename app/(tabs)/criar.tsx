@@ -120,7 +120,7 @@ function CampoSelecionavel({
         onPress={onPress}
         className="bg-[#161D30] border border-border/60 rounded-2xl px-4 py-3.5 flex-row items-center justify-between"
       >
-        <Text className={`font-medium ${valor ? "text-white" : "text-[#64748B]"}`}>
+        <Text className={`font-medium ${valor ? "text-white" : "text-[#94A3B8]"}`}>
           {valor || placeholder}
         </Text>
         {icone}
@@ -168,7 +168,7 @@ function CriarMusico({ usuarioId }: { usuarioId: string }) {
           </View>
 
           {/* TABS — mesmo padrão do Organizador */}
-          <View className="flex-row flex-wrap p-1.5 bg-[#141a24] border border-white/10 rounded-2xl self-start lg:self-auto shadow-xl">
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ padding: 6, gap: 4 }} className="flex-row bg-[#141a24] border border-white/10 rounded-2xl self-start lg:self-auto shadow-xl max-w-full">
             <Pressable
               onPress={() => setAba("musica")}
               className={`flex-row items-center gap-2 px-5 py-2 rounded-xl transition-all duration-200 ${aba === "musica" ? "bg-[#3B82F6] shadow-[0_0_20px_rgba(59,130,246,0.45)]" : "hover:bg-white/5"}`}
@@ -192,7 +192,7 @@ function CriarMusico({ usuarioId }: { usuarioId: string }) {
               <Sparkles size={17} color={aba === "publicacao" ? "#fff" : "#94A3B8"} />
               <Text className={`font-semibold text-sm ${aba === "publicacao" ? "text-white" : "text-[#94A3B8]"}`}>Publicação</Text>
             </Pressable>
-          </View>
+          </ScrollView>
         </View>
 
         {aba === "musica" && <FormMusica usuarioId={usuarioId} />}
@@ -235,7 +235,7 @@ function CriarOrganizador({ usuarioId }: { usuarioId: string }) {
           </View>
 
           {/* TWO DISTINCT TABS */}
-          <View className="flex-row p-1.5 bg-[#141a24] border border-white/10 rounded-2xl self-start lg:self-auto shadow-xl">
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ padding: 6, gap: 4 }} className="flex-row bg-[#141a24] border border-white/10 rounded-2xl self-start lg:self-auto shadow-xl max-w-full">
             <Pressable 
               onPress={() => setAba("evento")}
               className={`flex-row items-center gap-2 px-5 py-2 rounded-xl transition-all duration-200 ${aba === "evento" ? "bg-emerald-600 shadow-[0_0_20px_rgba(16,185,129,0.45)]" : "hover:bg-white/5"}`}
@@ -251,7 +251,7 @@ function CriarOrganizador({ usuarioId }: { usuarioId: string }) {
               <Sparkles size={19} color={aba === "publicacao" ? "#fff" : "#94A3B8"} />
               <Text className={`font-semibold text-sm ${aba === "publicacao" ? "text-white" : "text-[#94A3B8]"}`}>Publicação</Text>
             </Pressable>
-          </View>
+          </ScrollView>
         </View>
 
         {aba === "evento" ? <FormEvento usuarioId={usuarioId} /> : <FormPublicacaoOrganizador usuarioId={usuarioId} />}
@@ -373,12 +373,12 @@ function FormMusica({ usuarioId }: { usuarioId: string }) {
               <View className="w-8 h-8 rounded-lg bg-[#3B82F6]/15 items-center justify-center">
                 <Music size={16} color="#3B82F6" />
               </View>
-              <View>
+              <View className="flex-1">
                 <Text className="text-white text-sm font-bold">Lançar Nova Faixa</Text>
-                <Text className="text-[11px] text-[#64748B]">Música individual com áudio</Text>
+                <Text className="text-[11px] text-[#94A3B8]">Música individual com áudio</Text>
               </View>
             </View>
-            <View className="px-2.5 py-1 rounded-full bg-[#3B82F6]/10 border border-[#3B82F6]/20">
+            <View className="px-2.5 py-1 hidden md:flex rounded-full bg-[#3B82F6]/10 border border-[#3B82F6]/20 shrink-0">
               <Text className="text-[10px] text-[#3B82F6] font-bold uppercase tracking-wider">SINGLE</Text>
             </View>
           </View>
@@ -388,7 +388,7 @@ function FormMusica({ usuarioId }: { usuarioId: string }) {
             <View className="flex-col gap-2">
               <View className="flex-row items-center justify-between">
                 <Text className="text-sm font-semibold text-white">Capa do Single</Text>
-                <Text className="text-[11px] text-[#64748B]">1:1 • Mínimo 800 x 800 px</Text>
+                <Text className="text-[11px] text-[#94A3B8]">1:1 • Mínimo 800 x 800 px</Text>
               </View>
               <Pressable
                 onPress={escolherCapa}
@@ -402,7 +402,7 @@ function FormMusica({ usuarioId }: { usuarioId: string }) {
                       <ImageIcon size={22} color="#3B82F6" />
                     </View>
                     <Text className="text-white font-semibold text-sm mb-1">Arraste a capa da música aqui</Text>
-                    <Text className="text-xs text-[#64748B] text-center mb-4">Formatos aceitos: JPG ou PNG.</Text>
+                    <Text className="text-xs text-[#94A3B8] text-center mb-4">Formatos aceitos: JPG ou PNG.</Text>
                     <View className="flex-row items-center gap-2 bg-[#1a2035] border border-white/10 rounded-lg px-4 py-2">
                       <Upload size={14} color="#94A3B8" />
                       <Text className="text-[#94A3B8] text-xs font-medium">Selecionar arte do dispositivo</Text>
@@ -416,7 +416,7 @@ function FormMusica({ usuarioId }: { usuarioId: string }) {
             <View className="flex-col gap-1.5">
               <View className="flex-row items-center justify-between">
                 <Text className="text-sm font-semibold text-white">Título da Faixa</Text>
-                <Text className="text-[11px] text-[#64748B]">{nome.length}/60</Text>
+                <Text className="text-[11px] text-[#94A3B8]">{nome.length}/60</Text>
               </View>
               <TextInput
                 className="bg-[#0a0e16] border border-white/10 w-full text-white text-sm px-4 py-3 rounded-xl"
@@ -443,7 +443,7 @@ function FormMusica({ usuarioId }: { usuarioId: string }) {
             </View>
 
             {/* Gênero + Data */}
-            <View className="flex-col sm:flex-row gap-4">
+            <View className="flex-col md:flex-row gap-4">
               <View className="flex-col gap-1.5 flex-1">
                 <Text className="text-sm font-semibold text-white">Gênero Musical</Text>
                 <TextInput
@@ -509,12 +509,12 @@ function FormMusica({ usuarioId }: { usuarioId: string }) {
                 </View>
               )}
 
-              <View className="flex-row flex-wrap items-center justify-between gap-3">
+              <View className="flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
                 <Pressable
                   onPress={() => {
                     setNome(""); setDescricao(""); setGenero(""); setDataLancamento(""); setCapaUri(null); setArquivo(null);
                   }}
-                  className="flex-row items-center gap-1.5 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 active:opacity-70"
+                  className="flex-row items-center justify-center gap-1.5 px-4 py-3 md:py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 active:opacity-70 w-full md:w-auto"
                 >
                   <Upload size={15} color="#94A3B8" />
                   <Text className="text-white text-xs font-semibold">Salvar Rascunho</Text>
@@ -523,7 +523,7 @@ function FormMusica({ usuarioId }: { usuarioId: string }) {
                 <Pressable
                   onPress={publicar}
                   disabled={enviando}
-                  className="flex-row items-center gap-2 px-6 py-2.5 rounded-xl bg-[#3B82F6] hover:bg-blue-500 shadow-[0_0_24px_rgba(37,99,235,0.4)] active:opacity-90"
+                  className="flex-row items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#3B82F6] hover:bg-blue-500 shadow-[0_0_24px_rgba(37,99,235,0.4)] active:opacity-90"
                 >
                   {enviando ? <ActivityIndicator color="#fff" size="small" /> : (
                     <>
@@ -546,7 +546,7 @@ function FormMusica({ usuarioId }: { usuarioId: string }) {
                 <View className="w-2 h-2 rounded-full bg-emerald-400" />
                 <Text className="text-white text-xs font-bold uppercase tracking-wider">Preview do Single</Text>
               </View>
-              <Text className="text-[11px] text-[#64748B]">Feed do Ouvinte</Text>
+              <Text className="text-[11px] text-[#94A3B8]">Feed do Ouvinte</Text>
             </View>
 
             {/* Capa */}
@@ -563,7 +563,7 @@ function FormMusica({ usuarioId }: { usuarioId: string }) {
             {/* Info */}
             <View className="p-5">
               <Text className="text-white font-black text-xl" numberOfLines={1}>{nome || "Melodia da Noite"}</Text>
-              <Text className="text-[#64748B] text-xs mt-1">
+              <Text className="text-[#94A3B8] text-xs mt-1">
                 {genero ? genero : "Gênero Musical"}
               </Text>
 
@@ -691,12 +691,12 @@ function FormAlbum({ usuarioId }: { usuarioId: string }) {
               <View className="w-8 h-8 rounded-lg bg-[#A855F7]/10 items-center justify-center">
                 <Disc size={18} color="#A855F7" />
               </View>
-              <View>
-                <Text className="text-white text-lg font-bold">Novo Álbum</Text>
+              <View className="flex-1">
+                <Text className="text-white text-lg font-bold" numberOfLines={1}>Novo Álbum</Text>
                 <Text className="text-xs text-[#94A3B8]">Agrupe suas músicas em um lançamento</Text>
               </View>
             </View>
-            <View className="px-2.5 py-1 rounded-full bg-[#A855F7]/10 border border-[#A855F7]/20">
+            <View className="px-2.5 py-1 hidden md:flex rounded-full bg-[#A855F7]/10 border border-[#A855F7]/20 shrink-0">
               <Text className="text-[10px] text-[#A855F7] font-bold uppercase tracking-wider">ÁLBUM / EP</Text>
             </View>
           </View>
@@ -1037,12 +1037,12 @@ function FormEvento({ usuarioId }: { usuarioId: string }) {
                 <View className="w-8 h-8 rounded-lg bg-emerald-500/10 items-center justify-center">
                   <Calendar size={18} color="#34d399" />
                 </View>
-                <View>
+                <View className="flex-1">
                   <Text className="text-white text-lg font-bold">Criar Evento</Text>
                   <Text className="text-xs text-[#94A3B8]">Organize shows e festivais</Text>
                 </View>
               </View>
-              <View className="px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+              <View className="px-2.5 py-1 hidden md:flex rounded-full bg-emerald-500/10 border border-emerald-500/20 shrink-0">
                 <Text className="text-[10px] text-emerald-300 font-bold uppercase tracking-wider">EVENTO • AO VIVO</Text>
               </View>
             </View>
@@ -1072,7 +1072,7 @@ function FormEvento({ usuarioId }: { usuarioId: string }) {
             </View>
 
             {/* Informações Básicas */}
-            <View className="flex-col sm:flex-row gap-4">
+            <View className="flex-col md:flex-row gap-4">
               <View className="flex-col gap-1.5 flex-[2]">
                 <Text className="text-sm font-semibold text-white">Nome do Evento</Text>
                 <TextInput
@@ -1096,7 +1096,7 @@ function FormEvento({ usuarioId }: { usuarioId: string }) {
               </View>
             </View>
 
-            <View className="flex-col sm:flex-row gap-4">
+            <View className="flex-col md:flex-row gap-4">
               <View className="flex-col gap-1.5 flex-1">
                 <Text className="text-sm font-semibold text-white">Localização</Text>
                 <TextInput
@@ -1119,14 +1119,14 @@ function FormEvento({ usuarioId }: { usuarioId: string }) {
               </View>
             </View>
 
-            <View className="flex-col sm:flex-row gap-4">
+            <View className="flex-col md:flex-row gap-4">
               <View className="flex-col gap-1.5 flex-1">
                 <Text className="text-sm font-semibold text-white">Data</Text>
                 <Pressable
                   onPress={() => setMostrarCalendario(true)}
                   className="bg-[#0a0e16]/75 border border-white/10 w-full px-4 py-3 rounded-xl flex-row items-center justify-between"
                 >
-                  <Text className={`text-sm ${data ? "text-white" : "text-[#64748B]"}`}>
+                  <Text className={`text-sm ${data ? "text-white" : "text-[#94A3B8]"}`}>
                     {data || "Selecionar data"}
                   </Text>
                   <Calendar size={16} color="#64748B" />
@@ -1138,7 +1138,7 @@ function FormEvento({ usuarioId }: { usuarioId: string }) {
                   onPress={() => setMostrarRelogio(true)}
                   className="bg-[#0a0e16]/75 border border-white/10 w-full px-4 py-3 rounded-xl flex-row items-center justify-between"
                 >
-                  <Text className={`text-sm ${horario ? "text-white" : "text-[#64748B]"}`}>
+                  <Text className={`text-sm ${horario ? "text-white" : "text-[#94A3B8]"}`}>
                     {horario || "Selecionar horário"}
                   </Text>
                   <Clock size={16} color="#64748B" />
@@ -1213,7 +1213,7 @@ function FormEvento({ usuarioId }: { usuarioId: string }) {
 
               {/* Selected Chips */}
               {convidados.length > 0 && (
-                <View className="flex-row flex-wrap gap-2 mt-2">
+                <View className="flex-col md:flex-row items-stretch md:items-center gap-3 mt-2 w-full">
                   {convidados.map(id => {
                     const musico = musicos.find(m => m.usuario_id === id);
                     if (!musico) return null;
@@ -1237,15 +1237,15 @@ function FormEvento({ usuarioId }: { usuarioId: string }) {
               )}
             </View>
 
-            {erro && <Text className="text-red-400 text-center font-medium text-xs">{erro}</Text>}
-            {sucesso && <Text className="text-emerald-400 text-center font-medium text-xs">Evento salvo com sucesso!</Text>}
+            {erro && <Text accessibilityLiveRegion="polite" role="alert" className="text-red-400 text-center font-medium text-xs">{erro}</Text>}
+            {sucesso && <Text accessibilityLiveRegion="polite" role="status" className="text-emerald-400 text-center font-medium text-xs">Evento salvo com sucesso!</Text>}
 
             {/* Ações */}
             <View className="flex-row items-center justify-end gap-3 pt-2 border-t border-white/5">
               <Pressable
                 onPress={() => publicar(true)}
                 disabled={enviando}
-                className="px-5 py-3 rounded-xl border border-white/10 hover:bg-white/5 transition-all"
+                className="flex-row items-center justify-center px-5 py-3 rounded-xl border border-white/10 hover:bg-white/5 transition-all"
               >
                 <Text className="text-white text-sm font-semibold">Salvar Rascunho</Text>
               </Pressable>
@@ -1253,7 +1253,7 @@ function FormEvento({ usuarioId }: { usuarioId: string }) {
               <Pressable
                 onPress={() => publicar(false)}
                 disabled={enviando}
-                className="px-7 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 flex-row items-center gap-2 shadow-[0_0_24px_rgba(16,185,129,0.4)] transition-all"
+                className="flex-row items-center justify-center px-7 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 flex-row items-center gap-2 shadow-[0_0_24px_rgba(16,185,129,0.4)] transition-all"
               >
                 {enviando ? <ActivityIndicator size="small" color="#fff" /> : (
                   <Text className="text-white text-sm font-semibold">Publicar Evento</Text>
@@ -1405,12 +1405,12 @@ function FormPublicacaoMusico({ usuarioId }: { usuarioId: string }) {
             <View className="w-8 h-8 rounded-lg bg-emerald-500/10 items-center justify-center">
               <Sparkles size={16} color="#34d399" />
             </View>
-            <View>
-              <Text className="text-white text-sm font-bold">Nova Publicação na Cena</Text>
-              <Text className="text-[11px] text-[#64748B]">Atualizações para fãs, bastidores e novidades</Text>
+            <View className="flex-1">
+              <Text className="text-white text-sm font-bold" numberOfLines={1}>Nova Publicação na Cena</Text>
+              <Text className="text-[11px] text-[#94A3B8]">Atualizações para fãs, bastidores e novidades</Text>
             </View>
           </View>
-          <View className="px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+          <View className="px-2.5 py-1 hidden md:flex rounded-full bg-emerald-500/10 border border-emerald-500/20 shrink-0">
             <Text className="text-[10px] text-emerald-300 font-bold uppercase tracking-wider">FEED DA CENA</Text>
           </View>
         </View>
@@ -1434,7 +1434,7 @@ function FormPublicacaoMusico({ usuarioId }: { usuarioId: string }) {
           <View className="flex-col gap-2">
             <View className="flex-row items-center justify-between">
               <Text className="text-sm font-semibold text-white">Mídia da Publicação</Text>
-              <Text className="text-[11px] text-[#64748B]">Opcional</Text>
+              <Text className="text-[11px] text-[#94A3B8]">Opcional</Text>
             </View>
             {capaUri ? (
               <View className="relative rounded-xl overflow-hidden">
@@ -1455,7 +1455,7 @@ function FormPublicacaoMusico({ usuarioId }: { usuarioId: string }) {
                   <ImageIcon size={22} color="#34d399" />
                 </View>
                 <Text className="text-white font-semibold text-sm mb-1">Selecione uma imagem</Text>
-                <Text className="text-xs text-[#64748B] text-center mb-4">Ou escolha um item do catálogo abaixo para importar a arte automaticamente.</Text>
+                <Text className="text-xs text-[#94A3B8] text-center mb-4">Ou escolha um item do catálogo abaixo para importar a arte automaticamente.</Text>
                 <View className="flex-row items-center gap-2 bg-[#1a2035] border border-white/10 rounded-lg px-4 py-2">
                   <Upload size={14} color="#94A3B8" />
                   <Text className="text-[#94A3B8] text-xs font-medium">Anexar foto</Text>
@@ -1467,9 +1467,9 @@ function FormPublicacaoMusico({ usuarioId }: { usuarioId: string }) {
           {/* Divulgar catálogo */}
           {(minhasMusicas.length > 0 || meusAlbuns.length > 0) && (
             <View className="flex-col gap-2 pt-2 border-t border-white/5">
-              <View>
+              <View className="flex-1">
                 <Text className="text-sm font-semibold text-white">Divulgar item do seu catálogo (opcional)</Text>
-                <Text className="text-xs text-[#64748B] mt-0.5">Selecionar preenche o post com as informações do item.</Text>
+                <Text className="text-xs text-[#94A3B8] mt-0.5">Selecionar preenche o post com as informações do item.</Text>
               </View>
               <View className="flex-col gap-2 pt-1">
                 {meusAlbuns.map((a) => {
@@ -1480,16 +1480,16 @@ function FormPublicacaoMusico({ usuarioId }: { usuarioId: string }) {
                       onPress={() => escolher("album", a)}
                       className={`flex-row items-center justify-between p-3.5 rounded-xl border transition-all ${sel ? "bg-[#3B82F6]/10 border-[#3B82F6]/40" : "bg-[#0a0e16]/80 border-white/10"}`}
                     >
-                      <View className="flex-row items-center gap-3">
-                        <View className={`w-10 h-10 rounded-lg items-center justify-center ${sel ? "bg-blue-900/30 border border-blue-500/30" : "bg-white/5"}`}>
+                      <View className="flex-row items-center gap-3 flex-1 pr-2">
+                        <View className={`w-10 h-10 rounded-lg items-center justify-center shrink-0 ${sel ? "bg-blue-900/30 border border-blue-500/30" : "bg-white/5"}`}>
                           <Disc size={18} color={sel ? "#3B82F6" : "#94A3B8"} />
                         </View>
-                        <View>
-                          <Text className="text-sm font-semibold text-white">{a.nome}</Text>
-                          <Text className="text-[11px] text-[#94A3B8] uppercase tracking-wider font-bold">ÁLBUM</Text>
+                        <View className="flex-1">
+                          <Text className="text-sm font-semibold text-white" numberOfLines={1}>{a.nome}</Text>
+                          <Text className="text-[11px] text-[#94A3B8] uppercase tracking-wider font-bold" numberOfLines={1}>ÁLBUM</Text>
                         </View>
                       </View>
-                      <View className={`w-5 h-5 rounded-full border items-center justify-center ${sel ? "bg-[#3B82F6] border-[#3B82F6]" : "border-white/20"}`}>
+                      <View className={`w-5 h-5 rounded-full border items-center justify-center shrink-0 ${sel ? "bg-[#3B82F6] border-[#3B82F6]" : "border-white/20"}`}>
                         {sel && <Check size={12} color="#fff" />}
                       </View>
                     </Pressable>
@@ -1503,16 +1503,16 @@ function FormPublicacaoMusico({ usuarioId }: { usuarioId: string }) {
                       onPress={() => escolher("musica", m)}
                       className={`flex-row items-center justify-between p-3.5 rounded-xl border transition-all ${sel ? "bg-emerald-500/10 border-emerald-500/40" : "bg-[#0a0e16]/80 border-white/10"}`}
                     >
-                      <View className="flex-row items-center gap-3">
-                        <View className={`w-10 h-10 rounded-lg items-center justify-center ${sel ? "bg-emerald-900/30 border border-emerald-500/30" : "bg-white/5"}`}>
+                      <View className="flex-row items-center gap-3 flex-1 pr-2">
+                        <View className={`w-10 h-10 rounded-lg items-center justify-center shrink-0 ${sel ? "bg-emerald-900/30 border border-emerald-500/30" : "bg-white/5"}`}>
                           <Music size={18} color={sel ? "#34d399" : "#94A3B8"} />
                         </View>
-                        <View>
-                          <Text className="text-sm font-semibold text-white">{m.nome}</Text>
-                          <Text className="text-[11px] text-[#94A3B8] uppercase tracking-wider font-bold">MÚSICA • SINGLE</Text>
+                        <View className="flex-1">
+                          <Text className="text-sm font-semibold text-white" numberOfLines={1}>{m.nome}</Text>
+                          <Text className="text-[11px] text-[#94A3B8] uppercase tracking-wider font-bold" numberOfLines={1}>MÚSICA • SINGLE</Text>
                         </View>
                       </View>
-                      <View className={`w-5 h-5 rounded-full border items-center justify-center ${sel ? "bg-emerald-500 border-emerald-500" : "border-white/20"}`}>
+                      <View className={`w-5 h-5 rounded-full border items-center justify-center shrink-0 ${sel ? "bg-emerald-500 border-emerald-500" : "border-white/20"}`}>
                         {sel && <Check size={12} color="#fff" />}
                       </View>
                     </Pressable>
@@ -1524,14 +1524,14 @@ function FormPublicacaoMusico({ usuarioId }: { usuarioId: string }) {
 
           {/* Ações */}
           <View className="flex-row items-center justify-between pt-4 border-t border-white/5">
-            {erro && <Text className="text-red-400 text-xs font-medium mb-3">{erro}</Text>}
-            {sucesso && <Text className="text-emerald-400 text-xs font-medium mb-3">Publicação salva!</Text>}
+            {erro && <Text accessibilityLiveRegion="polite" role="alert" className="text-red-400 text-xs font-medium mb-3">{erro}</Text>}
+            {sucesso && <Text accessibilityLiveRegion="polite" role="status" className="text-emerald-400 text-xs font-medium mb-3">Publicação salva!</Text>}
 
-            <View className="flex-row items-center justify-between w-full">
+            <View className="flex-col md:flex-row items-stretch md:items-center justify-between w-full gap-3 mt-2">
               <Pressable
                 onPress={() => publicar(true)}
                 disabled={enviando}
-                className="flex-row items-center gap-1.5 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 active:opacity-70"
+                className="flex-row items-center justify-center gap-1.5 px-4 py-3 md:py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 active:opacity-70 w-full md:w-auto"
               >
                 <Text className="text-white text-xs font-semibold">Salvar Rascunho</Text>
               </Pressable>
@@ -1539,7 +1539,7 @@ function FormPublicacaoMusico({ usuarioId }: { usuarioId: string }) {
               <Pressable
                 onPress={() => publicar(false)}
                 disabled={enviando}
-                className="flex-row items-center gap-2 px-7 py-2.5 rounded-xl bg-[#3B82F6] hover:bg-blue-500 shadow-[0_0_24px_rgba(37,99,235,0.4)] active:opacity-90"
+                className="flex-row items-center justify-center gap-2 px-7 py-3 md:py-2.5 rounded-xl bg-[#3B82F6] hover:bg-blue-500 shadow-[0_0_24px_rgba(37,99,235,0.4)] active:opacity-90 w-full md:w-auto"
               >
                 {enviando ? <ActivityIndicator size="small" color="#fff" /> : (
                   <>
@@ -1561,7 +1561,7 @@ function FormPublicacaoMusico({ usuarioId }: { usuarioId: string }) {
               <View className="w-2 h-2 rounded-full bg-emerald-400" />
               <Text className="text-white text-xs font-bold uppercase tracking-wider">Como aparecerá no Feed</Text>
             </View>
-            <Text className="text-[11px] text-[#64748B]">Feed da Cena</Text>
+            <Text className="text-[11px] text-[#94A3B8]">Feed da Cena</Text>
           </View>
 
           {/* Feed card mockup */}
@@ -1571,14 +1571,14 @@ function FormPublicacaoMusico({ usuarioId }: { usuarioId: string }) {
               <View className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-500 items-center justify-center">
                 <Text className="text-white font-bold text-sm">M</Text>
               </View>
-              <View>
+              <View className="flex-1">
                 <View className="flex-row items-center gap-1.5">
                   <Text className="text-sm font-bold text-white">Seu Perfil</Text>
                   <View className="px-1.5 py-0.5 rounded bg-[#3B82F6]/20">
                     <Text className="text-[10px] text-[#3B82F6] font-bold">MÚSICO</Text>
                   </View>
                 </View>
-                <Text className="text-[11px] text-[#64748B]">Agora mesmo</Text>
+                <Text className="text-[11px] text-[#94A3B8]">Agora mesmo</Text>
               </View>
             </View>
 
@@ -1720,12 +1720,12 @@ function FormPublicacaoOrganizador({ usuarioId }: { usuarioId: string }) {
               <View className="w-8 h-8 rounded-lg bg-emerald-500/10 items-center justify-center">
                 <Sparkles size={18} color="#34d399" />
               </View>
-              <View>
+              <View className="flex-1">
                 <Text className="text-white text-lg font-bold">Publicação</Text>
                 <Text className="text-xs text-[#94A3B8]">Feed do Organizador</Text>
               </View>
             </View>
-            <View className="px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+            <View className="px-2.5 py-1 hidden md:flex rounded-full bg-emerald-500/10 border border-emerald-500/20 shrink-0">
               <Text className="text-[10px] text-emerald-300 font-bold uppercase tracking-wider">POST • FEED</Text>
             </View>
           </View>
@@ -1801,15 +1801,15 @@ function FormPublicacaoOrganizador({ usuarioId }: { usuarioId: string }) {
             />
           </View>
 
-          {erro && <Text className="text-red-400 text-center font-medium text-xs">{erro}</Text>}
-          {sucesso && <Text className="text-emerald-400 text-center font-medium text-xs">Publicação salva com sucesso!</Text>}
+          {erro && <Text accessibilityLiveRegion="polite" role="alert" className="text-red-400 text-center font-medium text-xs">{erro}</Text>}
+          {sucesso && <Text accessibilityLiveRegion="polite" role="status" className="text-emerald-400 text-center font-medium text-xs">Publicação salva com sucesso!</Text>}
 
           {/* Actions */}
-          <View className="flex-row items-center justify-end gap-3 pt-2 border-t border-white/5">
+          <View className="flex-col md:flex-row items-stretch md:items-center justify-between gap-3 pt-4 border-t border-white/5 w-full">
             <Pressable
               onPress={() => publicar(true)}
               disabled={enviando}
-              className="px-5 py-3 rounded-xl border border-white/10 hover:bg-white/5 transition-all"
+              className="flex-row items-center justify-center px-5 py-3 rounded-xl border border-white/10 hover:bg-white/5 transition-all w-full md:w-auto"
             >
               <Text className="text-white text-sm font-semibold">Salvar Rascunho</Text>
             </Pressable>
@@ -1817,7 +1817,7 @@ function FormPublicacaoOrganizador({ usuarioId }: { usuarioId: string }) {
             <Pressable
               onPress={() => publicar(false)}
               disabled={enviando}
-              className="px-7 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 flex-row items-center gap-2 shadow-[0_0_24px_rgba(16,185,129,0.4)] transition-all"
+              className="flex-row items-center justify-center px-7 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 gap-2 shadow-[0_0_24px_rgba(16,185,129,0.4)] transition-all w-full md:w-auto"
             >
               {enviando ? <ActivityIndicator size="small" color="#fff" /> : (
                 <Text className="text-white text-sm font-semibold">Postar</Text>
@@ -1843,7 +1843,7 @@ function FormPublicacaoOrganizador({ usuarioId }: { usuarioId: string }) {
             <View className="w-10 h-10 rounded-full bg-white/10 items-center justify-center">
               <UserSearch size={16} color="#fff" />
             </View>
-            <View>
+            <View className="flex-1">
               <Text className="text-white font-bold text-sm">Seu Perfil</Text>
               <Text className="text-emerald-400 text-[10px] font-bold tracking-wider">ORGANIZADOR</Text>
             </View>

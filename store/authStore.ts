@@ -1,4 +1,6 @@
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { supabase, Usuario } from "../lib/supabase";
 
 type TipoContaCadastro = "musico" | "organizador";
@@ -17,6 +19,7 @@ type AuthState = {
     tipoConta: TipoContaCadastro;
   }) => Promise<{ error: string | null }>;
   sair: () => Promise<void>;
+  setCarregando: (val: boolean) => void;
 };
 
 async function carregarRestricao(usuarioId: string, set: any) {
@@ -30,9 +33,12 @@ async function carregarRestricao(usuarioId: string, set: any) {
   set({ restricaoAtiva: data ?? null });
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set, get) => ({
   usuario: null,
   carregando: true,
+  setCarregando: (val: boolean) => set({ carregando: val }),
   restricaoAtiva: null,
 
   inicializar: async () => {
@@ -43,9 +49,11 @@ export const useAuthStore = create<AuthState>((set) => ({
         .select("*")
         .eq("id", data.session.user.id)
         .single();
-      set({ usuario: perfil ?? null, carregando: false });
+      set({ usuario: perfil ?? null });
+      if (get().carregando) set({ carregando: false });
     } else {
-      set({ usuario: null, carregando: false });
+      set({ usuario: null });
+      if (get().carregando) set({ carregando: false });
     }
 
     supabase.auth.onAuthStateChange(async (_event, session) => {
@@ -141,37 +149,31 @@ export const useAuthStore = create<AuthState>((set) => ({
     await supabase.auth.signOut();
     set({ usuario: null });
   },
-}));
+    }),
+    {
+      name: "auth-storage",
+      storage: createJSONStorage(() => AsyncStorage),
+      partialize: (state) => ({ usuario: state.usuario }),
+      onRehydrateStorage: () => (state) => {
+        if (state) state.setCarregando(false);
+      },
+    }
+  )
+);
 
-// ---------------------------------------------------------------
-// Checagens de tipo de conta centralizadas — usar estas funções em
-// vez de comparar `tipo_conta === "algumTexto"` espalhado pelas
-// telas. Evita o tipo de bug que já tivemos ('adm' vs
-// 'administrador' divergindo em lugares diferentes): agora só
-// existe UM lugar onde esses textos aparecem escritos na mão.
-// ---------------------------------------------------------------
-export function ehAdministrador(usuario: Usuario | null): boolean {
-  return usuario?.tipo_conta === "adm";
-}
 
-export function ehModerador(usuario: Usuario | null): boolean {
-  return usuario?.tipo_conta === "moderador" || ehAdministrador(usuario);
-}
-
-export function ehContaComum(usuario: Usuario | null): boolean {
-  return usuario?.tipo_conta === "musico" || usuario?.tipo_conta === "organizador";
-}
-
-export function ehBanido(usuario: Usuario | null): boolean {
+export function ehBanido(usuario: Usuario | null) {
   return usuario?.status === "banido";
 }
 
-export function bloqueioAtivo(
-  usuario: Usuario | null,
-  restricao: { tipo: string; data_fim: string | null } | null
-): boolean {
-  if (usuario?.status !== "bloqueado") return false;
-  if (!restricao || restricao.tipo !== "bloqueio") return true;
-  if (!restricao.data_fim) return true;
-  return new Date(restricao.data_fim) > new Date();
+export function ehContaComum(u: Usuario | null) {
+  return u?.tipo_conta === "musico" || u?.tipo_conta === "organizador";
+}
+
+export function ehModerador(u: Usuario | null) {
+  return u?.tipo_conta === "moderador" || u?.tipo_conta === "adm";
+}
+
+export function ehAdministrador(u: Usuario | null) {
+  return u?.tipo_conta === "adm";
 }

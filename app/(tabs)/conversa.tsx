@@ -29,7 +29,7 @@ export default function Conversa() {
   const { width } = useWindowDimensions();
   const isDesktop = width >= 1024;
   const [conversaAtiva, setConversaAtiva] = useState<ConversaComContato | null>(null);
-  const paddingBottom = usePlayerAwarePadding(140);
+  const paddingBottom = usePlayerAwarePadding(isDesktop ? 12 : 140);
 
   const [mostrarOpcoes, setMostrarOpcoes] = useState(false);
   const [conversaSelecionada, setConversaSelecionada] = useState<ConversaComContato | null>(null);
@@ -182,6 +182,8 @@ export default function Conversa() {
     }, [carregar])
   );
 
+  const wrapperPaddingBottom = usePlayerAwarePadding(isDesktop ? 16 : 0);
+
   if (!usuario) return null;
 
   const conversasFiltradas = conversas.filter((c) => {
@@ -190,8 +192,11 @@ export default function Conversa() {
   });
 
   return (
-    <View className="flex-1 bg-[#0B101E] pt-4 lg:pt-0">
-      <View className="flex-1 flex-col lg:flex-row w-full max-w-[1440px] mx-auto lg:p-4 lg:gap-4">
+    <View className="flex-1 bg-[#0a0e16] pt-4 lg:pt-0">
+      <View 
+        className="flex-1 flex-col lg:flex-row w-full max-w-[1440px] mx-auto lg:p-4 lg:gap-4"
+        style={isDesktop ? { paddingBottom: wrapperPaddingBottom } : {}}
+      >
         
         {/* LEFT PANE (LIST) */}
         <View className={`flex-1 lg:max-w-[420px] flex-col lg:bg-[#141a24]/80 lg:border border-white/5 lg:rounded-2xl overflow-hidden ${conversaAtiva ? 'hidden lg:flex' : 'flex'}`}>
@@ -237,7 +242,7 @@ export default function Conversa() {
               ListEmptyComponent={
                 <View className="items-center mt-20 px-8">
                   <MessageCircle color="#475569" size={48} strokeWidth={1.5} />
-                  <Text className="text-[#64748B] text-center mt-4 text-sm">
+                  <Text className="text-[#94A3B8] text-center mt-4 text-sm">
                     Nenhuma conversa ainda.{"\n"}Vá ao perfil de alguém e toque em "Contatar" para começar.
                   </Text>
                 </View>
@@ -288,7 +293,7 @@ export default function Conversa() {
                             </View>
                           </View>
                           {item.ultimaMensagemData && (
-                            <Text className="text-[10px] text-[#64748B] font-medium">
+                            <Text className="text-[10px] text-[#94A3B8] font-medium">
                               {new Date(item.ultimaMensagemData).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                             </Text>
                           )}
@@ -299,7 +304,7 @@ export default function Conversa() {
                           className={`text-[12px] ${item.naoLida ? "text-white font-medium" : "text-[#94A3B8]"}`}
                         >
                           {item.ultimaMensagem
-                            ? <><Text className="text-[#64748B]">{item.ultimaMensagemEhMinha ? "Você: " : ""}</Text>{item.ultimaMensagem}</>
+                            ? <><Text className="text-[#94A3B8]">{item.ultimaMensagemEhMinha ? "Você: " : ""}</Text>{item.ultimaMensagem}</>
                             : "Nenhuma mensagem ainda"}
                         </Text>
                       </View>
@@ -330,7 +335,7 @@ export default function Conversa() {
         </View>
 
         {/* RIGHT PANE (CHAT) */}
-        <View className={`flex-[2] flex-col lg:bg-[#0B101E] lg:border border-white/5 lg:rounded-2xl overflow-hidden shadow-2xl ${conversaAtiva ? 'flex' : 'hidden lg:flex'}`}>
+        <View className={`flex-[2] flex-col lg:bg-[#0a0e16] lg:border border-white/5 lg:rounded-2xl overflow-hidden shadow-2xl ${conversaAtiva ? 'flex' : 'hidden lg:flex'}`}>
           {conversaAtiva ? (
             <ChatPanel
               conversaId={conversaAtiva.id}
@@ -394,7 +399,7 @@ export default function Conversa() {
                 value={descricaoDenuncia}
                 onChangeText={setDescricaoDenuncia}
                 multiline
-                className="bg-[#0B101E] text-white border border-white/10 rounded-xl px-4 py-3 mt-4 min-h-[100px]"
+                className="bg-[#0a0e16] text-white border border-white/10 rounded-xl px-4 py-3 mt-4 min-h-[100px]"
                 style={{ textAlignVertical: "top" }}
               />
             )}
@@ -421,3 +426,4 @@ export default function Conversa() {
     </View>
   );
 }
+

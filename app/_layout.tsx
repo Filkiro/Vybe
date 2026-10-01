@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Stack, useRouter, useSegments } from "expo-router";
-import { View, Text, Platform, UIManager, LayoutAnimation } from "react-native";
+import { View, Text, Platform, UIManager, LayoutAnimation, ActivityIndicator } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import "../global.css";
@@ -108,8 +108,8 @@ export default function RootLayout() {
 
   if (carregando) {
     return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-        <Text>Carregando...</Text>
+      <View style={{ flex: 1, backgroundColor: "#0a0e16", alignItems: "center", justifyContent: "center" }}>
+        <ActivityIndicator size="large" color="#3B82F6" />
       </View>
     );
   }

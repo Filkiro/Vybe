@@ -1,4 +1,6 @@
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createAudioPlayer, AudioPlayer, AudioStatus, setAudioModeAsync } from "expo-audio";
 
 type Musica = {
@@ -38,7 +40,8 @@ let audioModeSet = false;
 async function carregarESocar(
   musica: Musica,
   get: () => PlayerState,
-  set: (partial: Partial<PlayerState>) => void
+  set: (partial: Partial<PlayerState>) => void,
+  posicaoInicial: number = 0
 ) {
   const meuToken = ++token;
 
@@ -116,7 +119,9 @@ async function carregarESocar(
   set({ sound: player, musicaAtual: musica, estaTocando: true });
 }
 
-export const usePlayerStore = create<PlayerState>((set, get) => ({
+export const usePlayerStore = create<PlayerState>()(
+  persist(
+    (set, get) => ({
   musicaAtual: null,
   fila: [],
   repetir: false,
@@ -136,7 +141,12 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   },
 
   retomar: async () => {
-    get().sound?.play();
+    const { sound, musicaAtual, posicaoMs } = get();
+    if (!sound && musicaAtual) {
+      await carregarESocar(musicaAtual, get, set, posicaoMs);
+      return;
+    }
+    sound?.play();
     set({ estaTocando: true });
   },
 
@@ -210,4 +220,19 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
       duracaoMs: 0,
     });
   },
-}));
+    }),
+    {
+      name: "vybe-player-storage",
+      storage: createJSONStorage(() => AsyncStorage),
+      partialize: (state) => ({
+        musicaAtual: state.musicaAtual,
+        fila: state.fila,
+        repetir: state.repetir,
+        posicaoMs: state.posicaoMs,
+        duracaoMs: state.duracaoMs,
+        volume: state.volume,
+        isMuted: state.isMuted,
+      }),
+    }
+  )
+);

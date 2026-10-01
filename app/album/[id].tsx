@@ -129,14 +129,14 @@ export default function AlbumDetalhe() {
 
   if (carregando || !album) {
     return (
-      <View className="flex-1 bg-[#0B101E] items-center justify-center">
+      <View className="flex-1 bg-[#0a0e16] items-center justify-center">
         <ActivityIndicator color={colors.primary} size="large" />
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-[#0B101E]">
+    <View className="flex-1 bg-[#0a0e16]">
       {/* Background Blur */}
       {album.capa_url && (
         <View style={StyleSheet.absoluteFill}>

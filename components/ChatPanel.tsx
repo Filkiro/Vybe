@@ -17,11 +17,13 @@
   import { supabase, Mensagem } from "../lib/supabase";
   import { useAuthStore } from "../store/authStore";
   import { colors } from "../constants/theme";
+  import { usePlayerAwarePadding } from "../hooks/usePlayerAwarePadding";
 
   export function ChatPanel({ conversaId, contatoNome, contatoFotoUrl, contatoId, onVoltar }: { conversaId: string; contatoNome?: string; contatoFotoUrl?: string; contatoId?: string; onVoltar: () => void; }) {
     
     const router = useRouter();
     const usuario = useAuthStore((s) => s.usuario);
+    const playerPaddingBottom = usePlayerAwarePadding(32);
 
     const [mensagens, setMensagens] = useState<Mensagem[]>([]);
     const [texto, setTexto] = useState("");

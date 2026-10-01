@@ -1,8 +1,9 @@
-import { View, Text, Pressable, Image, StyleSheet } from "react-native";
+import { View, Text, Pressable, Image, StyleSheet, Animated } from "react-native";
 import { router } from "expo-router";
 import { Play, Pause } from "lucide-react-native";
 import { BlurView } from "expo-blur";
 import { usePlayerStore } from "../store/playerStore";
+import { useCorDinamica } from "./player/PlayerVisuals";
 
 function formatarTempo(ms: number) {
   const totalSegundos = Math.floor(ms / 1000);
@@ -11,8 +12,11 @@ function formatarTempo(ms: number) {
   return `${minutos}:${segundos.toString().padStart(2, "0")}`;
 }
 
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
 export function MiniPlayer() {
   const { musicaAtual, estaTocando, posicaoMs, duracaoMs, pausar, retomar } = usePlayerStore();
+  const corDinamica = useCorDinamica();
 
   if (!musicaAtual) return null;
 
@@ -55,27 +59,33 @@ export function MiniPlayer() {
               {formatarTempo(posicaoMs)} / {formatarTempo(duracaoMs)}
             </Text>
 
-            {/* Barra de Progresso com Glow */}
-            <View className="h-1 bg-glass-white rounded-full overflow-hidden">
-              <View
-                className="h-1 bg-primary rounded-full"
-                style={[{ width: `${progresso * 100}%` }, styles.progressGlow]}
+            {/* Barra de Progresso */}
+            <View className="h-1 w-full bg-white/20 rounded-full mt-1 relative overflow-hidden">
+              <Animated.View
+                style={{
+                  height: "100%",
+                  width: `${progresso * 100}%`,
+                  backgroundColor: corDinamica as any,
+                  borderRadius: 999,
+                }}
               />
             </View>
           </View>
         </Pressable>
 
-        <Pressable
-          onPress={() => (estaTocando ? pausar() : retomar())}
-          className="w-11 h-11 rounded-full bg-primary items-center justify-center ml-2 border border-blue-400"
-          style={styles.buttonGlow}
-        >
-          {estaTocando ? (
-            <Pause color="white" size={18} fill="white" />
-          ) : (
-            <Play color="white" size={18} fill="white" style={{ marginLeft: 3 }} />
-          )}
-        </Pressable>
+        <View className="ml-2 relative items-center justify-center">
+          <AnimatedPressable
+            onPress={() => (estaTocando ? pausar() : retomar())}
+            className="w-11 h-11 rounded-full items-center justify-center border border-white/10"
+            style={{ backgroundColor: corDinamica as any, borderRadius: 9999, padding: 8 }}
+          >
+            {estaTocando ? (
+              <Pause color="white" size={18} fill="white" />
+            ) : (
+              <Play color="white" size={18} fill="white" style={{ marginLeft: 0 }} />
+            )}
+          </AnimatedPressable>
+        </View>
       </BlurView>
     </View>
   );
@@ -86,14 +96,12 @@ export function MiniPlayer() {
 // ---------------------------------------------------------------
 const styles = StyleSheet.create({
   buttonGlow: {
-    shadowColor: "#60A5FA",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.8,
     shadowRadius: 10,
     elevation: 10,
   },
   progressGlow: {
-    shadowColor: "#3B82F6",
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 1,
     shadowRadius: 5,

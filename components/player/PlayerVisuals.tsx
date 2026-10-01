@@ -168,6 +168,7 @@ export function BarraProgressoLinha({ corDinamica }: { corDinamica: CorAnimada }
               width: `${progresso * 100}%`,
               backgroundColor: corDinamica as any,
               borderRadius: 999,
+              
             }}
           />
         </View>
@@ -235,6 +236,7 @@ export function ControlesDesign({
           backgroundColor: corDinamica as any,
           alignItems: "center",
           justifyContent: "center",
+          
         }}
       >
         <Pressable

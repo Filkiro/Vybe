@@ -60,7 +60,7 @@ export default function AdminScreen() {
   }
 
   return (
-    <View className="flex-1 bg-[#0B101E]">
+    <View className="flex-1 bg-[#0a0e16]">
       <ScrollView contentContainerStyle={{ paddingBottom }} showsVerticalScrollIndicator={false}>
         <View className="w-full max-w-5xl mx-auto px-4 md:px-10 pt-6 md:pt-8">
           
@@ -243,7 +243,7 @@ function SecaoEquipe() {
         <FormularioCriarModerador />
       ) : (
         <>
-          <View className="flex-row items-center border border-border rounded-xl px-3 bg-background mb-4">
+          <View className="flex-row items-center border border-border rounded-xl px-3 bg-[#0a0e16] mb-4">
             <Search color={colors.muted} size={18} />
             <TextInput 
               placeholder="Buscar usuário por email..."
@@ -336,7 +336,7 @@ function SecaoAuditoria() {
       {logs.length === 0 && <Text className="text-muted text-sm">Nenhuma ação registrada recentemente.</Text>}
 
       {logs.map(log => (
-        <View key={log.id} className="mb-4 bg-background p-3 rounded-xl border border-border">
+        <View key={log.id} className="mb-4 bg-[#0a0e16] p-3 rounded-xl border border-border">
           <View className="flex-row justify-between mb-1">
             <Text className="text-red-400 font-bold uppercase text-xs">{log.tipo}</Text>
             <Text className="text-muted text-xs">{new Date(log.data_inicio).toLocaleDateString('pt-BR')}</Text>
@@ -368,7 +368,7 @@ function SecaoConfiguracoes() {
           value={uploadLimit}
           onChangeText={setUploadLimit}
           keyboardType="numeric"
-          className="border border-border rounded-xl bg-background px-3 py-3 text-textDark"
+          className="border border-border rounded-xl bg-[#0a0e16] px-3 py-3 text-textDark"
         />
       </View>
 
@@ -452,7 +452,7 @@ function FormularioCriarModerador() {
             <Pressable
               key={c}
               onPress={() => setCargo(c)}
-              className={`flex-1 py-3 rounded-xl border items-center ${cargo === c ? "bg-primary/20 border-primary" : "bg-background border-border"}`}
+              className={`flex-1 py-3 rounded-xl border items-center ${cargo === c ? "bg-primary/20 border-primary" : "bg-[#0a0e16] border-border"}`}
             >
               <Text className={`font-semibold text-sm ${cargo === c ? "text-primary" : "text-muted"}`}>
                 {c === "moderador" ? "Moderador" : "Administrador"}
@@ -514,7 +514,7 @@ function CampoAdmin(props: React.ComponentProps<typeof TextInput> & { label: str
   return (
     <View className="mb-4">
       <Text className="text-xs font-semibold text-muted mb-1.5 ml-0.5">{label}</Text>
-      <View className={`flex-row items-center border rounded-xl bg-background px-3.5 ${focado ? "border-primary" : "border-border"}`}>
+      <View className={`flex-row items-center border rounded-xl bg-[#0a0e16] px-3.5 ${focado ? "border-primary" : "border-border"}`}>
         {Icone && <Icone color={focado ? colors.primary : "#9CA3AF"} size={18} />}
         <TextInput
           placeholderTextColor="#9CA3AF"
@@ -559,3 +559,4 @@ function CardMetrica({ titulo, valor, Icone, cor }: { titulo: string, valor: num
     </View>
   );
 }
+
