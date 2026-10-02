@@ -177,3 +177,13 @@ export function ehModerador(u: Usuario | null) {
 export function ehAdministrador(u: Usuario | null) {
   return u?.tipo_conta === "adm";
 }
+
+export function bloqueioAtivo(
+  usuario: Usuario | null,
+  restricao: { tipo: string; data_fim: string | null } | null
+): boolean {
+  if (usuario?.status !== "bloqueado") return false;
+  if (!restricao || restricao.tipo !== "bloqueio") return true;
+  if (!restricao.data_fim) return true;
+  return new Date(restricao.data_fim) > new Date();
+}
