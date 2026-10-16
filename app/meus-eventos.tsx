@@ -23,19 +23,21 @@ function MeusEventos() {
       .eq("musico_id", usuario.id)
       .eq("status", "aceito")
       .then(({ data }) => {
-        let evts = data ?? [];
+        let evts = (data ?? []) as any[];
         const hoje = new Date();
         hoje.setHours(0, 0, 0, 0); // Considerar inicio do dia atual
         
         if (aba === "confirmados") {
            evts = evts.filter(d => {
-             if (!d.evento?.data) return true;
-             return new Date(d.evento.data + "T12:00:00Z") >= hoje;
+             const ev = (Array.isArray(d.evento) ? d.evento[0] : d.evento) as any;
+             if (!ev?.data) return true;
+             return new Date(ev.data + "T12:00:00Z") >= hoje;
            });
         } else {
            evts = evts.filter(d => {
-             if (!d.evento?.data) return false;
-             return new Date(d.evento.data + "T12:00:00Z") < hoje;
+             const ev = (Array.isArray(d.evento) ? d.evento[0] : d.evento) as any;
+             if (!ev?.data) return false;
+             return new Date(ev.data + "T12:00:00Z") < hoje;
            });
         }
 

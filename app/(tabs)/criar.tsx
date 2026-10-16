@@ -168,7 +168,8 @@ function CriarMusico({ usuarioId }: { usuarioId: string }) {
           </View>
 
           {/* TABS — mesmo padrão do Organizador */}
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ padding: 6, gap: 4 }} className="flex-row bg-[#141a24] border border-white/10 rounded-2xl self-start lg:self-auto shadow-xl max-w-full">
+          <View className="shrink-0 self-start lg:self-end max-w-full">
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ padding: 6, gap: 4, alignItems: "center" }} className="flex-row bg-[#141a24] border border-white/10 rounded-2xl shadow-xl">
             <Pressable
               onPress={() => setAba("musica")}
               className={`flex-row items-center gap-2 px-5 py-2 rounded-xl transition-all duration-200 ${aba === "musica" ? "bg-[#3B82F6] shadow-[0_0_20px_rgba(59,130,246,0.45)]" : "hover:bg-white/5"}`}
@@ -193,6 +194,7 @@ function CriarMusico({ usuarioId }: { usuarioId: string }) {
               <Text className={`font-semibold text-sm ${aba === "publicacao" ? "text-white" : "text-[#94A3B8]"}`}>Publicação</Text>
             </Pressable>
           </ScrollView>
+          </View>
         </View>
 
         {aba === "musica" && <FormMusica usuarioId={usuarioId} />}
@@ -235,7 +237,8 @@ function CriarOrganizador({ usuarioId }: { usuarioId: string }) {
           </View>
 
           {/* TWO DISTINCT TABS */}
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ padding: 6, gap: 4 }} className="flex-row bg-[#141a24] border border-white/10 rounded-2xl self-start lg:self-auto shadow-xl max-w-full">
+          <View className="shrink-0 self-start lg:self-end max-w-full">
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ padding: 6, gap: 4, alignItems: "center" }} className="flex-row bg-[#141a24] border border-white/10 rounded-2xl shadow-xl">
             <Pressable 
               onPress={() => setAba("evento")}
               className={`flex-row items-center gap-2 px-5 py-2 rounded-xl transition-all duration-200 ${aba === "evento" ? "bg-emerald-600 shadow-[0_0_20px_rgba(16,185,129,0.45)]" : "hover:bg-white/5"}`}
@@ -252,6 +255,7 @@ function CriarOrganizador({ usuarioId }: { usuarioId: string }) {
               <Text className={`font-semibold text-sm ${aba === "publicacao" ? "text-white" : "text-[#94A3B8]"}`}>Publicação</Text>
             </Pressable>
           </ScrollView>
+          </View>
         </View>
 
         {aba === "evento" ? <FormEvento usuarioId={usuarioId} /> : <FormPublicacaoOrganizador usuarioId={usuarioId} />}

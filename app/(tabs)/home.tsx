@@ -422,8 +422,8 @@ await Promise.all([
       {/* SEÇÃO 1: EVENTOS EM ABERTO & EM ALTA NO VYBE */}
       <View className="px-5 w-full">
         <View className="flex-row items-center justify-between mb-4">
-          <View className="flex-row items-center gap-2">
-            <View className="w-2.5 h-2.5 rounded-full bg-[#3B82F6] shadow-md shadow-[#3B82F6]/80" />
+          <View className="flex-row items-center gap-2 flex-1">
+            <View className="w-2.5 h-2.5 rounded-full bg-[#3B82F6] shadow-md shadow-[#3B82F6]/80 shrink-0" />
             <Text className="text-2xl font-bold text-white tracking-tight">Eventos em aberto</Text>
           </View>
         </View>
@@ -563,13 +563,13 @@ await Promise.all([
 
       {/* SEÇÃO 2: Lançamentos e Mais Tocadas Header */}
       <View className="px-5 mt-12 mb-4 w-full">
-        <View className="flex-row items-center justify-between">
-          <View>
+        <View className="flex-row items-center justify-between gap-4">
+          <View className="flex-1">
             <Text className="text-2xl font-bold text-white tracking-tight">Lançamentos e Mais Tocadas</Text>
             <Text className="text-sm text-gray-400 mt-1">Músicas mais executadas e tendências no ecossistema autoral independente</Text>
           </View>
           {ehDesktop && (
-            <View className="flex-row items-center gap-2">
+            <View className="flex-row items-center gap-2 shrink-0">
               <View className="px-4 py-1.5 rounded-full bg-[#3B82F6]/20">
                 <Text className="text-[#3B82F6] text-xs font-bold">Em Alta</Text>
               </View>
@@ -642,7 +642,7 @@ await Promise.all([
       {albuns.length > 0 && (
         <View className="px-5 mt-10">
           <View className="flex-row items-center justify-between mb-4">
-            <View>
+            <View className="flex-1">
               <Text className="text-2xl font-bold text-white tracking-tight">Descubra Álbuns</Text>
               <Text className="text-sm text-gray-400 mt-1">Obras completas recomendadas pela curadoria do algoritmo</Text>
             </View>
@@ -682,7 +682,7 @@ await Promise.all([
       {/* SEÇÃO 4: ARTISTAS DA COMUNIDADE */}
       <View className="px-5 mt-16">
         <View className="flex-row items-center justify-between mb-4">
-          <View>
+          <View className="flex-1">
             <Text className="text-2xl font-bold text-white tracking-tight flex-row items-center gap-2">
                Artistas da Comunidade
             </Text>
@@ -725,7 +725,7 @@ await Promise.all([
       {/* SEÇÃO 5: DESCUBRA MAIS (procedural, cresce conforme rola a tela, sem repetir) */}
       <View className="px-5 mt-16">
         <View className="flex-row items-center justify-between mb-4">
-          <View>
+          <View className="flex-1">
             <Text className="text-2xl font-bold text-white tracking-tight">Descubra Mais</Text>
             <Text className="text-sm text-gray-400 mt-1">Continue explorando novas músicas do ecossistema Vybe</Text>
           </View>

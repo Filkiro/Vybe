@@ -157,7 +157,7 @@ async function alternarCurtida() {
               {item.foto_perfil_url ? (
                 <Image source={{ uri: item.foto_perfil_url }} className="w-full h-full rounded-full" />
               ) : (
-                <Text className="text-white font-bold text-xs">{getLetrasIniciais(item.apelido || item.usuario?.nome)}</Text>
+                <Text className="text-white font-bold text-sm">{getLetrasIniciais(item.apelido || item.usuario?.nome)}</Text>
               )}
             </View>
             <View className="absolute bottom-0 right-0 w-3 h-3 bg-[#3b82f6] rounded-full border-2 border-[#121724]" />
@@ -165,16 +165,16 @@ async function alternarCurtida() {
 
           <View className="flex-col justify-center flex-1 pr-2">
             <View className="flex-row items-center gap-2 mb-0.5">
-              <Text className="font-bold text-white text-[14px]" numberOfLines={1}>
+              <Text className="font-bold text-white text-base" numberOfLines={1}>
                 {item.apelido || item.usuario?.nome || "Usuário"}
               </Text>
               <View className="px-2 py-[2px] rounded-full bg-[#3b82f6]/10 border border-[#3b82f6]/20">
-                <Text className="text-[10px] font-semibold text-[#60a5fa] uppercase tracking-wider">
+                <Text className="text-xs font-semibold text-[#60a5fa] uppercase tracking-wider">
                   {rotulosTipoConta[item.usuario?.tipo_conta || "musico"]}
                 </Text>
               </View>
             </View>
-            <Text className="text-[11px] text-[#64748b]">
+            <Text className="text-xs text-[#94a3b8] mt-0.5">
               {formatarTempoPassado(item.criado_em)} {item.evento?.localizacao ? `• ${item.evento.localizacao}` : ""}
             </Text>
           </View>
@@ -194,7 +194,7 @@ async function alternarCurtida() {
       {/* Descrição */}
       {item.descricao ? (
         <View className="px-5 pb-4">
-          <Text className="text-[#e2e8f0] text-[14px] leading-relaxed font-normal">
+          <Text className="text-[#e2e8f0] text-[15px] sm:text-base leading-relaxed font-normal">
             {item.descricao}
           </Text>
         </View>
@@ -209,14 +209,14 @@ async function alternarCurtida() {
                  <Calendar size={18} color="white" />
                </View>
                <View className="flex-1">
-                 <Text className="text-xs font-semibold text-white" numberOfLines={1}>{item.evento.nome}</Text>
-                 <Text className="text-[11px] text-[#3B82F6] font-bold">
+                 <Text className="text-sm font-semibold text-white" numberOfLines={1}>{item.evento.nome}</Text>
+                 <Text className="text-xs text-[#3B82F6] font-bold">
                    Evento Oficial
                  </Text>
                </View>
              </View>
              <View className="px-2 py-1 bg-[#3b82f6]/10 rounded border border-[#3b82f6]/20">
-               <Text className="text-[#3b82f6] text-[10px] font-bold">VER MAIS</Text>
+               <Text className="text-[#3b82f6] text-xs font-bold">VER MAIS</Text>
              </View>
           </View>
         </View>
@@ -252,8 +252,8 @@ async function alternarCurtida() {
                  )}
                </View>
                <View className="flex-1">
-                 <Text className="text-sm font-bold text-white" numberOfLines={1}>{linkedItem.nome}</Text>
-                 <Text className="text-[11px] text-[#3B82F6] font-bold">
+                 <Text className="text-base font-bold text-white" numberOfLines={1}>{linkedItem.nome}</Text>
+                 <Text className="text-xs text-[#3B82F6] font-bold">
                    {linkedItem.tipo === "album" ? "Álbum" : "Música • Single"}
                  </Text>
                </View>
@@ -282,7 +282,7 @@ async function alternarCurtida() {
                 size={22}
                 className="group-active:scale-110"
               />
-              <Text className="font-medium text-[#cbd5e1] text-xs">{totalCurtidas}</Text>
+              <Text className="font-medium text-[#cbd5e1] text-sm">{totalCurtidas}</Text>
             </Pressable>
           </View>
         </View>

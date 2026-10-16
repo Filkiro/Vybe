@@ -89,10 +89,6 @@ export function AppHeader({ onOpenSearch }: AppHeaderProps) {
           <View className="flex-row items-center gap-2 lg:gap-4 ml-2 justify-end shrink-0">
             {usuario ? (
               <>
-                <Pressable className="w-10 h-10 rounded-full items-center justify-center active:bg-white/10 relative shrink-0">
-                  <Bell size={20} color="#94A3B8" />
-                  <View className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-[#3B82F6] border border-[#0B101E]" />
-                </Pressable>
                 
                 <Pressable className="flex-row items-center gap-2 pl-1 pr-3 py-1 rounded-full bg-white/5 active:bg-white/10 transition-colors shrink-0 max-w-[200px]">
                   <View className="w-8 h-8 rounded-full overflow-hidden items-center justify-center bg-[#3B82F6] shrink-0">

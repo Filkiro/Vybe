@@ -54,11 +54,11 @@ export function ModalEventoDetalhes({
                 </View>
 
                 <View className="gap-4">
-                  <View className="flex-row items-center gap-3">
-                    <View className="w-10 h-10 rounded-full bg-[#3B82F6]/20 items-center justify-center">
+                  <View className="flex-row items-start gap-3">
+                    <View className="w-10 h-10 rounded-full bg-[#3B82F6]/20 items-center justify-center shrink-0 mt-0.5">
                       <Calendar color="#3B82F6" size={18} />
                     </View>
-                    <View>
+                    <View className="flex-1">
                       <Text className="text-gray-400 text-[10px] uppercase font-bold tracking-wider">Data e Horário</Text>
                       <Text className="text-white font-semibold">
                         {eventoSelecionado.data}{eventoSelecionado.horario ? ` às ${eventoSelecionado.horario}` : ""}
@@ -67,11 +67,11 @@ export function ModalEventoDetalhes({
                   </View>
 
                   {eventoSelecionado.localizacao && (
-                    <View className="flex-row items-center gap-3">
-                      <View className="w-10 h-10 rounded-full bg-white/5 items-center justify-center">
+                    <View className="flex-row items-start gap-3">
+                      <View className="w-10 h-10 rounded-full bg-white/5 items-center justify-center shrink-0 mt-0.5">
                         <MapPin color="#94A3B8" size={18} />
                       </View>
-                      <View>
+                      <View className="flex-1">
                         <Text className="text-gray-400 text-[10px] uppercase font-bold tracking-wider">Local</Text>
                         <Text className="text-white font-semibold">{eventoSelecionado.localizacao}</Text>
                       </View>

@@ -16,7 +16,7 @@ import { supabase } from "../../lib/supabase";
 import { usePlayerAwarePadding } from "../../hooks/usePlayerAwarePadding";
 import { PublicacaoCard, PublicacaoFeedItem } from "../../components/PublicacaoCard";
 
-const FILTROS_CENA = ["Tudo", "Lançamentos", "Eventos", "Em Alta", "Bastidores & Estúdio", "Collabs"];
+const FILTROS_CENA = ["Tudo", "Lançamentos", "Eventos", "Em Alta"];
 
 export default function Explorar() {
   const usuarioLogado = useAuthStore((s) => s.usuario);
@@ -150,12 +150,12 @@ export default function Explorar() {
   const FeedHeader = () => (
     <View className="mb-6">
       <View className="flex-row items-center justify-between mb-4 mt-2">
-        <View>
+        <View className="flex-1">
           <View className="flex-row items-center gap-3">
             <Text className="text-[28px] font-extrabold text-white tracking-tight">Feed da Cena</Text>
-            <View className="w-2.5 h-2.5 rounded-full bg-[#3b82f6] shadow-md shadow-[#3b82f6]/50" />
+            <View className="w-2.5 h-2.5 rounded-full bg-[#3b82f6] shadow-md shadow-[#3b82f6]/50 shrink-0" />
           </View>
-          <Text className="text-xs text-[#94a3b8] mt-1">Conecte-se com as novidades, ensaios e lançamentos da comunidade independente</Text>
+          <Text className="text-[16px] sm:text-base text-[#94a3b8] mt-1 leading-relaxed">Conecte-se com as novidades, ensaios e lançamentos da comunidade independente</Text>
         </View>
       </View>
 
@@ -166,13 +166,13 @@ export default function Explorar() {
             <Pressable
               key={f}
               onPress={() => setFiltroAtivo(f)}
-              className={`px-5 py-2 rounded-full mr-2.5 transition-all ${
+              className={`px-5 py-2.5 rounded-full mr-2.5 transition-all ${
                 ativo 
                   ? "bg-[#2563eb] border border-[#2563eb]" 
                   : "bg-white/5 border border-white/10"
               }`}
             >
-              <Text className={`text-xs tracking-wide font-medium ${ativo ? "text-white font-semibold" : "text-[#cbd5e1]"}`}>
+              <Text className={`text-sm tracking-wide ${ativo ? "text-white font-bold" : "text-[#cbd5e1] font-medium"}`}>
                 {f}
               </Text>
             </Pressable>
@@ -184,48 +184,50 @@ export default function Explorar() {
 
   const WidgetsSidebar = () => (
     <View className="w-full flex-col gap-6">
-      <View className="bg-[#121724] rounded-2xl p-5 border border-white/5 shadow-xl">
-        <View className="flex-row items-center justify-between mb-4">
-          <View className="flex-row items-center gap-2">
-            <TrendingUp color="#60a5fa" size={16} />
-            <Text className="text-sm font-bold text-white">Artistas em Destaque</Text>
+      {isDesktop && (
+        <View className="bg-[#121724] rounded-2xl p-5 border border-white/5 shadow-xl">
+          <View className="flex-row items-center justify-between mb-4">
+            <View className="flex-row items-center gap-2">
+              <TrendingUp color="#60a5fa" size={18} />
+              <Text className="text-base font-bold text-white">Artistas em Destaque</Text>
+            </View>
+            <Text className="text-xs font-semibold text-[#60a5fa]">Ver todos</Text>
           </View>
-          <Text className="text-[11px] text-[#60a5fa]">Ver todos</Text>
-        </View>
 
-        <View className="flex-col gap-3">
-          {destaques.length > 0 ? destaques.map((dest, i) => (
-            <Pressable key={dest.id} onPress={() => router.push(`/usuario/${dest.id}`)} className="flex-row items-center gap-3 p-2 rounded-xl bg-white/5 active:bg-white/10">
-              <View className="w-10 h-10 rounded-full items-center justify-center overflow-hidden bg-slate-800">
-                {dest.foto ? (
-                  <Image source={{uri: dest.foto}} className="w-full h-full" />
-                ) : (
-                  <Text className="text-white font-bold text-xs">{dest.apelido.substring(0, 2).toUpperCase()}</Text>
-                )}
-              </View>
-              <View className="flex-1">
-                <Text className="text-white text-xs font-bold">{dest.apelido}</Text>
-                <Text className="text-[#64748b] text-[10px]">{dest.genero} • {dest.likes} curtidas</Text>
-              </View>
-            </Pressable>
-          )) : (
-            <Text className="text-xs text-slate-500">Nenhum artista em destaque ainda.</Text>
-          )}
+          <View className="flex-col gap-3">
+            {destaques.length > 0 ? destaques.map((dest, i) => (
+              <Pressable key={dest.id} onPress={() => router.push(`/usuario/${dest.id}`)} className="flex-row items-center gap-3 p-2.5 rounded-xl bg-white/5 active:bg-white/10">
+                <View className="w-11 h-11 rounded-full items-center justify-center overflow-hidden bg-slate-800">
+                  {dest.foto ? (
+                    <Image source={{uri: dest.foto}} className="w-full h-full" />
+                  ) : (
+                    <Text className="text-white font-bold text-sm">{dest.apelido.substring(0, 2).toUpperCase()}</Text>
+                  )}
+                </View>
+                <View className="flex-1">
+                  <Text className="text-white text-sm font-bold">{dest.apelido}</Text>
+                  <Text className="text-[#94a3b8] text-xs mt-0.5">{dest.genero} • {dest.likes} curtidas</Text>
+                </View>
+              </Pressable>
+            )) : (
+              <Text className="text-sm text-slate-400">Nenhum artista em destaque ainda.</Text>
+            )}
+          </View>
         </View>
-      </View>
+      )}
 
       {oportunidade && (
         <View className="rounded-2xl p-5 bg-[#151c2c] border border-[#3b82f6]/30 overflow-hidden relative">
           <View className="absolute -right-6 -bottom-6 w-28 h-28 bg-[#3b82f6]/10 rounded-full blur-2xl pointer-events-none" />
           <View className="flex-row items-center justify-between mb-2">
-            <View className="px-2 py-0.5 rounded bg-[#3b82f6]">
-              <Text className="text-[10px] font-bold uppercase text-white tracking-wider">Oportunidade</Text>
+            <View className="px-2.5 py-1 rounded bg-[#3b82f6]">
+              <Text className="text-xs font-bold uppercase text-white tracking-wider">Oportunidade</Text>
             </View>
-            {oportunidade.data && <Text className="text-[11px] text-[#93c5fd]">{new Date(oportunidade.data).toLocaleDateString('pt-BR')}</Text>}
+            {oportunidade.data && <Text className="text-xs font-medium text-[#93c5fd]">{new Date(oportunidade.data).toLocaleDateString('pt-BR')}</Text>}
           </View>
           
-          <Text className="font-bold text-sm text-white mt-1" numberOfLines={1}>{oportunidade.nome}</Text>
-          <Text className="text-xs text-[#cbd5e1] mt-1 leading-relaxed" numberOfLines={2}>
+          <Text className="font-bold text-base text-white mt-1.5" numberOfLines={1}>{oportunidade.nome}</Text>
+          <Text className="text-sm text-[#cbd5e1] mt-1 leading-relaxed" numberOfLines={2}>
             {oportunidade.descricao || "Participe deste evento!"}
           </Text>
           
@@ -235,9 +237,9 @@ export default function Explorar() {
                  router.push(`/chat/novo?contatoId=${oportunidade.organizador_id}&contatoNome=${encodeURIComponent(oportunidade.organizador?.nome || 'Organizador')}`);
               }
             }}
-            className="w-full mt-3 py-2 rounded-xl bg-[#2563eb] items-center active:opacity-80"
+            className="w-full mt-3.5 py-2.5 rounded-xl bg-[#2563eb] items-center active:opacity-80"
           >
-            <Text className="text-white font-semibold text-xs tracking-wide">Conversar com Organizador</Text>
+            <Text className="text-white font-semibold text-sm tracking-wide">Conversar com Organizador</Text>
           </Pressable>
         </View>
       )}
@@ -271,8 +273,8 @@ export default function Explorar() {
               ))
             ) : (
               <View className="py-20 items-center justify-center">
-                <Compass size={48} color="#334155" />
-                <Text className="text-[#94a3b8] text-sm mt-4 font-medium text-center">
+                <Compass size={52} color="#334155" />
+                <Text className="text-[#94a3b8] text-base mt-4 font-medium text-center">
                   Nenhuma publicação encontrada.
                 </Text>
               </View>
@@ -280,12 +282,14 @@ export default function Explorar() {
           </View>
         </View>
 
-        {/* DIREITA: WIDGETS (Sempre aparece embaixo no mobile, e na direita no Desktop) */}
-        <View className="flex-[4] min-w-0 pt-4">
-          <View className="lg:sticky top-4">
-            <WidgetsSidebar />
+        {/* DIREITA: WIDGETS (Aparece na direita no Desktop, ou embaixo no mobile se houver oportunidade) */}
+        {(isDesktop || oportunidade) && (
+          <View className="flex-[4] min-w-0 pt-4">
+            <View className="lg:sticky top-4">
+              <WidgetsSidebar />
+            </View>
           </View>
-        </View>
+        )}
 
       </View>
     </ScrollView>

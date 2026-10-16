@@ -317,8 +317,8 @@ export default function EditarMusica() {
           </View>
         </View>
       </View>
-      <GenrePickerModal visivel={mostrarGenero} aoFechar={() => setMostrarGenero(false)} aoSelecionar={setGenero} generoAtual={genero} />
-      <DatePickerModal visivel={mostrarData} aoFechar={() => setMostrarData(false)} aoSelecionar={setDataLancamento} />
+      <GenrePickerModal visible={mostrarGenero} onFechar={() => setMostrarGenero(false)} onSelecionar={setGenero} valor={genero} />
+      <DatePickerModal visible={mostrarData} onFechar={() => setMostrarData(false)} onSelecionar={setDataLancamento} valor={dataLancamento} />
     </ScrollView>
   );
 }
