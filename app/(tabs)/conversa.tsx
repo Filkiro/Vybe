@@ -117,12 +117,19 @@ export default function Conversa() {
           .neq("remetente_id", usuario.id),
       ]);
 
-      // Foto vem de perfil_musico OU perfil_organizador, dependendo
-      // do tipo — busca as duas em paralelo e usa a que existir.
+      // Foto vem de perfil_musico OU perfil_moderador / perfil_organizador
       const [{ data: pMusico }, { data: pOrg }] = await Promise.all([
         supabase.from("perfil_musico").select("foto_url").eq("usuario_id", contatoId).maybeSingle(),
         supabase.from("perfil_organizador").select("usuario_id").eq("usuario_id", contatoId).maybeSingle(),
       ]);
+
+      let fotoContato = pMusico?.foto_url ?? null;
+      if (!fotoContato) {
+        try {
+          const { data: pMod } = await supabase.from("perfil_moderador").select("foto_url").eq("usuario_id", contatoId).maybeSingle();
+          if (pMod?.foto_url) fotoContato = pMod.foto_url;
+        } catch (_) {}
+      }
 
       const ultima = ultimasMsgs?.[0];
       const ultimaMensagemEhMinha = ultima?.remetente_id === usuario.id;
@@ -131,7 +138,7 @@ export default function Conversa() {
         id: linha.id,
         contatoId,
         contatoNome: contato?.nome ?? "Usuário",
-        contatoFotoUrl: pMusico?.foto_url ?? null,
+        contatoFotoUrl: fotoContato,
         ultimaMensagem: ultima?.conteudo ?? null,
         ultimaMensagemData: ultima?.data_hora ?? null,
         ultimaMensagemEhMinha,

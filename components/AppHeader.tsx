@@ -54,6 +54,42 @@ export function AppHeader({ onOpenSearch }: AppHeaderProps) {
           setApelido(data?.apelido ?? null);
           setFotoUrl(data?.foto_url ?? null);
         });
+    } else if (usuario.tipo_conta === "moderador" || usuario.tipo_conta === "adm") {
+      setApelido(null);
+      (async () => {
+        try {
+          const { data: pMod } = await supabase
+            .from("perfil_moderador")
+            .select("foto_url")
+            .eq("usuario_id", usuario.id)
+            .maybeSingle();
+          if (pMod?.foto_url) {
+            setFotoUrl(pMod.foto_url);
+            return;
+          }
+        } catch (_) {}
+
+        try {
+          const { data: pMusico } = await supabase
+            .from("perfil_musico")
+            .select("foto_url")
+            .eq("usuario_id", usuario.id)
+            .maybeSingle();
+          setFotoUrl(pMusico?.foto_url ?? null);
+        } catch (_) {
+          setFotoUrl(null);
+        }
+      })();
+    } else if (usuario.tipo_conta === "organizador") {
+      setApelido(null);
+      supabase
+        .from("perfil_organizador")
+        .select("foto_url")
+        .eq("usuario_id", usuario.id)
+        .maybeSingle()
+        .then(({ data }) => {
+          setFotoUrl(data?.foto_url ?? null);
+        });
     } else {
       setApelido(null);
       setFotoUrl(null);

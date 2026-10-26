@@ -15,6 +15,7 @@ import { useAuthStore } from "../../store/authStore";
 import { supabase } from "../../lib/supabase";
 import { usePlayerAwarePadding } from "../../hooks/usePlayerAwarePadding";
 import { PublicacaoCard, PublicacaoFeedItem } from "../../components/PublicacaoCard";
+import { ModalEventoDetalhes, EventoDetalhado } from "../../components/ModalEventoDetalhes";
 
 const FILTROS_CENA = ["Tudo", "Lançamentos", "Eventos", "Em Alta"];
 
@@ -26,6 +27,7 @@ export default function Explorar() {
   const [atualizando, setAtualizando] = useState(false);
   const [destaques, setDestaques] = useState<any[]>([]);
   const [oportunidade, setOportunidade] = useState<any>(null);
+  const [eventoOportunidadeModal, setEventoOportunidadeModal] = useState<EventoDetalhado | null>(null);
   const paddingBottom = usePlayerAwarePadding(140);
   const { width } = useWindowDimensions();
   const isDesktop = width >= 1024;
@@ -34,7 +36,7 @@ export default function Explorar() {
     const { data: posts } = await supabase
       .from("publicacao")
       .select(
-        "id, usuario_id, foto_url, descricao, criado_em, evento_id, musica_id, album_id, usuario:usuario_id(nome, tipo_conta), evento:evento_id(nome, data, localizacao), musica:musica_id(id, nome, capa_url, arquivo_url), album:album_id(id, nome, capa_url)"
+        "id, usuario_id, foto_url, descricao, criado_em, evento_id, musica_id, album_id, usuario:usuario_id(nome, tipo_conta), evento:evento_id(id, nome, data, horario, localizacao, genero_musical, capacidade, status, organizador_id), musica:musica_id(id, nome, capa_url, arquivo_url), album:album_id(id, nome, capa_url)"
       )
       .order("criado_em", { ascending: false });
 
@@ -119,7 +121,7 @@ export default function Explorar() {
     // Fetch Oportunidade
     const { data: ultimosEventos } = await supabase
         .from('evento')
-        .select('id, nome, descricao, data, organizador_id')
+        .select('id, nome, descricao, data, horario, localizacao, genero_musical, capacidade, status, organizador_id, organizador:organizador_id(nome)')
         .order('criado_em', { ascending: false })
         .limit(1);
         
@@ -219,17 +221,35 @@ export default function Explorar() {
       {oportunidade && (
         <View className="rounded-2xl p-5 bg-[#151c2c] border border-[#3b82f6]/30 overflow-hidden relative">
           <View className="absolute -right-6 -bottom-6 w-28 h-28 bg-[#3b82f6]/10 rounded-full blur-2xl pointer-events-none" />
-          <View className="flex-row items-center justify-between mb-2">
-            <View className="px-2.5 py-1 rounded bg-[#3b82f6]">
-              <Text className="text-xs font-bold uppercase text-white tracking-wider">Oportunidade</Text>
+          <Pressable
+            onPress={() => {
+              setEventoOportunidadeModal({
+                id: oportunidade.id,
+                nome: oportunidade.nome,
+                data: oportunidade.data,
+                horario: oportunidade.horario ?? null,
+                localizacao: oportunidade.localizacao ?? null,
+                genero_musical: oportunidade.genero_musical ?? null,
+                capacidade: oportunidade.capacidade ?? null,
+                organizador_nome: oportunidade.organizador?.nome || undefined,
+                status: oportunidade.status,
+              });
+            }}
+            className="active:opacity-80"
+          >
+            <View className="flex-row items-center justify-between mb-2">
+              <View className="px-2.5 py-1 rounded bg-[#3b82f6]">
+                <Text className="text-xs font-bold uppercase text-white tracking-wider">Oportunidade</Text>
+              </View>
+              {oportunidade.data && <Text className="text-xs font-medium text-[#93c5fd]">{new Date(oportunidade.data).toLocaleDateString('pt-BR')}</Text>}
             </View>
-            {oportunidade.data && <Text className="text-xs font-medium text-[#93c5fd]">{new Date(oportunidade.data).toLocaleDateString('pt-BR')}</Text>}
-          </View>
-          
-          <Text className="font-bold text-base text-white mt-1.5" numberOfLines={1}>{oportunidade.nome}</Text>
-          <Text className="text-sm text-[#cbd5e1] mt-1 leading-relaxed" numberOfLines={2}>
-            {oportunidade.descricao || "Participe deste evento!"}
-          </Text>
+            
+            <Text className="font-bold text-base text-white mt-1.5" numberOfLines={1}>{oportunidade.nome}</Text>
+            <Text className="text-sm text-[#cbd5e1] mt-1 leading-relaxed" numberOfLines={2}>
+              {oportunidade.descricao || "Participe deste evento!"}
+            </Text>
+            <Text className="text-xs text-[#3b82f6] font-bold mt-2">VER DETALHES DO EVENTO</Text>
+          </Pressable>
           
           <Pressable 
             onPress={async () => {
@@ -292,6 +312,11 @@ export default function Explorar() {
         )}
 
       </View>
+
+      <ModalEventoDetalhes
+        eventoSelecionado={eventoOportunidadeModal}
+        onFechar={() => setEventoOportunidadeModal(null)}
+      />
     </ScrollView>
   );
 }

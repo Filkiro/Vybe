@@ -1,20 +1,22 @@
-import { View, Text, Image, StyleSheet } from "react-native";
+import { View, Text, Image, StyleSheet, Pressable } from "react-native";
 
 // Marca do app preparada para receber uma imagem local (PNG/JPG).
 // Pode ser usada na navbar (com glow) e no login (sem glow, tamanho grande).
 export function AppLogo({
   tamanho = "normal",
   comGlow = false,
+  onPress,
 }: {
   tamanho?: "normal" | "grande";
   corTexto?: string;
   comGlow?: boolean;
   mostrarTexto?: boolean;
+  onPress?: () => void;
 }) {
   // Ajusta o tamanho da imagem dependendo de onde o componente é chamado
   const imageSize = tamanho === "grande" ? 0 : 80;
 
-  return (
+  const content = (
     <View className="flex-row items-center">
       <View
         style={[
@@ -30,9 +32,24 @@ export function AppLogo({
           resizeMode="contain"
         />
       </View>
-      
     </View>
   );
+
+  if (onPress) {
+    return (
+      <Pressable
+        onPress={onPress}
+        className="active:opacity-80 transition-opacity"
+        style={{ cursor: "pointer" as any }}
+        accessibilityRole="button"
+        accessibilityLabel="Vybe Logo"
+      >
+        {content}
+      </Pressable>
+    );
+  }
+
+  return content;
 }
 
 // ---------------------------------------------------------------

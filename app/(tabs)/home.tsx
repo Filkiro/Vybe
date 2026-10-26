@@ -1,5 +1,5 @@
-import { useCallback, useRef, useState } from "react";
-import { View, Text, FlatList, Pressable, Image, RefreshControl, ScrollView, ImageBackground, StyleSheet } from "react-native";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { View, Text, FlatList, Pressable, Image, RefreshControl, ScrollView, ImageBackground, StyleSheet, ActivityIndicator } from "react-native";
 import { ModalEventoDetalhes, EventoDetalhado } from "../../components/ModalEventoDetalhes";
 import { BlurView } from 'expo-blur'
 import { useFocusEffect } from "@react-navigation/native";
@@ -107,6 +107,10 @@ export default function Home() {
   // Cache global — só recarrega quando algo novo for publicado (invalidarHome)
   const precisaAtualizar = useHomeStore((s) => s.precisaAtualizar);
   const marcarCarregado = useHomeStore((s) => s.marcarCarregado);
+  const tokenRecarregar = useHomeStore((s) => s.tokenRecarregar);
+
+  const flatListRef = useRef<FlatList>(null);
+  const ultimoTokenRecarregado = useRef(0);
 
   // Controla se ESTA instância do componente já carregou pelo menos uma vez.
   // Evita loading infinito quando precisaAtualizar já é false no momento em
@@ -392,6 +396,20 @@ await Promise.all([
       return () => { ativo = false; };
     }, [precisaAtualizar, carregarDados, marcarCarregado])
   );
+
+  // Recarregamento forçado acionado ao clicar no botão "Início" (já estando nele) ou na logo
+  useEffect(() => {
+    if (tokenRecarregar > 0 && tokenRecarregar !== ultimoTokenRecarregado.current) {
+      ultimoTokenRecarregado.current = tokenRecarregar;
+      flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
+      setCarregando(true);
+      setTokenEscolhaADedo((t) => t + 1);
+      carregarDados().finally(() => {
+        setCarregando(false);
+        marcarCarregado();
+      });
+    }
+  }, [tokenRecarregar, carregarDados, marcarCarregado]);
 
   async function aoAtualizar() {
     setAtualizando(true);
@@ -767,10 +785,11 @@ await Promise.all([
     <View style={{ flex: 1, backgroundColor: '#0B101E' }}>
       {carregando ? (
         <View className="flex-1 items-center justify-center">
-          <Text className="text-muted text-center">Carregando o seu Vybe...</Text>
+          <ActivityIndicator size="large" color="#3B82F6" />
         </View>
       ) : (
         <FlatList
+          ref={flatListRef}
           key={ehDesktop ? "desktop-grid" : "mobile-list"}
           numColumns={ehDesktop ? 2 : 1}
           columnWrapperStyle={ehDesktop ? { gap: 16, paddingHorizontal: 20, maxWidth: 1200, alignSelf: 'center', width: '100%', marginBottom: 12 } : undefined}

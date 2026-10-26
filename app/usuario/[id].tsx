@@ -65,6 +65,20 @@ export default function PerfilPublico() {
     } else if (dadosUsuario?.tipo_conta === "organizador") {
       const { data: perfil } = await supabase.from("perfil_organizador").select("*").eq("usuario_id", id).single();
       setDadosPerfil(perfil ?? null);
+    } else if (dadosUsuario?.tipo_conta === "moderador" || dadosUsuario?.tipo_conta === "adm") {
+      let perfilEncontrado: any = null;
+      try {
+        const { data: pMod } = await supabase.from("perfil_moderador").select("*").eq("usuario_id", id).maybeSingle();
+        if (pMod) perfilEncontrado = pMod;
+      } catch (_) {}
+
+      if (!perfilEncontrado) {
+        try {
+          const { data: pMusico } = await supabase.from("perfil_musico").select("*").eq("usuario_id", id).maybeSingle();
+          if (pMusico) perfilEncontrado = pMusico;
+        } catch (_) {}
+      }
+      setDadosPerfil(perfilEncontrado);
     }
     setCarregando(false);
   }

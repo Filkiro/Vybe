@@ -12,6 +12,7 @@ import { AnimatedBackgroundBlobs } from "../../components/AnimatedBackgroundBlob
 import { SearchOverlay } from "../../components/SearchOverlay"; // <--- 1. Importação do Overlay
 import { useAuthStore, ehContaComum, ehModerador, ehAdministrador } from "../../store/authStore";
 import { useUnreadStore } from "../../store/unreadStore";
+import { useHomeStore } from "../../store/homeStore";
 import { useEhDesktop } from "../../hooks/useEhDesktop";
 import { colors } from "../../constants/theme";
 import { TAB_BAR_CAPSULE_HEIGHT } from "../../constants/layout";
@@ -133,6 +134,13 @@ export default function TabsLayout() {
                 title: "Início",
                 tabBarIcon: ({ focused }) => <TabIcon Icone={Home} focado={focused} />,
               }}
+              listeners={({ navigation }) => ({
+                tabPress: () => {
+                  if (navigation.isFocused()) {
+                    useHomeStore.getState().recarregarHome();
+                  }
+                },
+              })}
             />
             <Tabs.Screen
               name="explorar"

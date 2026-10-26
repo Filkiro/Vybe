@@ -8,6 +8,7 @@ import { usePlayerStore } from "../store/playerStore";
 import { useRequireAuth } from "../store/authPromptStore";
 import { useAbrirPerfil } from "../store/perfilModalStore";
 import { colors, rotulosTipoConta } from "../constants/theme";
+import { ModalEventoDetalhes, EventoDetalhado } from "./ModalEventoDetalhes";
 
 export type PublicacaoFeedItem = {
   id: string;
@@ -26,7 +27,17 @@ export type PublicacaoFeedItem = {
   foto_perfil_url: string | null;
   total_curtidas: number;
   curtido_por_mim: boolean;
-  evento?: { nome: string; data: string; localizacao: string | null } | null;
+  evento?: {
+    id?: string;
+    nome: string;
+    data: string;
+    horario?: string | null;
+    localizacao?: string | null;
+    genero_musical?: string | null;
+    capacidade?: number | null;
+    status?: string;
+    organizador_id?: string;
+  } | null;
   musica?: { id: string; nome: string; capa_url: string | null; arquivo_url: string } | null;
   album?: { id: string; nome: string; capa_url: string | null } | null;
 };
@@ -38,6 +49,64 @@ export function PublicacaoCard({ item, footer, noMargin, esconderOpcoes }: { ite
   const [curtido, setCurtido] = useState(item.curtido_por_mim);
   const [totalCurtidas, setTotalCurtidas] = useState(item.total_curtidas);
   const [enviando, setEnviando] = useState(false);
+
+  const [eventoModal, setEventoModal] = useState<EventoDetalhado | null>(null);
+  const [carregandoEvento, setCarregandoEvento] = useState(false);
+
+  async function abrirEventoDetalhes() {
+    if (!item.evento_id && !item.evento) return;
+    const evId = item.evento_id || item.evento?.id;
+    setCarregandoEvento(true);
+
+    if (item.evento && item.evento.horario !== undefined && item.evento.capacidade !== undefined) {
+      setEventoModal({
+        id: evId || "",
+        nome: item.evento.nome,
+        data: item.evento.data,
+        horario: item.evento.horario ?? null,
+        localizacao: item.evento.localizacao ?? null,
+        genero_musical: item.evento.genero_musical ?? null,
+        capacidade: item.evento.capacidade ?? null,
+        organizador_nome: item.apelido || item.usuario?.nome || undefined,
+        status: item.evento.status,
+      });
+      setCarregandoEvento(false);
+      return;
+    }
+
+    try {
+      if (evId) {
+        const { data } = await supabase
+          .from("evento")
+          .select("id, nome, data, horario, localizacao, genero_musical, capacidade, status, organizador_id")
+          .eq("id", evId)
+          .maybeSingle();
+
+        if (data) {
+          let orgNome = item.apelido || item.usuario?.nome;
+          if (!orgNome && data.organizador_id) {
+            const { data: org } = await supabase.from("usuario").select("nome").eq("id", data.organizador_id).maybeSingle();
+            orgNome = org?.nome;
+          }
+          setEventoModal({
+            id: data.id,
+            nome: data.nome,
+            data: data.data,
+            horario: data.horario,
+            localizacao: data.localizacao,
+            genero_musical: data.genero_musical,
+            capacidade: data.capacidade,
+            status: data.status,
+            organizador_nome: orgNome,
+          });
+        }
+      }
+    } catch (e) {
+      console.error("Erro ao carregar detalhes do evento:", e);
+    } finally {
+      setCarregandoEvento(false);
+    }
+  }
 
   const [mostrarOpcoes, setMostrarOpcoes] = useState(false);
   const [denunciaAberta, setDenunciaAberta] = useState(false);
@@ -203,7 +272,10 @@ async function alternarCurtida() {
       {/* Linked Event Box (If Organizer linked an event) */}
       {item.evento_id && item.evento && (
         <View className="px-5 pb-4">
-          <View className="p-3 rounded-xl bg-[#0a0e16] border border-[#3b82f6]/30 flex-row items-center justify-between gap-3">
+          <Pressable 
+            onPress={abrirEventoDetalhes}
+            className="p-3 rounded-xl bg-[#0a0e16] border border-[#3b82f6]/30 flex-row items-center justify-between gap-3 active:opacity-80 hover:border-[#3b82f6]/60 hover:bg-white/5 transition-all"
+          >
              <View className="flex-row items-center gap-3 flex-1">
                <View className="w-10 h-10 rounded-lg bg-gradient-to-tr from-blue-800 to-indigo-700 items-center justify-center">
                  <Calendar size={18} color="white" />
@@ -215,10 +287,10 @@ async function alternarCurtida() {
                  </Text>
                </View>
              </View>
-             <View className="px-2 py-1 bg-[#3b82f6]/10 rounded border border-[#3b82f6]/20">
+             <View className="px-2.5 py-1 bg-[#3b82f6]/10 rounded border border-[#3b82f6]/20">
                <Text className="text-[#3b82f6] text-xs font-bold">VER MAIS</Text>
              </View>
-          </View>
+          </Pressable>
         </View>
       )}
 
@@ -382,6 +454,13 @@ async function alternarCurtida() {
           </Pressable>
         </Pressable>
       </Modal>
+
+      {/* Modal de Detalhes do Evento do show */}
+      <ModalEventoDetalhes
+        eventoSelecionado={eventoModal}
+        carregandoEvento={carregandoEvento}
+        onFechar={() => setEventoModal(null)}
+      />
     </View>
   );
 }

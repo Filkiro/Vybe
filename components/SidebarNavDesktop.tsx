@@ -7,6 +7,7 @@ import { supabase } from "../lib/supabase";
 import { useAuthStore, ehContaComum, ehModerador, ehAdministrador } from "../store/authStore";
 import { useUnreadStore } from "../store/unreadStore";
 import { usePlayerStore } from "../store/playerStore";
+import { useHomeStore } from "../store/homeStore";
 
 type ItemNav = {
   rota: string;
@@ -55,7 +56,12 @@ export function SidebarNavDesktop() {
       <View className="flex-col gap-10 px-4">
         {/* Logo */}
         <View className="items-center mt-2 w-full pr-8">
-          <AppLogo />
+          <AppLogo
+            onPress={() => {
+              useHomeStore.getState().recarregarHome();
+              router.push("/(tabs)/home");
+            }}
+          />
         </View>
 
         {/* Nav Items */}
@@ -65,7 +71,20 @@ export function SidebarNavDesktop() {
             return (
               <Pressable
                 key={item.rota}
-                onPress={() => router.push(item.rota as any)}
+                onPress={() => {
+                  if (item.rota === "/(tabs)/home") {
+                    const jaEstaNaHome =
+                      pathname === "/(tabs)/home" ||
+                      pathname === "/home" ||
+                      pathname === "/" ||
+                      pathname.endsWith("/home");
+                    if (jaEstaNaHome) {
+                      useHomeStore.getState().recarregarHome();
+                      return;
+                    }
+                  }
+                  router.push(item.rota as any);
+                }}
                 className={`flex-row items-center gap-4 px-4 py-2.5 rounded-lg transition-all ${
                   ativo ? "bg-[#2563EB]" : "hover:bg-white/5 active:opacity-80"
                 }`}

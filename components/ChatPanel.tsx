@@ -13,11 +13,12 @@
     ScrollView
   } from "react-native";
   import { useLocalSearchParams, useRouter } from "expo-router";
-  import { ChevronLeft, Send, MoreVertical, Flag, Ticket } from "lucide-react-native";
+  import { ChevronLeft, Send, MoreVertical, Flag, Ticket, CheckCircle2, XCircle, AlertTriangle, Clock } from "lucide-react-native";
   import { supabase, Mensagem } from "../lib/supabase";
   import { useAuthStore } from "../store/authStore";
   import { colors } from "../constants/theme";
   import { usePlayerAwarePadding } from "../hooks/usePlayerAwarePadding";
+  import { ModalEventoDetalhes } from "./ModalEventoDetalhes";
 
   export function ChatPanel({ conversaId, contatoNome, contatoFotoUrl, contatoId, onVoltar }: { conversaId: string; contatoNome?: string; contatoFotoUrl?: string; contatoId?: string; onVoltar: () => void; }) {
     
@@ -325,7 +326,14 @@
               return (
                 <View className="my-2 items-center w-full px-4">
                   <Pressable 
-                    onPress={() => setEventoSelecionado(convite.evento)}
+                    onPress={() => {
+                      if (convite.evento) {
+                        setEventoSelecionado({
+                          ...convite.evento,
+                          organizador_nome: convite.evento?.organizador_nome || (usuario?.tipo_conta === "organizador" ? usuario.nome : contatoNome)
+                        });
+                      }
+                    }}
                     className="bg-[#1A2235] border border-primary/40 rounded-2xl p-4 w-full max-w-[300px] active:opacity-80"
                   >
                     <View className="bg-primary/20 self-start px-2 py-1 rounded-md mb-3">
@@ -344,19 +352,25 @@
                         </Pressable>
                       </View>
                     ) : (
-                      <View className={`py-2 rounded-xl items-center ${
+                      <View className={`py-2 px-3 rounded-xl items-center flex-row justify-center gap-1.5 ${
                         convite.status === 'aceito' ? 'bg-emerald-500/20 border border-emerald-500/30' : 
                         (convite.status === 'recusado' || convite.status === 'cancelado') ? 'bg-red-500/20 border border-red-500/30' : 
                         'bg-white/10'
                       }`}>
+                        {convite.status === 'aceito' && <CheckCircle2 size={16} color="#10b981" />}
+                        {convite.status === 'recusado' && <XCircle size={16} color="#ef4444" />}
+                        {convite.status === 'cancelado' && <AlertTriangle size={16} color="#ef4444" />}
+                        {convite.status !== 'aceito' && convite.status !== 'recusado' && convite.status !== 'cancelado' && (
+                          <Clock size={16} color="#94A3B8" />
+                        )}
                         <Text className={`font-bold text-sm ${
                           convite.status === 'aceito' ? 'text-emerald-500' : 
                           (convite.status === 'recusado' || convite.status === 'cancelado') ? 'text-red-500' : 
                           'text-white/60'
                         }`}>
-                          {convite.status === 'aceito' ? '✅ Convite Aceito' : 
-                           convite.status === 'recusado' ? '❌ Convite Recusado' : 
-                           convite.status === 'cancelado' ? '⚠️ Participação Cancelada' : 
+                          {convite.status === 'aceito' ? 'Convite Aceito' : 
+                           convite.status === 'recusado' ? 'Convite Recusado' : 
+                           convite.status === 'cancelado' ? 'Participação Cancelada' : 
                            'Aguardando resposta...'}
                         </Text>
                       </View>
@@ -558,52 +572,11 @@
           </View>
         </Modal>
 
-        {/* Modal de Detalhes do Evento */}
-        <Modal transparent visible={!!eventoSelecionado} animationType="slide" onRequestClose={() => setEventoSelecionado(null)}>
-          <View className="flex-1 justify-end bg-black/50">
-            <View className="bg-[#1A2235] rounded-t-3xl p-6 border-t border-white/10 max-h-[85%]">
-              <View className="flex-row justify-between items-center mb-6">
-                <Text className="text-white font-bold text-xl">Detalhes do Evento</Text>
-                <Pressable onPress={() => setEventoSelecionado(null)} className="p-2">
-                  <Text className="text-gray-400 font-bold">X</Text>
-                </Pressable>
-              </View>
-
-              {eventoSelecionado && (
-                <ScrollView showsVerticalScrollIndicator={false} className="mb-4">
-                  <View className="mb-4">
-                    <Text className="text-gray-400 text-xs uppercase font-bold mb-1">Nome</Text>
-                    <Text className="text-white text-base">{eventoSelecionado.nome}</Text>
-                  </View>
-                  <View className="mb-4 flex-row gap-4">
-                    <View className="flex-1">
-                      <Text className="text-gray-400 text-xs uppercase font-bold mb-1">Data</Text>
-                      <Text className="text-white text-base">{eventoSelecionado.data}</Text>
-                    </View>
-                    <View className="flex-1">
-                      <Text className="text-gray-400 text-xs uppercase font-bold mb-1">Horário</Text>
-                      <Text className="text-white text-base">{eventoSelecionado.horario || "Não definido"}</Text>
-                    </View>
-                  </View>
-                  <View className="mb-4">
-                    <Text className="text-gray-400 text-xs uppercase font-bold mb-1">Localização</Text>
-                    <Text className="text-white text-base">{eventoSelecionado.localizacao || "Não definida"}</Text>
-                  </View>
-                  <View className="mb-4 flex-row gap-4">
-                    <View className="flex-1">
-                      <Text className="text-gray-400 text-xs uppercase font-bold mb-1">Gênero Musical</Text>
-                      <Text className="text-white text-base">{eventoSelecionado.genero_musical || "Todos"}</Text>
-                    </View>
-                    <View className="flex-1">
-                      <Text className="text-gray-400 text-xs uppercase font-bold mb-1">Capacidade</Text>
-                      <Text className="text-white text-base">{eventoSelecionado.capacidade ? `${eventoSelecionado.capacidade} pessoas` : "Não definida"}</Text>
-                    </View>
-                  </View>
-                </ScrollView>
-              )}
-            </View>
-          </View>
-        </Modal>
+        {/* Modal de Detalhes do Evento - mesmo da tela inicial */}
+        <ModalEventoDetalhes
+          eventoSelecionado={eventoSelecionado}
+          onFechar={() => setEventoSelecionado(null)}
+        />
 
         {/* Modal de Motivo de Cancelamento */}
         <Modal transparent visible={!!conviteParaCancelar} animationType="fade" onRequestClose={() => setConviteParaCancelar(null)}>

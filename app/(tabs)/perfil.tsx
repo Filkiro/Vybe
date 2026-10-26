@@ -11,6 +11,7 @@ import {
   Modal,
   Pressable,
   Share,
+  ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
@@ -202,26 +203,68 @@ function CabecalhoPerfil({ usuario }: { usuario: any }) {
   const [totalShows, setTotalShows] = useState(0);
   const ehMusico = usuario.tipo_conta === "musico";
   const ehOrganizador = usuario.tipo_conta === "organizador";
+  const ehModerador = usuario.tipo_conta === "moderador" || usuario.tipo_conta === "adm";
+  const podeTrocarFoto = ehMusico || ehOrganizador || ehModerador;
   const tabelaPerfil = ehMusico ? "perfil_musico" : ehOrganizador ? "perfil_organizador" : null;
 
   useEffect(() => {
-    if (!tabelaPerfil) return;
-    supabase
-      .from(tabelaPerfil)
-      .select(ehMusico ? "foto_url, banner_url, apelido, disponivel" : "banner_url")
-      .eq("usuario_id", usuario.id)
-      .single()
-      .then(({ data }) => {
-        if (ehMusico) {
+    if (ehMusico) {
+      supabase
+        .from("perfil_musico")
+        .select("foto_url, banner_url, apelido, disponivel")
+        .eq("usuario_id", usuario.id)
+        .single()
+        .then(({ data }) => {
           setFotoUrl((data as any)?.foto_url ?? null);
           setDisponivel((data as any)?.disponivel ?? null);
           setApelido((data as any)?.apelido ?? null);
           supabase.from("musica").select("id", { count: "exact" }).eq("usuario_id", usuario.id).eq("status", "ativo").then(({ count }) => setTotalMusicas(count || 0));
           supabase.from("evento_convite").select("id", { count: "exact" }).eq("musico_id", usuario.id).eq("status", "aceito").then(({ count }) => setTotalShows(count || 0));
-        }
-        setBannerUrl((data as any)?.banner_url ?? null);
-      });
-  }, [usuario.id, tabelaPerfil]);
+          setBannerUrl((data as any)?.banner_url ?? null);
+        });
+    } else if (ehOrganizador) {
+      supabase
+        .from("perfil_organizador")
+        .select("banner_url, foto_url")
+        .eq("usuario_id", usuario.id)
+        .single()
+        .then(({ data }) => {
+          setBannerUrl((data as any)?.banner_url ?? null);
+          setFotoUrl((data as any)?.foto_url ?? null);
+        });
+    } else if (ehModerador) {
+      (async () => {
+        try {
+          const { data: pMod } = await supabase
+            .from("perfil_moderador")
+            .select("foto_url, banner_url")
+            .eq("usuario_id", usuario.id)
+            .maybeSingle();
+
+          if (pMod?.foto_url) {
+            setFotoUrl(pMod.foto_url);
+            if (pMod.banner_url) setBannerUrl(pMod.banner_url);
+            return;
+          }
+        } catch (_) {}
+
+        try {
+          const { data: pMusico } = await supabase
+            .from("perfil_musico")
+            .select("foto_url, banner_url")
+            .eq("usuario_id", usuario.id)
+            .maybeSingle();
+
+          if (pMusico?.foto_url) {
+            setFotoUrl(pMusico.foto_url);
+          }
+          if (pMusico?.banner_url) {
+            setBannerUrl(pMusico.banner_url);
+          }
+        } catch (_) {}
+      })();
+    }
+  }, [usuario.id, usuario.tipo_conta, ehMusico, ehOrganizador, ehModerador]);
 
   async function trocarFoto() {
     const permissao = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -244,12 +287,51 @@ function CabecalhoPerfil({ usuario }: { usuario: any }) {
         contentType: "image/jpeg",
       });
 
-      const { error } = await supabase
-        .from("perfil_musico")
-        .update({ foto_url: url })
-        .eq("usuario_id", usuario.id);
+      if (ehMusico) {
+        const { error } = await supabase
+          .from("perfil_musico")
+          .update({ foto_url: url })
+          .eq("usuario_id", usuario.id);
 
-      if (error) throw error;
+        if (error) throw error;
+      } else if (ehOrganizador) {
+        const { error } = await supabase
+          .from("perfil_organizador")
+          .update({ foto_url: url })
+          .eq("usuario_id", usuario.id);
+
+        if (error) throw error;
+      } else if (ehModerador) {
+        let salvo = false;
+        try {
+          const { error: errMod } = await supabase
+            .from("perfil_moderador")
+            .upsert({ usuario_id: usuario.id, foto_url: url }, { onConflict: "usuario_id" });
+
+          if (!errMod) {
+            salvo = true;
+          }
+        } catch (_) {}
+
+        if (!salvo) {
+          const { error: errMusico } = await supabase
+            .from("perfil_musico")
+            .upsert(
+              { usuario_id: usuario.id, foto_url: url, apelido: usuario.nome },
+              { onConflict: "usuario_id" }
+            );
+
+          if (errMusico) {
+            const { error: errUpdate } = await supabase
+              .from("perfil_musico")
+              .update({ foto_url: url })
+              .eq("usuario_id", usuario.id);
+
+            if (errUpdate) throw errUpdate;
+          }
+        }
+      }
+
       setFotoUrl(url);
     } catch (e) {
       console.error("Erro ao atualizar foto de perfil:", e);
@@ -333,7 +415,7 @@ function CabecalhoPerfil({ usuario }: { usuario: any }) {
           {/* Esquerda: Avatar e Info */}
           <View className="flex-col sm:flex-row items-center sm:items-end gap-4 text-center sm:text-left flex-1 shrink min-w-0">
             {/* Avatar com borda */}
-            <Pressable onPress={ehMusico ? trocarFoto : undefined} disabled={!ehMusico || enviandoFoto}>
+            <Pressable onPress={podeTrocarFoto ? trocarFoto : undefined} disabled={!podeTrocarFoto || enviandoFoto}>
               <View className="relative">
                 <View className="w-36 h-36 rounded-full p-1 bg-primary/20">
                   <View className="w-full h-full rounded-full overflow-hidden bg-[#0a0e16] border-4 border-[#0B101E]">
@@ -348,14 +430,32 @@ function CabecalhoPerfil({ usuario }: { usuario: any }) {
                     )}
                   </View>
                 </View>
-                {/* Ícone de Verificado */}
-                <View className="absolute bottom-2 right-4 w-6 h-6 rounded-full bg-[#3B82F6] items-center justify-center border-2 border-[#0B101E]">
-                  <UserCheck color="white" size={12} />
-                </View>
+                {/* Badge com botão de câmera no avatar */}
+                {podeTrocarFoto ? (
+                  <View className="absolute bottom-1 right-2 w-9 h-9 rounded-full bg-[#2563EB] items-center justify-center border-2 border-[#0B101E] shadow-lg">
+                    {enviandoFoto ? (
+                      <ActivityIndicator color="white" size="small" />
+                    ) : (
+                      <Camera color="white" size={16} />
+                    )}
+                  </View>
+                ) : (
+                  <View className="absolute bottom-2 right-4 w-6 h-6 rounded-full bg-[#3B82F6] items-center justify-center border-2 border-[#0B101E]">
+                    <UserCheck color="white" size={12} />
+                  </View>
+                )}
                 
-                {ehMusico && (
-                  <View className="absolute inset-0 bg-black/40 rounded-full items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                    <Camera color="white" size={28} />
+                {podeTrocarFoto && (
+                  <View
+                    className={`absolute inset-0 bg-black/40 rounded-full items-center justify-center transition-opacity ${
+                      enviandoFoto ? "opacity-100" : "opacity-0 hover:opacity-100"
+                    }`}
+                  >
+                    {enviandoFoto ? (
+                      <ActivityIndicator color="white" size="small" />
+                    ) : (
+                      <Camera color="white" size={28} />
+                    )}
                   </View>
                 )}
               </View>
@@ -396,6 +496,18 @@ function CabecalhoPerfil({ usuario }: { usuario: any }) {
 
           {/* Direita: Botões */}
           <View className="flex-row flex-wrap items-center justify-center gap-2 mb-2">
+            {podeTrocarFoto && (
+              <Pressable
+                onPress={trocarFoto}
+                disabled={enviandoFoto}
+                className="flex-row items-center gap-2 px-4 py-2.5 rounded-full bg-primary active:bg-primary/80"
+              >
+                <Camera color="white" size={14} />
+                <Text className="text-white text-xs font-bold">
+                  {enviandoFoto ? "Enviando..." : "Trocar foto"}
+                </Text>
+              </Pressable>
+            )}
             <Pressable
               onPress={() => {
                 Share.share({

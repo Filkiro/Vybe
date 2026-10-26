@@ -61,9 +61,7 @@ export type Usuario = {
   criado_em: string;
 };
 
-// Espelham perfil_musico e perfil_organizador — só existem quando
-// usuario.tipo_conta é "musico" ou "organizador" respectivamente.
-// moderador/administrador não têm tabela de perfil própria ainda.
+// Espelham perfil_musico, perfil_organizador e perfil_moderador
 export type PerfilMusico = {
   id: string;
   usuario_id: string;
@@ -85,6 +83,14 @@ export type PerfilOrganizador = {
   contato: string | null;
   nicho_trabalho: string | null;
   banner_url: string | null;
+  foto_url?: string | null;
+};
+
+export type PerfilModerador = {
+  id?: string;
+  usuario_id: string;
+  foto_url: string | null;
+  banner_url?: string | null;
 };
 
 // Espelha a tabela "denuncia" — usada nas telas de Moderação e no
