@@ -496,18 +496,7 @@ function CabecalhoPerfil({ usuario }: { usuario: any }) {
 
           {/* Direita: Botões */}
           <View className="flex-row flex-wrap items-center justify-center gap-2 mb-2">
-            {podeTrocarFoto && (
-              <Pressable
-                onPress={trocarFoto}
-                disabled={enviandoFoto}
-                className="flex-row items-center gap-2 px-4 py-2.5 rounded-full bg-primary active:bg-primary/80"
-              >
-                <Camera color="white" size={14} />
-                <Text className="text-white text-xs font-bold">
-                  {enviandoFoto ? "Enviando..." : "Trocar foto"}
-                </Text>
-              </Pressable>
-            )}
+
             <Pressable
               onPress={() => {
                 Share.share({
