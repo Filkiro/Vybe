@@ -188,7 +188,7 @@ export default function EditarMusica() {
           <ChevronLeft color="#dfe2ee" size={24} />
         </Pressable>
         <View className="ml-4">
-          <Text className="text-[11px] font-semibold text-[#8d90a0] uppercase tracking-wider">Gerenciamento de Faixa</Text>
+          <Text className="text-xs font-semibold text-[#8d90a0] uppercase tracking-wider">Gerenciamento de Faixa</Text>
           <Text className="text-[26px] font-bold text-[#dfe2ee] tracking-tight mt-0.5">Editar música</Text>
         </View>
       </View>
@@ -215,14 +215,14 @@ export default function EditarMusica() {
 
           {/* Status */}
           <View className="bg-[#181c24] p-4 rounded-xl border border-[#31353e]">
-             <Text className="text-[11px] font-semibold text-[#8d90a0] uppercase tracking-wider mb-2">Status de Distribuição</Text>
+             <Text className="text-xs font-semibold text-[#8d90a0] uppercase tracking-wider mb-2">Status de Distribuição</Text>
              <View className="flex-row items-center justify-between bg-[#1c2028] p-3 rounded-lg border border-[#31353e]">
                 <View className="flex-row items-center gap-2">
                    <Globe color="#b4c5ff" size={18} />
                    <Text className="text-[#dfe2ee] text-[13px]">Disponibilidade</Text>
                 </View>
                 <View className="bg-[#b4c5ff]/10 px-2 py-0.5 rounded-full border border-[#b4c5ff]/20">
-                   <Text className="text-[#b4c5ff] text-[11px] font-medium">Pública</Text>
+                   <Text className="text-[#b4c5ff] text-xs font-medium">Pública</Text>
                 </View>
              </View>
           </View>
@@ -272,7 +272,7 @@ export default function EditarMusica() {
              <View className="mt-2">
                 <View className="flex-row items-center justify-between mb-1.5">
                    <Text className="text-[#c3c6d7] text-[13px] font-medium">Trocar arquivo de áudio (opcional)</Text>
-                   <Text className="text-[#b4c5ff] text-[11px] font-semibold">Áudio Master Ativo</Text>
+                   <Text className="text-[#b4c5ff] text-xs font-semibold">Áudio Master Ativo</Text>
                 </View>
                 <Pressable onPress={trocarArquivo} className="bg-[#1c2028] border border-[#31353e] rounded-lg p-3 flex-row items-center justify-between active:bg-[#262a33]">
                    <View className="flex-row items-center flex-1">
@@ -284,7 +284,7 @@ export default function EditarMusica() {
                       </Text>
                    </View>
                    <View className="bg-[#31353e] px-3 py-1.5 rounded-full ml-2">
-                      <Text className="text-[#dfe2ee] text-[11px] font-medium">Substituir</Text>
+                      <Text className="text-[#dfe2ee] text-xs font-medium">Substituir</Text>
                    </View>
                 </Pressable>
              </View>

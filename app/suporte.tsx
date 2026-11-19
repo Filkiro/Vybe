@@ -141,7 +141,7 @@ export default function Suporte() {
                 
                 {/* Campos */}
                 <View className="flex-col gap-2">
-                  <Text className="text-[11px] font-semibold text-[#c3c6d7] tracking-wider">ASSUNTO</Text>
+                  <Text className="text-xs font-semibold text-[#c3c6d7] tracking-wider">ASSUNTO</Text>
                   <TextInput
                     placeholder="Assunto (ex: Erro no upload de WAV 24-bit)"
                     placeholderTextColor="#8d90a0"
@@ -152,7 +152,7 @@ export default function Suporte() {
                 </View>
 
                 <View className="flex-col gap-2">
-                  <Text className="text-[11px] font-semibold text-[#c3c6d7] tracking-wider">DESCRIÇÃO DETALHADA</Text>
+                  <Text className="text-xs font-semibold text-[#c3c6d7] tracking-wider">DESCRIÇÃO DETALHADA</Text>
                   <TextInput
                     placeholder="Descreva o problema ou dúvida com o máximo de detalhes..."
                     placeholderTextColor="#8d90a0"
@@ -171,12 +171,12 @@ export default function Suporte() {
                   <View className="flex-row items-center gap-3">
                     <View className="flex-row items-center gap-1.5">
                       <Paperclip size={16} color="#c3c6d7" />
-                      <Text className="text-[#c3c6d7] text-[11px] font-semibold">Anexar log/áudio</Text>
+                      <Text className="text-[#c3c6d7] text-xs font-semibold">Anexar log/áudio</Text>
                     </View>
                     <Text className="text-[#31353e]">•</Text>
                     <View className="flex-row items-center gap-1.5">
                       <View className="w-2 h-2 rounded-full bg-[#2563eb]" />
-                      <Text className="text-[11px] font-semibold text-[#c3c6d7]">Resposta média: ~2h</Text>
+                      <Text className="text-xs font-semibold text-[#c3c6d7]">Resposta média: ~2h</Text>
                     </View>
                   </View>
                 </View>
@@ -193,7 +193,7 @@ export default function Suporte() {
                 <View className="flex-row items-center gap-3">
                   <Text className="text-2xl font-bold text-[#dfe2ee]">Meus chamados</Text>
                   <View className="px-2 py-0.5 rounded-full bg-[#262a33]">
-                    <Text className="text-[11px] font-mono font-semibold text-[#c3c6d7]">{chamados.length} {chamados.length === 1 ? "ativo" : "ativos"}</Text>
+                    <Text className="text-xs font-mono font-semibold text-[#c3c6d7]">{chamados.length} {chamados.length === 1 ? "ativo" : "ativos"}</Text>
                   </View>
                 </View>
               </View>
@@ -223,15 +223,15 @@ export default function Suporte() {
                         <View className="flex-col flex-1">
                           <View className="flex-row items-center gap-2 flex-wrap">
                             <Text className="text-base font-semibold text-[#dfe2ee]" numberOfLines={1}>{item.assunto}</Text>
-                            <Text className="text-[11px] font-mono text-[#8d90a0]">#{item.id.substring(0,8).toUpperCase()}</Text>
+                            <Text className="text-xs font-mono text-[#8d90a0]">#{item.id.substring(0,8).toUpperCase()}</Text>
                           </View>
                           <Text className="text-sm text-[#c3c6d7] mt-0.5" numberOfLines={1}>
                             {item.descricao || "Sem descrição"}
                           </Text>
                           <View className="flex-row items-center gap-2 mt-2">
                             <Clock size={14} color="#8d90a0" />
-                            <Text className="text-[11px] text-[#8d90a0]">Aberto em {new Date(item.criado_em).toLocaleDateString('pt-BR')}</Text>
-                            <Text className="text-[11px] text-[#8d90a0]">• Distribuição</Text>
+                            <Text className="text-xs text-[#8d90a0]">Aberto em {new Date(item.criado_em).toLocaleDateString('pt-BR')}</Text>
+                            <Text className="text-xs text-[#8d90a0]">• Distribuição</Text>
                           </View>
                         </View>
                       </View>
@@ -240,11 +240,11 @@ export default function Suporte() {
                         {item.status === 'aberto' ? (
                           <View className="px-3 py-1 rounded-full bg-amber-500/15 flex-row items-center gap-1.5">
                             <View className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                            <Text className="text-[11px] font-semibold text-amber-400">aberto</Text>
+                            <Text className="text-xs font-semibold text-amber-400">aberto</Text>
                           </View>
                         ) : (
                           <View className="px-3 py-1 rounded-full bg-[#262a33]">
-                            <Text className="text-[11px] font-medium text-[#c3c6d7]">{item.status}</Text>
+                            <Text className="text-xs font-medium text-[#c3c6d7]">{item.status}</Text>
                           </View>
                         )}
                       </View>

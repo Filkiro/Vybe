@@ -132,7 +132,7 @@ function MeusEventos() {
                   <View className="flex-row items-center gap-3">
                     <Text className="text-xl text-[#dfe2ee] font-bold tracking-tight">{item.evento?.nome}</Text>
                     <View className="px-2.5 py-0.5 rounded-full bg-emerald-900/30 border border-emerald-800/50">
-                      <Text className="text-emerald-400 text-[10px] font-semibold uppercase tracking-wider">Confirmado</Text>
+                      <Text className="text-emerald-400 text-xs font-semibold uppercase tracking-wider">Confirmado</Text>
                     </View>
                   </View>
                 </View>
@@ -141,7 +141,7 @@ function MeusEventos() {
                   <View className="flex-row items-center gap-3 text-white">
                     <Calendar color="#b4c5ff" size={20} />
                     <View className="flex-col">
-                      <Text className="text-[11px] text-[#8d90a0]">Data e Horário</Text>
+                      <Text className="text-xs text-[#8d90a0]">Data e Horário</Text>
                       <Text className="text-sm font-medium text-[#dfe2ee]">
                         {dataStr} {item.evento?.horario ? `às ${item.evento?.horario}` : ""}
                       </Text>
@@ -150,7 +150,7 @@ function MeusEventos() {
                   <View className="flex-row items-center gap-3 text-white">
                     <MapPin color="#b4c5ff" size={20} />
                     <View className="flex-col">
-                      <Text className="text-[11px] text-[#8d90a0]">Local</Text>
+                      <Text className="text-xs text-[#8d90a0]">Local</Text>
                       <Text className="text-sm font-medium text-[#dfe2ee]">{item.evento?.localizacao || "Local não definido"}</Text>
                     </View>
                   </View>
@@ -164,7 +164,7 @@ function MeusEventos() {
                       </Text>
                     </View>
                     <View className="flex-col">
-                      <Text className="text-[10px] text-[#8d90a0] uppercase tracking-wider font-semibold">Organizador</Text>
+                      <Text className="text-xs text-[#8d90a0] uppercase tracking-wider font-semibold">Organizador</Text>
                       <Text className="text-sm text-[#dfe2ee] font-semibold">{item.evento?.organizador?.nome || "Desconhecido"}</Text>
                     </View>
                   </View>

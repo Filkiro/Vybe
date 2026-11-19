@@ -228,7 +228,7 @@ export default function ModeracaoScreen() {
                 <View className="items-center justify-center w-8 h-8 rounded-full bg-[#2563eb]/20">
                   <ShieldAlert color="#a4c9ff" size={16} />
                 </View>
-                <Text className="text-[11px] font-bold uppercase tracking-wider text-[#b4c5ff]">Painel de Integridade & Confiança</Text>
+                <Text className="text-xs font-bold uppercase tracking-wider text-[#b4c5ff]">Painel de Integridade & Confiança</Text>
               </View>
               <Text className="text-[32px] font-bold text-[#dfe2ee] tracking-tight">Central de Moderação</Text>
               <Text className="text-[14px] text-[#c3c6d7] max-w-2xl">Analise e tome decisões sobre denúncias da comunidade com base nos termos de serviço e diretrizes de áudio.</Text>
@@ -245,12 +245,12 @@ export default function ModeracaoScreen() {
                 <View className="flex-row items-baseline gap-2">
                   <Text className="text-[20px] font-semibold text-[#dfe2ee]">Fila de Análise</Text>
                   <View className="px-2 py-0.5 rounded-full bg-[#93000a]/30">
-                    <Text className="text-[11px] font-bold text-[#ffb4ab]">{denuncias.length}</Text>
+                    <Text className="text-xs font-bold text-[#ffb4ab]">{denuncias.length}</Text>
                   </View>
                 </View>
               </View>
               <View className="flex-row items-center gap-1">
-                <Text className="text-[11px] font-bold text-[#8d90a0]">Prioridade Alta</Text>
+                <Text className="text-xs font-bold text-[#8d90a0]">Prioridade Alta</Text>
               </View>
             </View>
 
@@ -267,7 +267,7 @@ export default function ModeracaoScreen() {
                     <View className="flex-row items-center gap-3">
                       <View className="flex-row items-center gap-1.5 px-3 py-1 rounded-full bg-[#93000a]/40">
                         <ShieldAlert color="#ffdad6" size={12} />
-                        <Text className="text-[11px] font-bold tracking-wide uppercase text-[#ffdad6]">Denúncia de {item.tipo_alvo}</Text>
+                        <Text className="text-xs font-bold tracking-wide uppercase text-[#ffdad6]">Denúncia de {item.tipo_alvo}</Text>
                       </View>
                     </View>
                     <View className="flex-row items-center gap-1.5">
@@ -283,7 +283,7 @@ export default function ModeracaoScreen() {
                         <ShieldAlert color="#b4c5ff" size={24} />
                       </View>
                       <View className="flex-col min-w-0">
-                        <Text className="text-[11px] uppercase tracking-wider text-[#8d90a0]">Denunciante</Text>
+                        <Text className="text-xs uppercase tracking-wider text-[#8d90a0]">Denunciante</Text>
                         <Text className="text-[14px] font-semibold text-[#dfe2ee]" numberOfLines={1}>{item.denunciante_nome}</Text>
                       </View>
                     </View>
@@ -297,7 +297,7 @@ export default function ModeracaoScreen() {
                         <UserSearch color="#dfe2ee" size={24} />
                       </View>
                       <View className="flex-col min-w-0">
-                        <Text className="text-[11px] uppercase tracking-wider text-[#ffb4ab]">Alvo ({item.tipo_alvo})</Text>
+                        <Text className="text-xs uppercase tracking-wider text-[#ffb4ab]">Alvo ({item.tipo_alvo})</Text>
                         <Text className="text-[14px] font-bold text-[#dfe2ee]" numberOfLines={1}>{item.alvo_nome || item.alvo_id}</Text>
                       </View>
                     </View>
@@ -306,11 +306,11 @@ export default function ModeracaoScreen() {
                   {/* Detail Block */}
                   <View className="flex-col gap-2 bg-[#1c2028]/60 rounded-xl p-4">
                     <View className="flex-row items-center gap-2">
-                      <Text className="text-[11px] text-[#8d90a0]">Motivo da notificação:</Text>
+                      <Text className="text-xs text-[#8d90a0]">Motivo da notificação:</Text>
                       <Text className="text-[13px] font-semibold text-[#b4c5ff]">{item.motivo}</Text>
                     </View>
                     <View className="flex-col gap-1 mt-2">
-                      <Text className="text-[11px] text-[#8d90a0]">Descrição relatada:</Text>
+                      <Text className="text-xs text-[#8d90a0]">Descrição relatada:</Text>
                       <View className="bg-[#0a0e16]/90 rounded-lg p-4">
                         <Text className="text-[14px] text-[#dfe2ee] leading-5">{item.descricao || "Sem descrição"}</Text>
                       </View>
@@ -385,7 +385,7 @@ export default function ModeracaoScreen() {
                 <View className="flex-row items-baseline gap-2">
                   <Text className="text-[20px] font-semibold text-[#dfe2ee]">Chamados de Suporte</Text>
                   <View className="px-2 py-0.5 rounded-full bg-[#2563eb]/30">
-                    <Text className="text-[11px] font-bold text-[#b4c5ff]">{chamados.length}</Text>
+                    <Text className="text-xs font-bold text-[#b4c5ff]">{chamados.length}</Text>
                   </View>
                 </View>
               </View>
@@ -407,11 +407,11 @@ export default function ModeracaoScreen() {
                     <View className="flex-col flex-1 pr-12">
                       <Text className="text-[20px] font-bold text-[#dfe2ee] leading-snug">{item.assunto}</Text>
                       <View className="flex-row items-center gap-2 mt-1">
-                        <Text className="text-[11px] text-[#c3c6d7]">De: <Text className="font-semibold text-[#dfe2ee]">{item.usuario_nome}</Text></Text>
+                        <Text className="text-xs text-[#c3c6d7]">De: <Text className="font-semibold text-[#dfe2ee]">{item.usuario_nome}</Text></Text>
                         <Text className="text-[#8d90a0]">•</Text>
                         <View className="flex-row items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#0267b8]/40">
                           <View className="w-1.5 h-1.5 rounded-full bg-[#a4c9ff]" />
-                          <Text className="text-[11px] font-medium text-[#d6e5ff]">status: {item.status}</Text>
+                          <Text className="text-xs font-medium text-[#d6e5ff]">status: {item.status}</Text>
                         </View>
                       </View>
                     </View>
@@ -423,13 +423,13 @@ export default function ModeracaoScreen() {
                 </View>
 
                 <View className="bg-[#0a0e16]/80 rounded-xl p-4 flex-col gap-2">
-                  <Text className="text-[11px] text-[#8d90a0]">Mensagem enviada pelo usuário:</Text>
+                  <Text className="text-xs text-[#8d90a0]">Mensagem enviada pelo usuário:</Text>
                   <Text className="text-[14px] text-[#dfe2ee] leading-relaxed">{item.descricao}</Text>
                 </View>
 
                 <View className="flex-row flex-wrap items-center justify-between gap-3 pt-2">
                   <View className="flex-row items-center gap-2 bg-[#1c2028]/50 px-3 py-1.5 rounded-lg">
-                    <Text className="text-[11px] text-[#c3c6d7]">Ticket vinculado à conta</Text>
+                    <Text className="text-xs text-[#c3c6d7]">Ticket vinculado à conta</Text>
                   </View>
                   <View className="flex-row items-center gap-2">
                     {item.status === "aberto" && (

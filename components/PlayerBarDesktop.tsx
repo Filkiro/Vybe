@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { View, Text, Image, StyleSheet, Pressable, Animated, GestureResponderEvent } from "react-native";
 import { BlurView } from "expo-blur";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -91,7 +91,12 @@ export function PlayerBarDesktop() {
   }
 
   return (
-    <View style={{ position: "absolute", bottom: 0, left: 0, right: 0, paddingBottom: Math.max(insets.bottom, 0) }}>
+    <View
+      style={{ position: "absolute", bottom: 0, left: 0, right: 0, paddingBottom: Math.max(insets.bottom, 0) }}
+      // @ts-ignore
+      role="region"
+      aria-label="Player de reprodução de música"
+    >
       {/* POPOVER DA FILA */}
       {mostrarFila && (
         <View
@@ -180,6 +185,8 @@ export function PlayerBarDesktop() {
             <View className="flex-row items-center gap-6 mb-2">
               <Pressable
                 onPress={() => setModoAleatorio((v) => !v)}
+                accessibilityRole="button"
+                accessibilityLabel={modoAleatorio ? "Desativar modo aleatório" : "Ativar modo aleatório"}
                 className="active:opacity-70 hover:scale-110 transition-transform"
               >
                 <Shuffle size={18} color={modoAleatorio ? "#3B82F6" : "#8d90a0"} />
@@ -187,6 +194,8 @@ export function PlayerBarDesktop() {
 
               <Pressable
                 onPress={anterior}
+                accessibilityRole="button"
+                accessibilityLabel="Música anterior"
                 className="active:opacity-70 hover:scale-110 transition-transform"
               >
                 <SkipBack size={22} color="#dfe2ee" />
@@ -194,6 +203,8 @@ export function PlayerBarDesktop() {
 
               <AnimatedPressable
                 onPress={handleTogglePlayPause}
+                accessibilityRole="button"
+                accessibilityLabel={estaTocando ? "Pausar música" : "Reproduzir música"}
                 className="w-12 h-12 items-center justify-center hover:scale-105 active:scale-95 transition-all" style={{ backgroundColor: corDinamica || "#2563EB", shadowColor: corDinamica || "#2563EB", shadowOpacity: 0.45, shadowRadius: 16, shadowOffset: { width: 0, height: 0 }, elevation: 10, borderRadius: 9999, padding: 5 }}
               >
                 {estaTocando ? (
@@ -205,6 +216,8 @@ export function PlayerBarDesktop() {
 
               <Pressable
                 onPress={proxima}
+                accessibilityRole="button"
+                accessibilityLabel="Próxima música"
                 className="active:opacity-70 hover:scale-110 transition-transform"
               >
                 <SkipForward size={22} color="#dfe2ee" />
@@ -212,6 +225,8 @@ export function PlayerBarDesktop() {
 
               <Pressable
                 onPress={alternarRepetir}
+                accessibilityRole="button"
+                accessibilityLabel={repetir ? "Desativar repetição" : "Ativar repetição"}
                 className="active:opacity-70 hover:scale-110 transition-transform"
               >
                 <Repeat size={18} color={repetir ? "#3B82F6" : "#8d90a0"} />

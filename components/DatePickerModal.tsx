@@ -133,7 +133,7 @@ export default function DatePickerModal({
               <View className="flex-row mb-1">
                 {DIAS_SEMANA.map((d, i) => (
                   <View key={i} style={{ width: `${100 / 7}%` }} className="items-center py-1">
-                    <Text className="text-muted text-[10px] font-bold">{d}</Text>
+                    <Text className="text-gray-300 text-xs font-bold">{d}</Text>
                   </View>
                 ))}
               </View>

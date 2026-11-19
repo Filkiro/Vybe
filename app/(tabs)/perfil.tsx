@@ -12,6 +12,7 @@ import {
   Pressable,
   Share,
   ActivityIndicator,
+  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
@@ -55,6 +56,12 @@ export default function Perfil() {
   const [aba, setAba] = useState<"biblioteca" | "dados">("biblioteca");
   const paddingBottom = usePlayerAwarePadding(140);
 
+  useEffect(() => {
+    if (Platform.OS === "web") {
+      document.title = "Vybe - Perfil";
+    }
+  }, []);
+
   async function handleLogout() {
     usePlayerStore.getState().resetar();
     await supabase.auth.signOut();
@@ -90,7 +97,12 @@ export default function Perfil() {
   const temBiblioteca = ehContaComum(usuario);
 
   return (
-    <View className="flex-1 bg-[#0a0e16]">
+    <View
+      className="flex-1 bg-[#0a0e16]"
+      // @ts-ignore
+      role="main"
+      aria-label="Perfil do usuário"
+    >
       <ScrollView
         className="flex-1 bg-transparent"
         contentContainerStyle={{ paddingBottom }}
@@ -104,18 +116,25 @@ export default function Perfil() {
           <View className="px-4 mt-2">
             {/* Seletor de Abas Estilo Segmented Control */}
             <View className="flex-row items-center justify-between gap-4 mb-6 z-10">
-              <View className="flex-row p-1.5 rounded-full bg-white/5 border border-white/10">
+              <View className="flex-row p-1.5 rounded-full bg-[#141A24] border border-white/10" style={{ backgroundColor: "#141A24" }}>
                 <Pressable
                   onPress={() => setAba("biblioteca")}
+                  accessibilityRole="tab"
+                  accessibilityLabel="Aba Sua Biblioteca"
+                  // @ts-ignore
+                  aria-label="Aba Sua Biblioteca"
                   className={`flex-row items-center gap-2 px-6 py-2 rounded-full transition-all ${
-                    aba === "biblioteca" ? "bg-[#3B82F6]" : "bg-transparent"
+                    aba === "biblioteca" ? "bg-[#1D4ED8]" : "bg-[#141A24]"
                   }`}
-                  style={aba === "biblioteca" ? { shadowColor: "#3B82F6", shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.45, shadowRadius: 16 } : undefined}
+                  style={{
+                    backgroundColor: aba === "biblioteca" ? "#1D4ED8" : "#141A24",
+                    ...(aba === "biblioteca" ? { shadowColor: "#1D4ED8", shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.45, shadowRadius: 16 } : {}),
+                  }}
                 >
-                  <Music size={16} color={aba === "biblioteca" ? "white" : "#94A3B8"} />
+                  <Music size={16} color={aba === "biblioteca" ? "white" : "#CBD5E1"} />
                   <Text
                     className={`font-bold text-xs ${
-                      aba === "biblioteca" ? "text-white" : "text-gray-400"
+                      aba === "biblioteca" ? "text-white" : "text-[#CBD5E1]"
                     }`}
                   >
                     Sua Biblioteca
@@ -124,15 +143,22 @@ export default function Perfil() {
 
                 <Pressable
                   onPress={() => setAba("dados")}
+                  accessibilityRole="tab"
+                  accessibilityLabel="Aba Dados Pessoais"
+                  // @ts-ignore
+                  aria-label="Aba Dados Pessoais"
                   className={`flex-row items-center gap-2 px-6 py-2 rounded-full transition-all ${
-                    aba === "dados" ? "bg-[#3B82F6]" : "bg-transparent"
+                    aba === "dados" ? "bg-[#1D4ED8]" : "bg-[#141A24]"
                   }`}
-                  style={aba === "dados" ? { shadowColor: "#3B82F6", shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.45, shadowRadius: 16 } : undefined}
+                  style={{
+                    backgroundColor: aba === "dados" ? "#1D4ED8" : "#141A24",
+                    ...(aba === "dados" ? { shadowColor: "#1D4ED8", shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.45, shadowRadius: 16 } : {}),
+                  }}
                 >
-                  <UserCheck size={16} color={aba === "dados" ? "white" : "#94A3B8"} />
+                  <UserCheck size={16} color={aba === "dados" ? "white" : "#CBD5E1"} />
                   <Text
                     className={`font-bold text-xs ${
-                      aba === "dados" ? "text-white" : "text-gray-400"
+                      aba === "dados" ? "text-white" : "text-[#CBD5E1]"
                     }`}
                   >
                     Dados Pessoais
@@ -378,7 +404,13 @@ function CabecalhoPerfil({ usuario }: { usuario: any }) {
       {/* Banner */}
       <View pointerEvents="none" className="h-64 sm:h-72 w-full overflow-hidden bg-surface relative">
         {bannerUrl ? (
-          <Image source={{ uri: bannerUrl }} className="w-full h-full" resizeMode="cover" />
+          <Image
+            source={{ uri: bannerUrl }}
+            className="w-full h-full"
+            resizeMode="cover"
+            alt={`Banner de perfil de ${usuario.nome}`}
+            accessibilityLabel={`Banner de perfil de ${usuario.nome}`}
+          />
         ) : (
           <>
             <View className="absolute -top-10 -left-10 w-48 h-48 rounded-full bg-primary/25 blur-2xl" />
@@ -398,12 +430,14 @@ function CabecalhoPerfil({ usuario }: { usuario: any }) {
         <Pressable
           onPress={trocarBanner}
           disabled={enviandoBanner}
+          accessibilityRole="button"
+          accessibilityLabel="Trocar banner de perfil"
           hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
           style={{ position: "absolute", top: 16, right: 16, zIndex: 20, elevation: 20 }}
           className="bg-black/60 rounded-full p-2 border border-white/20 flex-row items-center gap-1.5 px-3 active:bg-black/80"
         >
           <Camera color="white" size={14} />
-          <Text className="text-white text-[11px] font-semibold uppercase tracking-wide">
+          <Text className="text-white text-xs font-semibold uppercase tracking-wide">
             {enviandoBanner ? "Enviando..." : bannerUrl ? "Trocar banner" : "Adicionar banner"}
           </Text>
         </Pressable>
@@ -415,12 +449,23 @@ function CabecalhoPerfil({ usuario }: { usuario: any }) {
           {/* Esquerda: Avatar e Info */}
           <View className="flex-col sm:flex-row items-center sm:items-end gap-4 text-center sm:text-left flex-1 shrink min-w-0">
             {/* Avatar com borda */}
-            <Pressable onPress={podeTrocarFoto ? trocarFoto : undefined} disabled={!podeTrocarFoto || enviandoFoto}>
+            <Pressable
+              onPress={podeTrocarFoto ? trocarFoto : undefined}
+              disabled={!podeTrocarFoto || enviandoFoto}
+              accessibilityRole={podeTrocarFoto ? "button" : undefined}
+              accessibilityLabel={podeTrocarFoto ? "Trocar foto de perfil" : `Foto de perfil de ${usuario.nome}`}
+            >
               <View className="relative">
                 <View className="w-36 h-36 rounded-full p-1 bg-primary/20">
                   <View className="w-full h-full rounded-full overflow-hidden bg-[#0a0e16] border-4 border-[#0B101E]">
                     {fotoUrl ? (
-                      <Image source={{ uri: fotoUrl }} className="w-full h-full" resizeMode="cover" />
+                      <Image
+                        source={{ uri: fotoUrl }}
+                        className="w-full h-full"
+                        resizeMode="cover"
+                        alt={`Foto de perfil de ${usuario.nome}`}
+                        accessibilityLabel={`Foto de perfil de ${usuario.nome}`}
+                      />
                     ) : (
                       <View className="w-full h-full bg-surface items-center justify-center">
                         <Text className="text-4xl font-extrabold text-muted">
@@ -440,7 +485,7 @@ function CabecalhoPerfil({ usuario }: { usuario: any }) {
                     )}
                   </View>
                 ) : (
-                  <View className="absolute bottom-2 right-4 w-6 h-6 rounded-full bg-[#3B82F6] items-center justify-center border-2 border-[#0B101E]">
+                  <View className="absolute bottom-2 right-4 w-6 h-6 rounded-full bg-[#2563EB] items-center justify-center border-2 border-[#0B101E]">
                     <UserCheck color="white" size={12} />
                   </View>
                 )}
@@ -464,7 +509,12 @@ function CabecalhoPerfil({ usuario }: { usuario: any }) {
             {/* Nome e Tags */}
             <View className="items-center sm:items-start mb-2">
               <View className="flex-row items-center gap-2">
-                <Text className="text-3xl sm:text-4xl font-black text-textDark tracking-tight">
+                <Text
+                  accessibilityRole="header"
+                  // @ts-ignore
+                  aria-level={1}
+                  className="text-3xl sm:text-4xl font-black text-textDark tracking-tight"
+                >
                   {usuario.nome}
                 </Text>
                 {apelido && <Text className="text-muted font-medium text-sm">(@{apelido})</Text>}
@@ -515,11 +565,11 @@ function CabecalhoPerfil({ usuario }: { usuario: any }) {
           <View className="flex-row items-center gap-8 mt-6 pt-4 border-t border-white/10 bg-black/20 p-4 rounded-xl">
             <View className="flex-col items-center sm:items-start px-2">
               <Text className="text-2xl font-black text-textDark">{totalMusicas}</Text>
-              <Text className="text-[10px] text-muted font-bold uppercase tracking-wider mt-1">Faixas lançadas</Text>
+              <Text className="text-xs text-gray-300 font-bold uppercase tracking-wider mt-1">Faixas lançadas</Text>
             </View>
             <View className="flex-col items-center sm:items-start px-2">
               <Text className="text-2xl font-black text-primary">{totalShows} {totalShows === 1 ? "Show" : "Shows"}</Text>
-              <Text className="text-[10px] text-muted font-bold uppercase tracking-wider mt-1">Confirmados</Text>
+              <Text className="text-xs text-gray-300 font-bold uppercase tracking-wider mt-1">Confirmados</Text>
             </View>
           </View>
         )}
@@ -554,7 +604,7 @@ function ItemMenu({
         </View>
         <View className="flex-1 pr-2">
           <Text className="text-textDark font-bold text-sm">{titulo}</Text>
-          <Text className="text-muted text-[11px] mt-0.5">{subtitulo}</Text>
+          <Text className="text-gray-400 text-xs mt-0.5">{subtitulo}</Text>
         </View>
       </View>
       <ChevronRight color={colors.muted} size={18} />
@@ -660,8 +710,8 @@ function BibliotecaMusico({ usuarioId }: { usuarioId: string }) {
                 <View className="flex-1 justify-center">
                   <View className="flex-row items-center gap-2">
                     <Text className="text-sm font-bold text-textDark group-hover:text-[#3B82F6] transition-colors flex-1" numberOfLines={1}>{m.nome}</Text>
-                    <View className="px-2 py-0.5 rounded-full bg-[#3B82F6]/20 shrink-0">
-                      <Text className="text-[#3B82F6] text-[10px] font-bold">{m.status || "Ativo"}</Text>
+                    <View className="px-2.5 py-0.5 rounded-full bg-[#2563EB]/20 border border-[#2563EB]/40 shrink-0">
+                      <Text className="text-[#93C5FD] text-xs font-bold">{m.status || "Ativo"}</Text>
                     </View>
                   </View>
                   <Text className="text-xs text-gray-400 mt-1">{m.genero || "Original"}</Text>
@@ -708,7 +758,12 @@ function BibliotecaMusico({ usuarioId }: { usuarioId: string }) {
             >
               <View className="w-full aspect-square rounded-xl overflow-hidden mb-4 relative">
                 {item.capa_url ? (
-                  <Image source={{ uri: item.capa_url }} className="w-full h-full group-hover:scale-105 transition-transform duration-500" />
+                  <Image
+                    source={{ uri: item.capa_url }}
+                    className="w-full h-full group-hover:scale-105 transition-transform duration-500"
+                    alt={`Capa do álbum ${item.nome}`}
+                    accessibilityLabel={`Capa do álbum ${item.nome}`}
+                  />
                 ) : (
                   <View className="w-full h-full bg-white/10 items-center justify-center">
                     <Disc color="#94A3B8" size={32} />
@@ -716,7 +771,7 @@ function BibliotecaMusico({ usuarioId }: { usuarioId: string }) {
                 )}
                 {/* Play Button Overlay */}
                 <View className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
-                  <View className="w-10 h-10 rounded-full bg-[#3B82F6] items-center justify-center shadow-lg">
+                  <View className="w-10 h-10 rounded-full bg-[#2563EB] items-center justify-center shadow-lg">
                     <Play color="white" size={20} fill="white" style={{ marginLeft: 2 }} />
                   </View>
                 </View>
@@ -741,12 +796,12 @@ function BibliotecaMusico({ usuarioId }: { usuarioId: string }) {
       <View className="flex-col gap-5 items-stretch w-full">
         <View className="flex-row items-center justify-between w-full mb-4">
           <View className="flex-row items-center gap-2 flex-1 pr-2">
-            <Calendar color="#3B82F6" size={22} />
+            <Calendar color="#2563EB" size={22} />
             <Text className="text-xl font-bold text-white" numberOfLines={1}>Shows Confirmados</Text>
           </View>
           <Pressable onPress={() => router.push("/meus-eventos")} className="flex-row items-center gap-1">
-            <Text className="text-xs text-[#3B82F6] uppercase font-bold tracking-wider">Agenda Completa</Text>
-            <ChevronRight color="#3B82F6" size={16} />
+            <Text className="text-xs text-[#93C5FD] uppercase font-bold tracking-wider">Agenda Completa</Text>
+            <ChevronRight color="#93C5FD" size={16} />
           </Pressable>
         </View>
 
@@ -759,28 +814,28 @@ function BibliotecaMusico({ usuarioId }: { usuarioId: string }) {
             
             return (
               <View key={item.id} className="relative overflow-hidden rounded-2xl bg-white/5 border border-white/10 p-5 flex-col md:flex-row md:items-center justify-between gap-4 shadow-xl">
-                <View className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-[#3B82F6]/10 rounded-full blur-3xl" />
+                <View className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-[#2563EB]/10 rounded-full blur-3xl" />
                 
                 <View className="flex-row items-center gap-4 flex-1">
                   {/* Calendar Badge */}
                   <View className="flex-col items-center justify-center w-16 h-16 rounded-xl bg-white/10 shadow-inner">
-                    <Text className="text-[10px] text-[#3B82F6] uppercase font-black tracking-widest">{mes}</Text>
+                    <Text className="text-xs text-[#93C5FD] uppercase font-black tracking-widest">{mes}</Text>
                     <Text className="text-xl font-bold text-textDark leading-tight">{dia}</Text>
-                    <Text className="text-[8px] text-gray-400">{ano}</Text>
+                    <Text className="text-xs text-gray-300">{ano}</Text>
                   </View>
 
                   {/* Event Details */}
                   <View className="flex-col gap-1">
                     <View className="flex-row items-center gap-2">
                       <Text className="font-semibold text-textDark text-sm">{item.nome}</Text>
-                      <View className="flex-row items-center gap-1 px-2 py-0.5 rounded-full bg-green-500/20">
-                        <View className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                        <Text className="text-green-500 text-[10px] font-bold">Participando</Text>
+                      <View className="flex-row items-center gap-1 px-2.5 py-0.5 rounded-full bg-green-500/20 border border-green-500/30">
+                        <View className="w-1.5 h-1.5 rounded-full bg-green-400" />
+                        <Text className="text-green-400 text-xs font-bold">Participando</Text>
                       </View>
                     </View>
                     <View className="flex-row items-center gap-4 mt-1">
                       <View className="flex-row items-center gap-1">
-                        <MapPin color="#3B82F6" size={14} />
+                        <MapPin color="#93C5FD" size={14} />
                         <Text className="text-gray-400 text-xs">{item.localizacao || "Local a definir"}</Text>
                       </View>
                       <View className="flex-row items-center gap-1">
@@ -793,7 +848,15 @@ function BibliotecaMusico({ usuarioId }: { usuarioId: string }) {
 
                 {/* Actions */}
                 <View className="flex-row items-center gap-2">
-                  <Pressable onPress={() => setEventoSelecionado(item)} className="px-4 py-2 rounded-full bg-[#3B82F6] hover:scale-105 transition-transform">
+                  <Pressable
+                    onPress={() => setEventoSelecionado(item)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Mostrar detalhes do evento ${item.nome}`}
+                    // @ts-ignore
+                    aria-label={`Mostrar detalhes do evento ${item.nome}`}
+                    className="px-4 py-2 rounded-full bg-[#1D4ED8] hover:scale-105 transition-transform"
+                    style={{ backgroundColor: "#1D4ED8" }}
+                  >
                     <Text className="text-white text-xs font-bold">Mostrar Detalhes</Text>
                   </Pressable>
                 </View>
@@ -893,8 +956,8 @@ function BibliotecaOrganizador({ usuarioId }: { usuarioId: string }) {
             <Text className="text-muted text-xs mt-1">
               {item.data} · {item.localizacao ?? "Local a definir"}
             </Text>
-            <View className="self-start bg-primary/10 px-2 py-0.5 rounded-md mt-2">
-              <Text className="text-primary text-[10px] font-bold capitalize">{item.status}</Text>
+            <View className="self-start bg-[#2563EB]/15 border border-[#2563EB]/30 px-2 py-0.5 rounded-md mt-2">
+              <Text className="text-[#93C5FD] text-xs font-bold capitalize">{item.status}</Text>
             </View>
           </View>
           <Pressable
@@ -921,17 +984,23 @@ function CampoTexto({
   onChangeText: (v: string) => void;
   multiline?: boolean;
 }) {
+  const inputId = "campo-" + label.toLowerCase().replace(/[^a-z0-9]/g, "-");
   return (
-    <View className="bg-card border border-border/70 rounded-2xl p-3.5 mb-3">
-      <Text className="text-[11px] font-bold text-muted uppercase tracking-wider mb-1">
+    <View className="bg-[#141A24] border border-white/10 rounded-2xl p-3.5 mb-3" style={{ backgroundColor: "#141A24" }}>
+      <Text nativeID={inputId + "-lbl"} className="text-xs font-bold text-[#CBD5E1] uppercase tracking-wider mb-1">
         {label}
       </Text>
       <TextInput
+        nativeID={inputId}
         value={value}
         onChangeText={onChangeText}
         multiline={multiline}
-        className="text-textDark font-medium text-sm p-0"
-        placeholderTextColor={colors.muted}
+        accessibilityLabel={label}
+        // @ts-ignore
+        aria-label={label}
+        aria-labelledby={inputId + "-lbl"}
+        className="text-white font-medium text-sm p-0"
+        placeholderTextColor="#94A3B8"
       />
     </View>
   );
@@ -1075,7 +1144,7 @@ function FormularioMusico({ usuarioId }: { usuarioId: string }) {
         <View className="bg-white/5 border border-white/10 rounded-2xl p-5 shadow-lg">
           <View className="flex-row items-center justify-between mb-4">
             <Text className="text-xl font-bold text-white">Identidade do Músico</Text>
-            <Text className="text-xs text-[#3B82F6] font-medium">Informações Públicas</Text>
+            <Text className="text-xs text-[#93C5FD] font-medium">Informações Públicas</Text>
           </View>
 
           <View className="flex-col gap-3 w-full">
@@ -1101,7 +1170,10 @@ function FormularioMusico({ usuarioId }: { usuarioId: string }) {
             <Switch
               value={disponivel}
               onValueChange={setDisponivel}
-              trackColor={{ false: "#1E293B", true: "#3B82F6" }}
+              accessibilityLabel="Disponível para contratação"
+              // @ts-ignore
+              aria-label="Disponível para contratação"
+              trackColor={{ false: "#1E293B", true: "#2563EB" }}
               thumbColor="white"
             />
           </View>
@@ -1115,7 +1187,12 @@ function FormularioMusico({ usuarioId }: { usuarioId: string }) {
           <Pressable
             onPress={salvar}
             disabled={salvando}
-            className="bg-[#3B82F6] rounded-full py-3.5 items-center mt-6 active:opacity-90 transition-opacity shadow-lg shadow-[#3B82F6]/30"
+            accessibilityRole="button"
+            accessibilityLabel="Salvar alterações do perfil"
+            // @ts-ignore
+            aria-label="Salvar alterações do perfil"
+            className="bg-[#1D4ED8] rounded-full py-3.5 items-center mt-6 active:opacity-90 transition-opacity shadow-lg shadow-[#1D4ED8]/30"
+            style={{ backgroundColor: "#1D4ED8" }}
           >
             <Text className="text-white font-bold text-sm">
               {salvando ? "Salvando alterações..." : "Salvar Alterações"}
@@ -1180,7 +1257,12 @@ function FormularioOrganizador({ usuarioId }: { usuarioId: string }) {
       <Pressable
         onPress={salvar}
         disabled={salvando}
-        className="bg-primary rounded-2xl py-4 items-center mt-3   active:opacity-90"
+        accessibilityRole="button"
+        accessibilityLabel="Salvar alterações do perfil"
+        // @ts-ignore
+        aria-label="Salvar alterações do perfil"
+        className="bg-[#1D4ED8] rounded-2xl py-4 items-center mt-3 active:opacity-90"
+        style={{ backgroundColor: "#1D4ED8" }}
       >
         <Text className="text-white font-bold text-sm">
           {salvando ? "Salvando alterações..." : "Salvar Alterações"}

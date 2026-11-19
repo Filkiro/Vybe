@@ -39,6 +39,12 @@ export default function Conversa() {
   const [erroDenuncia, setErroDenuncia] = useState<string | null>(null);
   const [enviandoDenuncia, setEnviandoDenuncia] = useState(false);
 
+  useEffect(() => {
+    if (Platform.OS === "web") {
+      document.title = "Vybe - Conversas";
+    }
+  }, []);
+
   async function enviarDenuncia() {
     if (!motivoEscolhido || !usuario || !conversaSelecionada) {
       setErroDenuncia("Escolha um motivo.");
@@ -199,7 +205,12 @@ export default function Conversa() {
   });
 
   return (
-    <View className="flex-1 bg-[#0a0e16] pt-4 lg:pt-0">
+    <View
+      className="flex-1 bg-[#0a0e16] pt-4 lg:pt-0"
+      // @ts-ignore
+      role="main"
+      aria-label="Área de conversas e mensagens"
+    >
       <View 
         className="flex-1 flex-col lg:flex-row w-full max-w-[1440px] mx-auto lg:p-4 lg:gap-4"
         style={isDesktop ? { paddingBottom: wrapperPaddingBottom } : {}}
@@ -207,10 +218,17 @@ export default function Conversa() {
         
         {/* LEFT PANE (LIST) */}
         <View className={`flex-1 lg:max-w-[420px] flex-col lg:bg-[#141a24]/80 lg:border border-white/5 lg:rounded-2xl overflow-hidden ${conversaAtiva ? 'hidden lg:flex' : 'flex'}`}>
-          {/* Header Desktop Only */}
-          <View className="hidden lg:flex px-5 pt-5 pb-2">
+          {/* Header */}
+          <View className="flex px-5 pt-5 pb-2">
             <View className="flex-row items-center gap-3">
-              <Text className="text-white text-xl font-bold tracking-tight">Conversas</Text>
+              <Text
+                accessibilityRole="header"
+                // @ts-ignore
+                aria-level={1}
+                className="text-white text-xl font-bold tracking-tight"
+              >
+                Conversas
+              </Text>
             </View>
           </View>
 
@@ -218,21 +236,36 @@ export default function Conversa() {
           <View className="flex-row px-4 pt-2 pb-3 gap-2 border-b border-white/5">
             <Pressable
               onPress={() => setFiltro("todos")}
-              className={`px-3.5 py-1.5 rounded-full transition-all ${filtro === "todos" ? "bg-[#3B82F6] shadow-[0_0_14px_rgba(37,99,235,0.4)]" : "bg-white/5 hover:bg-white/10"}`}
+              accessibilityRole="button"
+              accessibilityLabel="Filtrar todas as conversas"
+              // @ts-ignore
+              aria-label="Filtrar todas as conversas"
+              className={`px-3.5 py-1.5 rounded-full transition-all ${filtro === "todos" ? "bg-[#1D4ED8]" : "bg-[#1E2633] border border-white/10"}`}
+              style={{ backgroundColor: filtro === "todos" ? "#1D4ED8" : "#1E2633" }}
             >
-              <Text className={`font-semibold text-xs ${filtro === "todos" ? "text-white" : "text-[#94A3B8]"}`}>Tudo</Text>
+              <Text className={`font-semibold text-xs ${filtro === "todos" ? "text-white" : "text-[#CBD5E1]"}`}>Tudo</Text>
             </Pressable>
             <Pressable
               onPress={() => setFiltro("musico")}
-              className={`px-3.5 py-1.5 rounded-full transition-all ${filtro === "musico" ? "bg-[#3B82F6] shadow-[0_0_14px_rgba(37,99,235,0.4)]" : "bg-white/5 hover:bg-white/10"}`}
+              accessibilityRole="button"
+              accessibilityLabel="Filtrar conversas com músicos"
+              // @ts-ignore
+              aria-label="Filtrar conversas com músicos"
+              className={`px-3.5 py-1.5 rounded-full transition-all ${filtro === "musico" ? "bg-[#1D4ED8]" : "bg-[#1E2633] border border-white/10"}`}
+              style={{ backgroundColor: filtro === "musico" ? "#1D4ED8" : "#1E2633" }}
             >
-              <Text className={`font-semibold text-xs ${filtro === "musico" ? "text-white" : "text-[#94A3B8]"}`}>Músicos</Text>
+              <Text className={`font-semibold text-xs ${filtro === "musico" ? "text-white" : "text-[#CBD5E1]"}`}>Músicos</Text>
             </Pressable>
             <Pressable
               onPress={() => setFiltro("organizador")}
-              className={`px-3.5 py-1.5 rounded-full transition-all ${filtro === "organizador" ? "bg-[#3B82F6] shadow-[0_0_14px_rgba(37,99,235,0.4)]" : "bg-white/5 hover:bg-white/10"}`}
+              accessibilityRole="button"
+              accessibilityLabel="Filtrar conversas com organizadores"
+              // @ts-ignore
+              aria-label="Filtrar conversas com organizadores"
+              className={`px-3.5 py-1.5 rounded-full transition-all ${filtro === "organizador" ? "bg-[#1D4ED8]" : "bg-[#1E2633] border border-white/10"}`}
+              style={{ backgroundColor: filtro === "organizador" ? "#1D4ED8" : "#1E2633" }}
             >
-              <Text className={`font-semibold text-xs ${filtro === "organizador" ? "text-white" : "text-[#94A3B8]"}`}>Organizadores</Text>
+              <Text className={`font-semibold text-xs ${filtro === "organizador" ? "text-white" : "text-[#CBD5E1]"}`}>Organizadores</Text>
             </Pressable>
           </View>
 
@@ -270,6 +303,10 @@ export default function Conversa() {
                           );
                         }
                       }}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Abrir conversa com ${item.contatoNome}`}
+                      // @ts-ignore
+                      aria-label={`Abrir conversa com ${item.contatoNome}`}
                       className={`flex-1 flex-row items-center p-2.5 rounded-lg transition-all relative ${isActive ? 'bg-[#3B82F6]/15' : 'hover:bg-white/5 active:opacity-70'}`}
                     >
                       {isActive && (
@@ -280,6 +317,8 @@ export default function Conversa() {
                         <Image
                           source={{ uri: item.contatoFotoUrl }}
                           className="w-11 h-11 rounded-full mr-3 border border-white/5 bg-[#1A2235]"
+                          alt={`Foto de perfil de ${item.contatoNome}`}
+                          accessibilityLabel={`Foto de perfil de ${item.contatoNome}`}
                         />
                       ) : (
                         <View className="w-11 h-11 rounded-full bg-[#1A2235] mr-3 items-center justify-center border border-white/5">
@@ -293,14 +332,14 @@ export default function Conversa() {
                             <Text className="font-semibold text-white text-[14px]" numberOfLines={1}>
                               {item.contatoNome}
                             </Text>
-                            <View className="px-1.5 py-0.5 rounded bg-white/10">
-                              <Text className="text-[9px] text-[#94A3B8] uppercase font-bold tracking-wider">
+                            <View className="px-2 py-0.5 rounded bg-white/10">
+                              <Text className="text-xs text-[#CBD5E1] uppercase font-bold tracking-wider">
                                 {item.contatoTipo}
                               </Text>
                             </View>
                           </View>
                           {item.ultimaMensagemData && (
-                            <Text className="text-[10px] text-[#94A3B8] font-medium">
+                            <Text className="text-xs text-[#CBD5E1] font-medium">
                               {new Date(item.ultimaMensagemData).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                             </Text>
                           )}
@@ -308,17 +347,17 @@ export default function Conversa() {
                         
                         <Text
                           numberOfLines={1}
-                          className={`text-[12px] ${item.naoLida ? "text-white font-medium" : "text-[#94A3B8]"}`}
+                          className={`text-xs ${item.naoLida ? "text-white font-medium" : "text-[#CBD5E1]"}`}
                         >
                           {item.ultimaMensagem
-                            ? <><Text className="text-[#94A3B8]">{item.ultimaMensagemEhMinha ? "Você: " : ""}</Text>{item.ultimaMensagem}</>
+                            ? <><Text className="text-[#CBD5E1]">{item.ultimaMensagemEhMinha ? "Você: " : ""}</Text>{item.ultimaMensagem}</>
                             : "Nenhuma mensagem ainda"}
                         </Text>
                       </View>
 
                       {item.naoLidasContagem > 0 && (
-                        <View className="bg-[#3B82F6] rounded-full min-w-[20px] h-[20px] px-1.5 items-center justify-center shadow-[0_0_8px_rgba(37,99,235,0.6)] mr-1">
-                          <Text className="text-white text-[10px] font-bold">
+                        <View className="bg-[#1D4ED8] rounded-full min-w-[20px] h-[20px] px-1.5 items-center justify-center mr-1" style={{ backgroundColor: "#1D4ED8" }}>
+                          <Text className="text-white text-xs font-bold">
                             {item.naoLidasContagem > 9 ? "9+" : item.naoLidasContagem}
                           </Text>
                         </View>
@@ -402,7 +441,10 @@ export default function Conversa() {
             {motivoEscolhido === "Outro motivo" && (
               <TextInput
                 placeholder="Descreva o motivo da denúncia..."
-                placeholderTextColor="#64748B"
+                placeholderTextColor="#94A3B8"
+                accessibilityLabel="Descreva o motivo da denúncia"
+                // @ts-ignore
+                aria-label="Descreva o motivo da denúncia"
                 value={descricaoDenuncia}
                 onChangeText={setDescricaoDenuncia}
                 multiline

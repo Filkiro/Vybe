@@ -85,16 +85,16 @@ export function PerfilArtistaModal() {
                   <View className="absolute bottom-2.5 right-2.5 flex-row items-center gap-1.5 z-10">
                     {dadosPerfil?.genero_musical && (
                       <View className="bg-black/60 backdrop-blur-md border border-white/20 px-2.5 py-1 rounded-full flex-row items-center gap-1">
-                        <Sparkles size={11} color="white" />
-                        <Text className="text-white text-[10px] font-bold uppercase">
+                        <Sparkles size={12} color="white" />
+                        <Text className="text-white text-xs font-bold uppercase">
                           {dadosPerfil.genero_musical}
                         </Text>
                       </View>
                     )}
                     {dadosPerfil?.localizacao && (
                       <View className="bg-black/60 backdrop-blur-md border border-white/20 px-2.5 py-1 rounded-full flex-row items-center gap-1">
-                        <MapPin size={11} color="white" />
-                        <Text className="text-white text-[10px] font-bold">
+                        <MapPin size={12} color="white" />
+                        <Text className="text-white text-xs font-bold">
                           {dadosPerfil.localizacao}
                         </Text>
                       </View>

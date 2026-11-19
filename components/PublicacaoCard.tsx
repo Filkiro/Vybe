@@ -224,7 +224,14 @@ async function alternarCurtida() {
           <View className="relative mr-3">
             <View className="w-11 h-11 rounded-full p-0.5 border-2 border-[#3b82f6]/40 overflow-hidden items-center justify-center bg-[#2563eb]/20">
               {item.foto_perfil_url ? (
-                <Image source={{ uri: item.foto_perfil_url }} className="w-full h-full rounded-full" />
+                <Image
+                  source={{ uri: item.foto_perfil_url }}
+                  alt={`Foto de perfil de ${item.apelido || item.usuario?.nome || "Usuário"}`}
+                  accessibilityLabel={`Foto de perfil de ${item.apelido || item.usuario?.nome || "Usuário"}`}
+                  // @ts-ignore
+                  aria-label={`Foto de perfil de ${item.apelido || item.usuario?.nome || "Usuário"}`}
+                  className="w-full h-full rounded-full"
+                />
               ) : (
                 <Text className="text-white font-bold text-sm">{getLetrasIniciais(item.apelido || item.usuario?.nome)}</Text>
               )}
@@ -282,13 +289,13 @@ async function alternarCurtida() {
                </View>
                <View className="flex-1">
                  <Text className="text-sm font-semibold text-white" numberOfLines={1}>{item.evento.nome}</Text>
-                 <Text className="text-xs text-[#3B82F6] font-bold">
+                 <Text className="text-xs text-[#93c5fd] font-bold">
                    Evento Oficial
                  </Text>
                </View>
              </View>
              <View className="px-2.5 py-1 bg-[#3b82f6]/10 rounded border border-[#3b82f6]/20">
-               <Text className="text-[#3b82f6] text-xs font-bold">VER MAIS</Text>
+               <Text className="text-[#93c5fd] text-xs font-bold">VER MAIS</Text>
              </View>
           </Pressable>
         </View>
@@ -318,14 +325,21 @@ async function alternarCurtida() {
              <View className="flex-row items-center gap-4 flex-1">
                <View className="w-12 h-12 rounded-lg bg-[#3b82f6] items-center justify-center overflow-hidden">
                  {linkedItem.capa_url && !linkedItem.capa_url.startsWith('vybe_item') ? (
-                   <Image source={{ uri: linkedItem.capa_url }} className="w-full h-full object-cover" />
+                   <Image
+                     source={{ uri: linkedItem.capa_url }}
+                     alt={`Capa de ${linkedItem.nome}`}
+                     accessibilityLabel={`Capa de ${linkedItem.nome}`}
+                     // @ts-ignore
+                      aria-label={`Capa de ${linkedItem.nome}`}
+                      className="w-full h-full object-cover"
+                   />
                  ) : (
                    linkedItem.tipo === "album" ? <Disc size={20} color="white" /> : <Music size={20} color="white" />
                  )}
                </View>
                <View className="flex-1">
                  <Text className="text-base font-bold text-white" numberOfLines={1}>{linkedItem.nome}</Text>
-                 <Text className="text-xs text-[#3B82F6] font-bold">
+                 <Text className="text-xs text-[#93c5fd] font-bold">
                    {linkedItem.tipo === "album" ? "Álbum" : "Música • Single"}
                  </Text>
                </View>
@@ -338,7 +352,14 @@ async function alternarCurtida() {
       {realFotoUrl && (
         <View className="px-5 pb-4">
           <View className="relative w-full aspect-square rounded-xl overflow-hidden bg-black border border-white/5 shadow-2xl">
-            <Image source={{ uri: realFotoUrl }} className="w-full h-full object-cover" />
+            <Image
+              source={{ uri: realFotoUrl }}
+              alt={`Mídia da publicação de ${item.apelido || item.usuario?.nome || "Usuário"}`}
+              accessibilityLabel={`Mídia da publicação de ${item.apelido || item.usuario?.nome || "Usuário"}`}
+              // @ts-ignore
+              aria-label={`Mídia da publicação de ${item.apelido || item.usuario?.nome || "Usuário"}`}
+              className="w-full h-full object-cover"
+            />
           </View>
         </View>
       )}

@@ -339,7 +339,7 @@ export default function Pesquisa() {
                   </View>
 
                   <View className="bg-white/10 px-2.5 py-1 rounded-full border border-white/10">
-                    <Text className="text-gray-300 text-[10px] font-semibold uppercase tracking-wider">
+                    <Text className="text-gray-300 text-xs font-semibold uppercase tracking-wider">
                       {item.tipo}
                     </Text>
                   </View>

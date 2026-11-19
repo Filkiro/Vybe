@@ -188,7 +188,10 @@ export function SearchInputDesktop() {
         <TextInput
           ref={inputRef}
           placeholder="Pesquisar músicas, artistas, álbuns..."
-          placeholderTextColor="#8B95A8"
+          placeholderTextColor="#94A3B8"
+          accessibilityLabel="Pesquisar músicas, artistas e álbuns"
+          // @ts-ignore
+          aria-label="Pesquisar músicas, artistas e álbuns"
           value={busca}
           onChangeText={setBusca}
           onFocus={() => setFocado(true)}
@@ -198,7 +201,12 @@ export function SearchInputDesktop() {
         {carregando ? (
           <ActivityIndicator size="small" color="#3B82F6" />
         ) : busca.length > 0 ? (
-          <Pressable onPress={() => setBusca("")} className="p-1 active:opacity-60">
+          <Pressable
+            onPress={() => setBusca("")}
+            accessibilityRole="button"
+            accessibilityLabel="Limpar busca"
+            className="p-1 active:opacity-60"
+          >
             <X color="#94A3B8" size={16} />
           </Pressable>
         ) : null}
@@ -215,9 +223,11 @@ export function SearchInputDesktop() {
                 <Pressable
                   key={item}
                   onPress={() => setAba(item)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Filtrar por ${item}`}
                   className={"px-3 py-1.5 rounded-full border " + (aba === item ? "bg-primary border-primary" : "bg-white/5 border-white/10")}
                 >
-                  <Text className={"text-xs font-semibold capitalize " + (aba === item ? "text-white" : "text-gray-400")}>
+                  <Text className={"text-xs font-semibold capitalize " + (aba === item ? "text-white" : "text-gray-300")}>
                     {item}
                   </Text>
                 </Pressable>
@@ -234,6 +244,8 @@ export function SearchInputDesktop() {
                   renderItem={({ item }) => (
                     <Pressable
                       onPress={() => selecionarItem(item)}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${item.tipo}: ${item.titulo}`}
                       className="flex-row items-center p-2.5 rounded-xl active:bg-white/10 hover:bg-white/5 transition-colors"
                     >
                       {item.foto_url ? (
@@ -253,7 +265,7 @@ export function SearchInputDesktop() {
                         <Text numberOfLines={1} className="text-white font-semibold text-sm">
                           {item.titulo}
                         </Text>
-                        <Text numberOfLines={1} className="text-gray-400 text-[11px] mt-0.5">
+                        <Text numberOfLines={1} className="text-gray-300 text-xs mt-0.5">
                           {item.subtitulo}
                         </Text>
                       </View>

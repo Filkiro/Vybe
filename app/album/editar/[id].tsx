@@ -149,7 +149,7 @@ export default function EditarAlbum() {
           <ChevronLeft color="#dfe2ee" size={24} />
         </Pressable>
         <View className="ml-4">
-          <Text className="text-[11px] font-semibold text-[#8d90a0] uppercase tracking-wider">Gerenciamento de Disco</Text>
+          <Text className="text-xs font-semibold text-[#8d90a0] uppercase tracking-wider">Gerenciamento de Disco</Text>
           <Text className="text-[26px] font-bold text-[#dfe2ee] tracking-tight mt-0.5">Editar álbum</Text>
         </View>
       </View>
@@ -176,14 +176,14 @@ export default function EditarAlbum() {
 
           {/* Status */}
           <View className="bg-[#181c24] p-4 rounded-xl border border-[#31353e]">
-             <Text className="text-[11px] font-semibold text-[#8d90a0] uppercase tracking-wider mb-2">Status de Distribuição</Text>
+             <Text className="text-xs font-semibold text-[#8d90a0] uppercase tracking-wider mb-2">Status de Distribuição</Text>
              <View className="flex-row items-center justify-between bg-[#1c2028] p-3 rounded-lg border border-[#31353e]">
                 <View className="flex-row items-center gap-2">
                    <Globe color="#b4c5ff" size={18} />
                    <Text className="text-[#dfe2ee] text-[13px]">Disponibilidade</Text>
                 </View>
                 <View className="bg-[#b4c5ff]/10 px-2 py-0.5 rounded-full border border-[#b4c5ff]/20">
-                   <Text className="text-[#b4c5ff] text-[11px] font-medium capitalize">{album.status || "Pública"}</Text>
+                   <Text className="text-[#b4c5ff] text-xs font-medium capitalize">{album.status || "Pública"}</Text>
                 </View>
              </View>
           </View>

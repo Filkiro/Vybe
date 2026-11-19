@@ -222,7 +222,7 @@ function GerenciarEvento() {
 
         {/* Input 1: Nome do Evento */}
         <View className="flex flex-col gap-1.5">
-          <Text className="text-[11px] font-semibold text-[#c3c6d7] tracking-wider uppercase pl-1">
+          <Text className="text-xs font-semibold text-[#c3c6d7] tracking-wider uppercase pl-1">
             Nome do evento
           </Text>
           <TextInput
@@ -236,7 +236,7 @@ function GerenciarEvento() {
 
         {/* Input 2: Data do Evento */}
         <View className="flex flex-col gap-1.5">
-          <Text className="text-[11px] font-semibold text-[#c3c6d7] tracking-wider uppercase pl-1">
+          <Text className="text-xs font-semibold text-[#c3c6d7] tracking-wider uppercase pl-1">
             Data
           </Text>
           <Pressable
@@ -253,7 +253,7 @@ function GerenciarEvento() {
 
         {/* Input 3: Horário */}
         <View className="flex flex-col gap-1.5">
-          <Text className="text-[11px] font-semibold text-[#c3c6d7] tracking-wider uppercase pl-1">
+          <Text className="text-xs font-semibold text-[#c3c6d7] tracking-wider uppercase pl-1">
             Horário
           </Text>
           <Pressable
@@ -270,7 +270,7 @@ function GerenciarEvento() {
 
         {/* Input 4: Local / Endereço */}
         <View className="flex flex-col gap-1.5">
-          <Text className="text-[11px] font-semibold text-[#c3c6d7] tracking-wider uppercase pl-1">
+          <Text className="text-xs font-semibold text-[#c3c6d7] tracking-wider uppercase pl-1">
             Local / Endereço
           </Text>
           <TextInput
@@ -284,7 +284,7 @@ function GerenciarEvento() {
 
         {/* Input 5: Gênero Musical */}
         <View className="flex flex-col gap-1.5">
-          <Text className="text-[11px] font-semibold text-[#c3c6d7] tracking-wider uppercase pl-1">
+          <Text className="text-xs font-semibold text-[#c3c6d7] tracking-wider uppercase pl-1">
             Gênero musical
           </Text>
           <TextInput
@@ -298,7 +298,7 @@ function GerenciarEvento() {
 
         {/* Input 6: Capacidade */}
         <View className="flex flex-col gap-1.5">
-          <Text className="text-[11px] font-semibold text-[#c3c6d7] tracking-wider uppercase pl-1">
+          <Text className="text-xs font-semibold text-[#c3c6d7] tracking-wider uppercase pl-1">
             Capacidade
           </Text>
           <TextInput
@@ -313,7 +313,7 @@ function GerenciarEvento() {
 
         {/* Status do Evento */}
         <View className="flex flex-col gap-1.5 mt-1">
-          <Text className="text-[11px] font-semibold text-[#c3c6d7] pl-1">
+          <Text className="text-xs font-semibold text-[#c3c6d7] pl-1">
             Status do evento
           </Text>
           <View className="flex-row gap-2 p-1.5 bg-[#181c24] rounded-xl">

@@ -59,7 +59,7 @@ export function ModalEventoDetalhes({
                       <Calendar color="#3B82F6" size={18} />
                     </View>
                     <View className="flex-1">
-                      <Text className="text-gray-400 text-[10px] uppercase font-bold tracking-wider">Data e Horário</Text>
+                      <Text className="text-gray-300 text-xs uppercase font-bold tracking-wider">Data e Horário</Text>
                       <Text className="text-white font-semibold">
                         {eventoSelecionado.data}{eventoSelecionado.horario ? ` às ${eventoSelecionado.horario}` : ""}
                       </Text>
@@ -72,7 +72,7 @@ export function ModalEventoDetalhes({
                         <MapPin color="#94A3B8" size={18} />
                       </View>
                       <View className="flex-1">
-                        <Text className="text-gray-400 text-[10px] uppercase font-bold tracking-wider">Local</Text>
+                        <Text className="text-gray-300 text-xs uppercase font-bold tracking-wider">Local</Text>
                         <Text className="text-white font-semibold">{eventoSelecionado.localizacao}</Text>
                       </View>
                     </View>

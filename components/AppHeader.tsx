@@ -110,7 +110,13 @@ export function AppHeader({ onOpenSearch }: AppHeaderProps) {
 
   if (ehDesktop) {
     return (
-      <View style={{ paddingTop: Math.max(insets.top, 14), zIndex: 9999 }}>
+      <View
+        style={{ paddingTop: Math.max(insets.top, 14), zIndex: 9999 }}
+        accessibilityRole="header"
+        // @ts-ignore
+        role="banner"
+        aria-label="Cabeçalho da aplicação"
+      >
         {/* Adiciona um background sutil ou border-b para o AppHeader não parecer parte do resto do site */}
         <View className="px-6 pb-4 flex-row items-center justify-between border-b border-white/5 bg-[#0B101E]/80 backdrop-blur-md">
           {/* Esquerda: Espaço vazio para empurrar o centro */}
@@ -125,24 +131,29 @@ export function AppHeader({ onOpenSearch }: AppHeaderProps) {
           <View className="flex-row items-center gap-2 lg:gap-4 ml-2 justify-end shrink-0">
             {usuario ? (
               <>
-                
-                <Pressable className="flex-row items-center gap-2 pl-1 pr-3 py-1 rounded-full bg-white/5 active:bg-white/10 transition-colors shrink-0 max-w-[200px]">
-                  <View className="w-8 h-8 rounded-full overflow-hidden items-center justify-center bg-[#3B82F6] shrink-0">
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`Perfil de ${nomeExibido}`}
+                  className="flex-row items-center gap-2 pl-1 pr-3 py-1 rounded-full bg-white/5 active:bg-white/10 transition-colors shrink-0 max-w-[200px]"
+                >
+                  <View className="w-8 h-8 rounded-full overflow-hidden items-center justify-center bg-[#2563EB] shrink-0">
                     {fotoUrl ? (
-                      <Image source={{ uri: fotoUrl }} className="w-full h-full" />
+                      <Image source={{ uri: fotoUrl }} alt={`Foto de ${nomeExibido}`} accessibilityLabel={`Foto de ${nomeExibido}`} className="w-full h-full" />
                     ) : (
-                      <Text className="text-white font-bold text-[10px]">{getIniciais(nomeExibido)}</Text>
+                      <Text className="text-white font-bold text-xs">{getIniciais(nomeExibido)}</Text>
                     )}
                   </View>
                   <View className="flex-shrink overflow-hidden">
                     <Text className="text-white font-bold text-xs leading-tight truncate" numberOfLines={1}>{nomeExibido}</Text>
-                    {rotuloPerfil && <Text className="text-gray-400 text-[10px] leading-tight truncate" numberOfLines={1}>{rotuloPerfil}</Text>}
+                    {rotuloPerfil && <Text className="text-gray-300 text-xs leading-tight truncate" numberOfLines={1}>{rotuloPerfil}</Text>}
                   </View>
                 </Pressable>
               </>
             ) : (
               <Pressable
                 onPress={() => router.push("/(auth)/entrar?aba=cadastro")}
+                accessibilityRole="button"
+                accessibilityLabel="Cadastrar nova conta"
                 className="bg-surface rounded-full px-4 py-2 border border-border"
               >
                 <Text className="text-textDark font-semibold text-sm">Cadastrar</Text>
@@ -155,13 +166,19 @@ export function AppHeader({ onOpenSearch }: AppHeaderProps) {
   }
 
   return (
-    <View style={{ paddingTop: insets.top }}>
+    <View
+      style={{ paddingTop: insets.top }}
+      accessibilityRole="header"
+      // @ts-ignore
+      role="banner"
+      aria-label="Cabeçalho da aplicação"
+    >
       <View className="px-5 pb-4 pt-2 flex-row items-center justify-between">
         {ehHome ? (
           <View className="flex-row items-center gap-3">
-            <View className="w-12 h-12 rounded-full overflow-hidden border-2 border-[#3B82F6] border-opacity-50 items-center justify-center bg-[#3B82F6]">
+            <View className="w-12 h-12 rounded-full overflow-hidden border-2 border-[#2563EB] border-opacity-50 items-center justify-center bg-[#2563EB]">
               {fotoUrl ? (
-                <Image source={{ uri: fotoUrl }} className="w-full h-full" />
+                <Image source={{ uri: fotoUrl }} alt={`Foto de ${nomeExibido}`} accessibilityLabel={`Foto de ${nomeExibido}`} className="w-full h-full" />
               ) : (
                 <Text className="text-white font-bold">{getIniciais(nomeExibido)}</Text>
               )}
@@ -180,6 +197,8 @@ export function AppHeader({ onOpenSearch }: AppHeaderProps) {
         <View className="flex-row items-center gap-4">
           <Pressable 
             onPress={onOpenSearch} 
+            accessibilityRole="button"
+            accessibilityLabel="Abrir pesquisa"
             className="w-10 h-10 rounded-full bg-surface items-center justify-center border border-border active:scale-95 transition-transform"
           >
             <Search color="#8B95A8" size={20} />
@@ -188,6 +207,8 @@ export function AppHeader({ onOpenSearch }: AppHeaderProps) {
           {!usuario && (
             <Pressable
               onPress={() => router.push("/(auth)/entrar?aba=cadastro")}
+              accessibilityRole="button"
+              accessibilityLabel="Cadastrar nova conta"
               className="bg-surface rounded-full px-4 py-2 border border-border"
             >
               <Text className="text-textDark font-semibold text-sm">Cadastrar</Text>

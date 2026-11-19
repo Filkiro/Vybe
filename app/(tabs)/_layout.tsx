@@ -132,6 +132,7 @@ export default function TabsLayout() {
               name="home"
               options={{
                 title: "Início",
+                tabBarAccessibilityLabel: "Início",
                 tabBarIcon: ({ focused }) => <TabIcon Icone={Home} focado={focused} />,
               }}
               listeners={({ navigation }) => ({
@@ -147,6 +148,7 @@ export default function TabsLayout() {
               options={{
                 href: comum ? "/(tabs)/explorar" : null,
                 title: "Explorar",
+                tabBarAccessibilityLabel: "Explorar",
                 tabBarIcon: ({ focused }) => <TabIcon Icone={Compass} focado={focused} />,
               }}
             />
@@ -155,6 +157,7 @@ export default function TabsLayout() {
               options={{
                 href: comum ? "/(tabs)/criar" : null,
                 title: "Criar",
+                tabBarAccessibilityLabel: "Criar conteúdo",
                 tabBarIcon: ({ focused }) => <TabIcon Icone={Plus} focado={focused} />,
               }}
             />
@@ -163,6 +166,7 @@ export default function TabsLayout() {
               options={{
                 href: comum ? "/(tabs)/conversa" : null,
                 title: "Conversas",
+                tabBarAccessibilityLabel: "Conversas",
                 tabBarIcon: ({ focused }) => <TabIcon Icone={MessageCircle} focado={focused} />,
                 tabBarBadge: naoLidas > 0 ? naoLidas : undefined,
                 tabBarBadgeStyle: {
@@ -177,6 +181,7 @@ export default function TabsLayout() {
               options={{
                 href: moderacao ? "/(tabs)/moderacao" : null,
                 title: "Moderação",
+                tabBarAccessibilityLabel: "Moderação",
                 tabBarIcon: ({ focused }) => <TabIcon Icone={ShieldCheck} focado={focused} />,
               }}
             />
@@ -185,6 +190,7 @@ export default function TabsLayout() {
               options={{
                 href: admin ? "/(tabs)/admin" : null,
                 title: "Painel",
+                tabBarAccessibilityLabel: "Painel de administração",
                 tabBarIcon: ({ focused }) => <TabIcon Icone={Settings} focado={focused} />,
               }}
             />
@@ -192,6 +198,7 @@ export default function TabsLayout() {
               name="perfil"
               options={{
                 title: "Perfil",
+                tabBarAccessibilityLabel: "Perfil de usuário",
                 // @ts-ignore
                 unmountOnBlur: true,
                 tabBarIcon: ({ focused }) => <TabIcon Icone={User} focado={focused} />,

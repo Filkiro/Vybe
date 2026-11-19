@@ -296,7 +296,7 @@ export default function MinhasPublicacoes() {
                                     </View>
                                     <View className="flex-1">
                                       <Text className="text-xs font-bold text-white" numberOfLines={1}>{itemLinkadoEdicao.nome}</Text>
-                                      <Text className="text-[10px] text-[#3B82F6] font-bold">
+                                      <Text className="text-xs text-[#3B82F6] font-bold">
                                         {itemLinkadoEdicao.tipo === "album" ? "Álbum" : "Música"}
                                       </Text>
                                     </View>

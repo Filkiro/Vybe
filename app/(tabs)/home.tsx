@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { View, Text, FlatList, Pressable, Image, RefreshControl, ScrollView, ImageBackground, StyleSheet, ActivityIndicator } from "react-native";
+import Head from "expo-router/head";
 import { ModalEventoDetalhes, EventoDetalhado } from "../../components/ModalEventoDetalhes";
 import { BlurView } from 'expo-blur'
 import { useFocusEffect } from "@react-navigation/native";
@@ -12,7 +13,7 @@ import { usePlayerAwarePadding } from "../../hooks/usePlayerAwarePadding";
 import { useHomeStore } from "../../store/homeStore";
 import { useEhDesktop } from "../../hooks/useEhDesktop";
 import { LinearGradient } from "expo-linear-gradient";
-import { MapPin, Play, User as UserIcon, Calendar, Heart, X, Flame } from "lucide-react-native";
+import { MapPin, Play, User as UserIcon, Calendar, Heart, X, Flame, Check } from "lucide-react-native";
 import { AnimatedBackgroundBlobs } from "../../components/AnimatedBackgroundBlobs";
 import { EscolhaADedo } from "../../components/EscolhaADedo";
 import { parseDateFromDB } from "../../lib/dateMask";
@@ -424,6 +425,14 @@ await Promise.all([
     }
   }
 
+  // Define o título da página no navegador (Web)
+  useEffect(() => {
+    // @ts-ignore
+    if (typeof document !== "undefined") {
+      document.title = "Vybe - Início | Música Autoral Independente";
+    }
+  }, []);
+
   const tipoUsuario = perfilLogado?.tipo ?? "musico";
 
   const renderHeaderComponent = () => {
@@ -442,7 +451,14 @@ await Promise.all([
         <View className="flex-row items-center justify-between mb-4">
           <View className="flex-row items-center gap-2 flex-1">
             <View className="w-2.5 h-2.5 rounded-full bg-[#3B82F6] shadow-md shadow-[#3B82F6]/80 shrink-0" />
-            <Text className="text-2xl font-bold text-white tracking-tight">Eventos em aberto</Text>
+            <Text
+              accessibilityRole="header"
+              // @ts-ignore
+              aria-level={1}
+              className="text-2xl font-bold text-white tracking-tight"
+            >
+              Eventos em aberto
+            </Text>
           </View>
         </View>
 
@@ -461,7 +477,14 @@ await Promise.all([
                 className="group relative rounded-2xl overflow-hidden bg-[#181C24] shadow-xl min-h-[380px] justify-center items-center p-6 border border-white/5 w-[320px] sm:w-[400px] md:w-[600px] lg:w-[700px] xl:w-[800px]"
               >
                 <Calendar color="#3B82F6" size={48} className="mb-4 opacity-50" />
-                <Text className="text-2xl font-bold text-white mb-2">Nenhum evento em aberto</Text>
+                <Text
+                  accessibilityRole="header"
+                  // @ts-ignore
+                  aria-level={3}
+                  className="text-2xl font-bold text-white mb-2"
+                >
+                  Nenhum evento em aberto
+                </Text>
                 <Text className="text-gray-400 text-center max-w-sm">
                   A cena está tranquila por enquanto. Volte mais tarde para conferir as próximas oportunidades e shows!
                 </Text>
@@ -471,12 +494,17 @@ await Promise.all([
                 <Pressable
                   key={evento.id}
                   onPress={() => abrirEvento(evento.id)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Ver detalhes do evento ${evento.titulo}`}
                   className="group relative rounded-2xl overflow-hidden bg-[#181C24] shadow-xl min-h-[380px] justify-end p-6 border border-white/5 active:opacity-90 w-[320px] sm:w-[400px] md:w-[600px] lg:w-[700px] xl:w-[800px]"
                 >
                   <ImageBackground
                     source={{ uri: evento.imagem_url ?? "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?q=80&w=1200&auto=format&fit=crop" }}
                     className="absolute inset-0"
                     resizeMode="cover"
+                    accessibilityLabel={`Imagem do evento ${evento.titulo}`}
+                    // @ts-ignore
+                    aria-label={`Imagem do evento ${evento.titulo}`}
                   >
                     <LinearGradient colors={["rgba(10, 14, 22, 0.2)", "rgba(10, 14, 22, 0.95)"]} className="absolute inset-0" />
                   </ImageBackground>
@@ -489,7 +517,7 @@ await Promise.all([
                     </View>
                     <View className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md">
                       <View className="w-1.5 h-1.5 rounded-full bg-[#3B82F6]" />
-                      <Text className="text-[#3B82F6] text-xs font-bold">Confirmar Presença</Text>
+                      <Text className="text-[#93C5FD] text-xs font-bold">Confirmar Presença</Text>
                     </View>
                   </View>
 
@@ -501,7 +529,12 @@ await Promise.all([
                         {evento.local ?? "Local a definir"}
                       </Text>
                     </View>
-                    <Text className="text-4xl sm:text-5xl font-black text-white tracking-tight leading-tight mb-1">
+                    <Text
+                      accessibilityRole="header"
+                      // @ts-ignore
+                      aria-level={3}
+                      className="text-4xl sm:text-5xl font-black text-white tracking-tight leading-tight mb-1"
+                    >
                       {evento.titulo}
                     </Text>
                     <Text className="text-gray-300 text-sm leading-relaxed mb-4" numberOfLines={2}>
@@ -525,10 +558,17 @@ await Promise.all([
               <View className="flex-row items-center justify-between">
                 <View className="flex-row items-center gap-2">
                   <Flame color="#3B82F6" size={20} />
-                  <Text className="text-lg font-bold text-white">Em Alta no Vybe</Text>
+                  <Text
+                    accessibilityRole="header"
+                    // @ts-ignore
+                    aria-level={3}
+                    className="text-lg font-bold text-white"
+                  >
+                    Em Alta no Vybe
+                  </Text>
                 </View>
                 <View className="px-2 py-0.5 rounded-full bg-[#2563EB]/20">
-                  <Text className="text-[#3B82F6] text-[10px] uppercase font-bold tracking-wider">Ao Vivo</Text>
+                  <Text className="text-[#93C5FD] text-xs uppercase font-bold tracking-wider">Ao Vivo</Text>
                 </View>
               </View>
               <Text className="text-gray-400 text-xs">Tendências com maior engajamento nas últimas 24h na rede.</Text>
@@ -550,12 +590,23 @@ await Promise.all([
                   });
                 }
               }}
+              accessibilityRole="button"
+              accessibilityLabel={`Ouvir música em alta: ${musicaEmAlta?.nome ?? "música"}`}
               className="my-4 p-4 rounded-xl bg-white/5 border border-white/5 flex-col gap-3 active:opacity-80"
             >
               <View className="flex-row items-center gap-4">
                 <View className="w-14 h-14 rounded-lg bg-[#262A33] overflow-hidden">
                   {musicaEmAlta?.capa_url ? (
-                    <Image importantForAccessibility="yes" accessibilityRole="image" source={{ uri: musicaEmAlta.capa_url }} className="w-full h-full" />
+                    <Image
+                      importantForAccessibility="yes"
+                      accessibilityRole="image"
+                      source={{ uri: musicaEmAlta.capa_url }}
+                      alt={`Capa da música ${musicaEmAlta.nome}`}
+                      accessibilityLabel={`Capa da música ${musicaEmAlta.nome}`}
+                      // @ts-ignore
+                      aria-label={`Capa da música ${musicaEmAlta.nome}`}
+                      className="w-full h-full"
+                    />
                   ) : (
                     <View className="w-full h-full items-center justify-center">
                       <UserIcon color="#94A3B8" size={20} />
@@ -583,13 +634,20 @@ await Promise.all([
       <View className="px-5 mt-12 mb-4 w-full">
         <View className="flex-row items-center justify-between gap-4">
           <View className="flex-1">
-            <Text className="text-2xl font-bold text-white tracking-tight">Lançamentos e Mais Tocadas</Text>
+            <Text
+              accessibilityRole="header"
+              // @ts-ignore
+              aria-level={2}
+              className="text-2xl font-bold text-white tracking-tight"
+            >
+              Lançamentos e Mais Tocadas
+            </Text>
             <Text className="text-sm text-gray-400 mt-1">Músicas mais executadas e tendências no ecossistema autoral independente</Text>
           </View>
           {ehDesktop && (
             <View className="flex-row items-center gap-2 shrink-0">
               <View className="px-4 py-1.5 rounded-full bg-[#3B82F6]/20">
-                <Text className="text-[#3B82F6] text-xs font-bold">Em Alta</Text>
+                <Text className="text-[#93C5FD] text-xs font-bold">Em Alta</Text>
               </View>
             </View>
           )}
@@ -618,20 +676,31 @@ await Promise.all([
             if (!ehDesktop) router.push("/tocando");
           });
         }}
+        accessibilityRole="button"
+        accessibilityLabel={`Tocar música ${item.nome} de ${item.autor_apelido ?? "autor desconhecido"}`}
         className="group relative flex-row items-center justify-between p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 shadow-sm transition-all"
       >
         {/* Active Edge Indicator mock (would be dynamic if playing) */}
         <View className="absolute left-0 top-3 bottom-3 w-1 bg-[#2563EB] rounded-r-full opacity-0 group-hover:opacity-100 transition-opacity" />
 
         <View className="flex-row items-center gap-4 flex-1 pl-2">
-          <Text className="text-gray-500 font-bold text-xs w-5 text-center group-hover:hidden">{(index + 1).toString().padStart(2, '0')}</Text>
+          <Text className="text-gray-400 font-bold text-xs w-5 text-center group-hover:hidden">{(index + 1).toString().padStart(2, '0')}</Text>
           <View className="w-5 items-center justify-center hidden group-hover:flex">
             <Play color="#3B82F6" size={14} fill="#3B82F6" />
           </View>
 
           <View className="w-12 h-12 rounded-lg bg-[#262A33] overflow-hidden">
             {item.capa_url ? (
-              <Image importantForAccessibility="yes" accessibilityRole="image" source={{ uri: item.capa_url }} className="w-full h-full" />
+              <Image
+                importantForAccessibility="yes"
+                accessibilityRole="image"
+                source={{ uri: item.capa_url }}
+                alt={`Capa da música ${item.nome}`}
+                accessibilityLabel={`Capa da música ${item.nome}`}
+                // @ts-ignore
+                aria-label={`Capa da música ${item.nome}`}
+                className="w-full h-full"
+              />
             ) : (
               <View className="w-full h-full items-center justify-center">
                 <UserIcon color="#94A3B8" size={20} />
@@ -661,7 +730,14 @@ await Promise.all([
         <View className="px-5 mt-10">
           <View className="flex-row items-center justify-between mb-4">
             <View className="flex-1">
-              <Text className="text-2xl font-bold text-white tracking-tight">Descubra Álbuns</Text>
+              <Text
+                accessibilityRole="header"
+                // @ts-ignore
+                aria-level={2}
+                className="text-2xl font-bold text-white tracking-tight"
+              >
+                Descubra Álbuns
+              </Text>
               <Text className="text-sm text-gray-400 mt-1">Obras completas recomendadas pela curadoria do algoritmo</Text>
             </View>
           </View>
@@ -672,12 +748,23 @@ await Promise.all([
                 <Pressable
                   key={album.id}
                   onPress={() => requireAuth(() => router.push(`/album/${album.id}`))}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Ver álbum ${album.nome} de ${album.autor_apelido ?? "autor desconhecido"}`}
                   style={ehDesktop ? { flexGrow: 1, flexBasis: 200, maxWidth: 280 } : { width: 160 }}
                   className="group flex-col p-3 rounded-2xl bg-[#181C24] hover:bg-white/5 border border-white/5 transition-all shadow-lg"
                 >
                   <View className="relative w-full aspect-square rounded-xl overflow-hidden bg-white/5 mb-3">
                     {album.capa_url ? (
-                      <Image importantForAccessibility="yes" accessibilityRole="image" source={{ uri: album.capa_url }} className="w-full h-full group-hover:scale-105 transition-transform duration-500" />
+                      <Image
+                        importantForAccessibility="yes"
+                        accessibilityRole="image"
+                        source={{ uri: album.capa_url }}
+                        alt={`Capa do álbum ${album.nome}`}
+                        accessibilityLabel={`Capa do álbum ${album.nome}`}
+                        // @ts-ignore
+                        aria-label={`Capa do álbum ${album.nome}`}
+                        className="w-full h-full group-hover:scale-105 transition-transform duration-500"
+                      />
                     ) : (
                       <View className="w-full h-full bg-surface items-center justify-center">
                         <UserIcon color="#94A3B8" size={32} />
@@ -701,7 +788,12 @@ await Promise.all([
       <View className="px-5 mt-16">
         <View className="flex-row items-center justify-between mb-4">
           <View className="flex-1">
-            <Text className="text-2xl font-bold text-white tracking-tight flex-row items-center gap-2">
+            <Text
+              accessibilityRole="header"
+              // @ts-ignore
+              aria-level={2}
+              className="text-2xl font-bold text-white tracking-tight flex-row items-center gap-2"
+            >
                Artistas da Comunidade
             </Text>
             <Text className="text-sm text-gray-400 mt-1">Conecte-se diretamente com produtores e músicos para collabs, turnês e contratação direta</Text>
@@ -714,24 +806,35 @@ await Promise.all([
               <Pressable
                 key={artista.id}
                 onPress={() => abrirPerfil(artista.id)}
+                accessibilityRole="button"
+                accessibilityLabel={`Ver perfil de ${artista.apelido}`}
                 style={ehDesktop ? { flexGrow: 1, flexBasis: 220, maxWidth: 280 } : { width: 220 }}
                 className="p-5 rounded-2xl bg-[#181C24] hover:bg-white/5 border border-white/5 transition-all flex-col items-center text-center group shadow-md"
               >
                 <View className="relative w-24 h-24 mb-4">
                   <View className="w-full h-full rounded-full overflow-hidden border-4 border-[#181C24] shadow-xl">
-                    <Image importantForAccessibility="yes" accessibilityRole="image" source={{ uri: artista.imagem_url ?? "https://images.unsplash.com/photo-1493225457124-a1a2a5f5f9af?q=80&w=200&auto=format&fit=crop" }} className="w-full h-full" />
+                    <Image
+                      importantForAccessibility="yes"
+                      accessibilityRole="image"
+                      source={{ uri: artista.imagem_url ?? "https://images.unsplash.com/photo-1493225457124-a1a2a5f5f9af?q=80&w=200&auto=format&fit=crop" }}
+                      alt={`Foto de ${artista.apelido}`}
+                      accessibilityLabel={`Foto de ${artista.apelido}`}
+                      // @ts-ignore
+                      aria-label={`Foto de ${artista.apelido}`}
+                      className="w-full h-full"
+                    />
                   </View>
                   <View className="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-[#2563EB] border-2 border-[#181C24] items-center justify-center">
-                    <Text className="text-white text-[8px] font-black">✓</Text>
+                    <Check size={12} color="white" strokeWidth={3} />
                   </View>
                 </View>
                 <Text className="text-lg font-bold text-white group-hover:text-[#3B82F6] transition-colors">{artista.apelido}</Text>
                 <Text className="text-xs text-gray-400 mt-1">{artista.local ?? "Local não informado"} • {artista.generos ?? "Músico"}</Text>
-                <Text className="text-[#3B82F6] text-[10px] font-bold mt-2">{artista.total_curtidas}x Favoritado</Text>
+                <Text className="text-[#93C5FD] text-xs font-bold mt-2">{artista.total_curtidas}x Favoritado</Text>
                 
                 <View className="w-full mt-4 py-2 px-3 rounded-full bg-[#2563EB]/20 hover:bg-[#2563EB] transition-colors flex-row items-center justify-center gap-1">
                   <Calendar color={ehDesktop ? "#3B82F6" : "white"} size={14} className="group-hover:text-white" />
-                  <Text className="text-[#3B82F6] group-hover:text-white text-xs font-bold transition-colors">Disponível p/ Shows</Text>
+                  <Text className="text-[#93C5FD] group-hover:text-white text-xs font-bold transition-colors">Disponível p/ Shows</Text>
                 </View>
               </Pressable>
             ))}
@@ -744,7 +847,14 @@ await Promise.all([
       <View className="px-5 mt-16">
         <View className="flex-row items-center justify-between mb-4">
           <View className="flex-1">
-            <Text className="text-2xl font-bold text-white tracking-tight">Descubra Mais</Text>
+            <Text
+              accessibilityRole="header"
+              // @ts-ignore
+              aria-level={2}
+              className="text-2xl font-bold text-white tracking-tight"
+            >
+              Descubra Mais
+            </Text>
             <Text className="text-sm text-gray-400 mt-1">Continue explorando novas músicas do ecossistema Vybe</Text>
           </View>
         </View>
@@ -765,16 +875,18 @@ await Promise.all([
 
         {!carregandoDescoberta && semMaisDescoberta && musicasDescoberta.length > 0 && (
           <View className="py-4 items-center justify-center">
-            <Text className="text-gray-500 text-xs">Você chegou ao fim por enquanto.</Text>
+            <Text className="text-gray-400 text-xs">Você chegou ao fim por enquanto.</Text>
           </View>
         )}
 
         {!carregandoDescoberta && musicasDescoberta.length === 0 && !semMaisDescoberta && (
           <Pressable
             onPress={carregarMaisDescoberta}
+            accessibilityRole="button"
+            accessibilityLabel="Carregar mais músicas"
             className="py-3 items-center justify-center rounded-xl bg-white/5 border border-white/5 active:bg-white/10"
           >
-            <Text className="text-[#3B82F6] text-xs font-bold">Carregar mais músicas</Text>
+            <Text className="text-[#93C5FD] text-xs font-bold">Carregar mais músicas</Text>
           </Pressable>
         )}
       </View>
@@ -782,7 +894,15 @@ await Promise.all([
   );
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#0B101E' }}>
+    <View
+      style={{ flex: 1, backgroundColor: '#0B101E' }}
+      // @ts-ignore
+      role="main"
+      aria-label="Conteúdo principal"
+    >
+      <Head>
+        <title>Vybe - A cena da música autoral independente</title>
+      </Head>
       {carregando ? (
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#3B82F6" />

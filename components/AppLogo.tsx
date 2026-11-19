@@ -30,6 +30,8 @@ export function AppLogo({
           source={require('../assets/logo.png')}
           style={{ width: '100%', height: '100%' }}
           resizeMode="contain"
+          alt="Logotipo Vybe"
+          accessibilityLabel="Logotipo Vybe"
         />
       </View>
     </View>

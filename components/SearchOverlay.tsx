@@ -171,7 +171,12 @@ export function SearchOverlay({ visible, onClose }: SearchOverlayProps) {
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View className="flex-1 bg-black/60">
         {/* Backdrop para fechar ao clicar fora */}
-        <Pressable style={StyleSheet.absoluteFillObject} onPress={onClose} />
+        <Pressable
+          style={StyleSheet.absoluteFillObject}
+          onPress={onClose}
+          accessibilityRole="button"
+          accessibilityLabel="Fechar pesquisa"
+        />
 
         {/* CONTAINER DO OVERLAY estilo YT Music */}
         <View className="mt-12 mx-4 max-w-[600px] self-center w-full rounded-3xl overflow-hidden border border-white/10 bg-[#0F172A]/95 ">
@@ -179,10 +184,13 @@ export function SearchOverlay({ visible, onClose }: SearchOverlayProps) {
             
             {/* INPUT DE BUSCA */}
             <View className="flex-row items-center bg-white/5 border border-white/10 rounded-2xl px-4 h-14">
-              <Search color="#64748B" size={20} />
+              <Search color="#94A3B8" size={20} />
               <TextInput
                 placeholder="Pesquisar músicas, artistas, álbuns..."
-                placeholderTextColor="#64748B"
+                placeholderTextColor="#94A3B8"
+                accessibilityLabel="Pesquisar músicas, artistas e álbuns"
+                // @ts-ignore
+                aria-label="Pesquisar músicas, artistas e álbuns"
                 value={busca}
                 onChangeText={setBusca}
                 autoFocus
@@ -193,7 +201,12 @@ export function SearchOverlay({ visible, onClose }: SearchOverlayProps) {
               {carregando ? (
                 <ActivityIndicator size="small" color="#3B82F6" />
               ) : busca.length > 0 ? (
-                <Pressable onPress={() => setBusca("")} className="p-1">
+                <Pressable
+                  onPress={() => setBusca("")}
+                  accessibilityRole="button"
+                  accessibilityLabel="Limpar busca"
+                  className="p-1"
+                >
                   <X color="#94A3B8" size={18} />
                 </Pressable>
               ) : null}

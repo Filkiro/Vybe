@@ -278,12 +278,22 @@
       >
         <View className="flex-row items-center justify-between px-4 pt-4 pb-4 bg-[#0B101E]  border-b border-white/5">
           <View className="flex-row items-center flex-1">
-            <Pressable onPress={voltar} className="mr-3 p-1.5 active:opacity-60">
+            <Pressable
+              onPress={voltar}
+              accessibilityRole="button"
+              accessibilityLabel="Voltar para conversas"
+              className="mr-3 p-1.5 active:opacity-60"
+            >
               <ChevronLeft color={colors.textDark} size={28} />
             </Pressable>
             <Pressable onPress={irParaPerfil} className="flex-row items-center flex-1 active:opacity-70 transition-opacity">
               {contatoFotoUrl ? (
-                <Image source={{ uri: contatoFotoUrl }} className="w-11 h-11 rounded-full mr-3 border border-white/10" />
+                <Image
+                  source={{ uri: contatoFotoUrl }}
+                  className="w-11 h-11 rounded-full mr-3 border border-white/10"
+                  alt={`Foto de perfil de ${contatoNome ?? "Contato"}`}
+                  accessibilityLabel={`Foto de perfil de ${contatoNome ?? "Contato"}`}
+                />
               ) : (
                 <View className="w-11 h-11 rounded-full bg-surface mr-3 items-center justify-center border border-white/10">
                   <Text className="text-muted font-bold text-xl">{contatoNome?.charAt(0).toUpperCase() ?? "C"}</Text>
@@ -295,7 +305,12 @@
             </Pressable>
           </View>
           
-          <Pressable onPress={() => setMostrarOpcoes(true)} className="p-2 ml-2 rounded-full active:bg-white/5">
+          <Pressable
+            onPress={() => setMostrarOpcoes(true)}
+            accessibilityRole="button"
+            accessibilityLabel="Mais opções da conversa"
+            className="p-2 ml-2 rounded-full active:bg-white/5"
+          >
             <MoreVertical size={24} color="#94A3B8" />
           </Pressable>
         </View>
@@ -336,8 +351,8 @@
                     }}
                     className="bg-[#1A2235] border border-primary/40 rounded-2xl p-4 w-full max-w-[300px] active:opacity-80"
                   >
-                    <View className="bg-primary/20 self-start px-2 py-1 rounded-md mb-3">
-                      <Text className="text-primary text-[10px] font-bold uppercase">Convite para Evento</Text>
+                    <View className="bg-[#2563EB]/20 border border-[#2563EB]/40 self-start px-2.5 py-1 rounded-md mb-3">
+                      <Text className="text-[#93C5FD] text-xs font-bold uppercase">Convite para Evento</Text>
                     </View>
                     <Text className="text-white font-bold text-lg mb-1">{convite.evento?.nome}</Text>
                     <Text className="text-white/60 text-xs mb-4">Data: {convite.evento?.data}</Text>
@@ -389,7 +404,7 @@
                     )}
 
                     {horaStr !== '' && (
-                      <Text className="text-[10px] mt-3 text-right font-medium text-muted">
+                      <Text className="text-xs mt-3 text-right font-medium text-gray-400">
                         {horaStr}
                       </Text>
                     )}
@@ -422,7 +437,7 @@
               >
                 <Text className={`text-[15px] leading-6 ${ehMinhaMensagem ? "text-white" : "text-white/90"}`}>{item.conteudo}</Text>
                 {horaStr !== '' && (
-                  <Text className={`text-[10px] mt-1.5 text-right font-medium ${ehMinhaMensagem ? "text-white/60" : "text-muted"}`}>
+                  <Text className={`text-xs mt-1.5 text-right font-medium ${ehMinhaMensagem ? "text-gray-300" : "text-gray-400"}`}>
                     {horaStr}
                   </Text>
                 )}
@@ -436,6 +451,10 @@
             {usuario?.tipo_conta === "organizador" && (
               <Pressable
                 onPress={abrirModalConvite}
+                accessibilityRole="button"
+                accessibilityLabel="Convidar músico para evento"
+                // @ts-ignore
+                aria-label="Convidar músico para evento"
                 className="w-12 h-12 rounded-full items-center justify-center bg-[#1A2235] border border-white/5 mr-2"
               >
                 <Ticket color="#94A3B8" size={20} />
@@ -445,7 +464,10 @@
               value={texto}
               onChangeText={setTexto}
               placeholder="Digite uma mensagem..."
-              placeholderTextColor="#64748B"
+              placeholderTextColor="#94A3B8"
+              accessibilityLabel="Digite uma mensagem"
+              // @ts-ignore
+              aria-label="Digite uma mensagem"
               className="flex-1 bg-[#1A2235] border border-white/5 rounded-3xl px-5 py-3.5 mr-3 text-white text-[15px]"
               multiline
               style={{ maxHeight: 120 }}
@@ -453,6 +475,10 @@
             <Pressable
               onPress={enviar}
               disabled={enviando || !texto.trim()}
+              accessibilityRole="button"
+              accessibilityLabel="Enviar mensagem"
+              // @ts-ignore
+              aria-label="Enviar mensagem"
               className={`w-12 h-12 rounded-full items-center justify-center transition-all ${
                 !texto.trim() ? "bg-[#1A2235] border border-white/5" : "bg-primary "
               }`}
@@ -543,7 +569,10 @@
               {motivoEscolhido === "Outro motivo" && (
                 <TextInput
                   placeholder="Descreva o motivo da denúncia..."
-                  placeholderTextColor="#64748B"
+                  placeholderTextColor="#94A3B8"
+                  accessibilityLabel="Descreva o motivo da denúncia"
+                  // @ts-ignore
+                  aria-label="Descreva o motivo da denúncia"
                   value={descricaoDenuncia}
                   onChangeText={setDescricaoDenuncia}
                   multiline
@@ -591,7 +620,10 @@
                 value={motivoCancelamento}
                 onChangeText={setMotivoCancelamento}
                 placeholder="Qual o motivo?"
-                placeholderTextColor="#64748B"
+                placeholderTextColor="#94A3B8"
+                accessibilityLabel="Motivo do cancelamento"
+                // @ts-ignore
+                aria-label="Motivo do cancelamento"
                 multiline
                 className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white min-h-[100px] mb-4"
                 style={{ textAlignVertical: "top" }}

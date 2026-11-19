@@ -134,6 +134,10 @@ export default function Explorar() {
   }, [usuarioLogado?.id]);
 
   useEffect(() => {
+    // @ts-ignore
+    if (typeof document !== "undefined") {
+      document.title = "Vybe - Explorar | Feed da Cena";
+    }
     carregar();
   }, [carregar]);
 
@@ -154,7 +158,14 @@ export default function Explorar() {
       <View className="flex-row items-center justify-between mb-4 mt-2">
         <View className="flex-1">
           <View className="flex-row items-center gap-3">
-            <Text className="text-[28px] font-extrabold text-white tracking-tight">Feed da Cena</Text>
+            <Text
+              accessibilityRole="header"
+              // @ts-ignore
+              aria-level={1}
+              className="text-[28px] font-extrabold text-white tracking-tight"
+            >
+              Feed da Cena
+            </Text>
             <View className="w-2.5 h-2.5 rounded-full bg-[#3b82f6] shadow-md shadow-[#3b82f6]/50 shrink-0" />
           </View>
           <Text className="text-[16px] sm:text-base text-[#94a3b8] mt-1 leading-relaxed">Conecte-se com as novidades, ensaios e lançamentos da comunidade independente</Text>
@@ -168,6 +179,8 @@ export default function Explorar() {
             <Pressable
               key={f}
               onPress={() => setFiltroAtivo(f)}
+              accessibilityRole="button"
+              accessibilityLabel={`Filtrar por ${f}`}
               className={`px-5 py-2.5 rounded-full mr-2.5 transition-all ${
                 ativo 
                   ? "bg-[#2563eb] border border-[#2563eb]" 
@@ -191,7 +204,14 @@ export default function Explorar() {
           <View className="flex-row items-center justify-between mb-4">
             <View className="flex-row items-center gap-2">
               <TrendingUp color="#60a5fa" size={18} />
-              <Text className="text-base font-bold text-white">Artistas em Destaque</Text>
+              <Text
+                accessibilityRole="header"
+                // @ts-ignore
+                aria-level={2}
+                className="text-base font-bold text-white"
+              >
+                Artistas em Destaque
+              </Text>
             </View>
             <Text className="text-xs font-semibold text-[#60a5fa]">Ver todos</Text>
           </View>
@@ -201,7 +221,7 @@ export default function Explorar() {
               <Pressable key={dest.id} onPress={() => router.push(`/usuario/${dest.id}`)} className="flex-row items-center gap-3 p-2.5 rounded-xl bg-white/5 active:bg-white/10">
                 <View className="w-11 h-11 rounded-full items-center justify-center overflow-hidden bg-slate-800">
                   {dest.foto ? (
-                    <Image source={{uri: dest.foto}} className="w-full h-full" />
+                    <Image source={{uri: dest.foto}} alt={`Foto de ${dest.apelido}`} accessibilityLabel={`Foto de ${dest.apelido}`} className="w-full h-full" />
                   ) : (
                     <Text className="text-white font-bold text-sm">{dest.apelido.substring(0, 2).toUpperCase()}</Text>
                   )}
@@ -248,7 +268,7 @@ export default function Explorar() {
             <Text className="text-sm text-[#cbd5e1] mt-1 leading-relaxed" numberOfLines={2}>
               {oportunidade.descricao || "Participe deste evento!"}
             </Text>
-            <Text className="text-xs text-[#3b82f6] font-bold mt-2">VER DETALHES DO EVENTO</Text>
+            <Text className="text-xs text-[#93c5fd] font-bold mt-2">VER DETALHES DO EVENTO</Text>
           </Pressable>
           
           <Pressable 
@@ -279,6 +299,9 @@ export default function Explorar() {
       className="flex-1 bg-[#0a0e17]" 
       contentContainerStyle={{ paddingBottom, paddingHorizontal: 16, paddingTop: 24 }}
       refreshControl={<RefreshControl refreshing={atualizando} onRefresh={aoAtualizar} tintColor="#3b82f6" />}
+      // @ts-ignore
+      role="main"
+      aria-label="Explorar o Feed da Cena"
     >
       <View className="w-full max-w-[1200px] mx-auto flex-col lg:flex-row gap-8">
         

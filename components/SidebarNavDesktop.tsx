@@ -50,6 +50,9 @@ export function SidebarNavDesktop() {
         paddingTop: Math.max(insets.top, 24),
         paddingBottom: 96, // espaço para o player
       }}
+      // @ts-ignore
+      role="navigation"
+      aria-label="Navegação principal"
       className="bg-transparent flex-col justify-between h-full relative"
     >
       {/* Top Section */}
@@ -71,6 +74,8 @@ export function SidebarNavDesktop() {
             return (
               <Pressable
                 key={item.rota}
+                accessibilityRole="link"
+                accessibilityLabel={item.rotulo}
                 onPress={() => {
                   if (item.rota === "/(tabs)/home") {
                     const jaEstaNaHome =
@@ -112,6 +117,8 @@ export function SidebarNavDesktop() {
         {usuario && (
           <Pressable
             onPress={handleSair}
+            accessibilityRole="button"
+            accessibilityLabel="Sair da conta"
             className="flex-row items-center gap-4 px-4 py-2.5 rounded-lg text-gray-400 hover:bg-red-500/20 hover:text-red-300 transition-all active:opacity-80 group"
           >
             <LogOut size={20} color="#C3C6D7" className="group-hover:text-red-300" />

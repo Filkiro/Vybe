@@ -166,10 +166,10 @@ export default function TodasMusicas() {
                     <View className="flex-row items-center gap-2 flex-wrap mb-1">
                       <View className="flex-row items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#262a33]">
                         <View className={`w-1.5 h-1.5 rounded-full ${isAtivo ? "bg-emerald-400" : "bg-gray-400"}`} />
-                        <Text className="text-[11px] font-semibold text-[#b4c5ff] capitalize">{item.status}</Text>
+                        <Text className="text-xs font-semibold text-[#b4c5ff] capitalize">{item.status}</Text>
                       </View>
                       <View className="px-2 py-0.5 rounded bg-[#31353e]">
-                        <Text className="text-[11px] font-medium text-[#c3c6d7]">Música</Text>
+                        <Text className="text-xs font-medium text-[#c3c6d7]">Música</Text>
                       </View>
                     </View>
 
@@ -182,7 +182,7 @@ export default function TodasMusicas() {
                         <Clock color="#8d90a0" size={14} />
                         <Text className="text-[#8d90a0] text-[12px] font-medium">03:45</Text>
                       </View>
-                      <Text className="text-[#8d90a0] text-[10px]">●</Text>
+                      <Text className="text-[#8d90a0] text-xs">●</Text>
                       <View className="flex-row items-center gap-1">
                         <Calendar color="#8d90a0" size={14} />
                         <Text className="text-[#8d90a0] text-[12px]">Lançada em {dataLancamento}</Text>

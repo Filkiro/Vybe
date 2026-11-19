@@ -172,7 +172,7 @@ export default function AlbumDetalhe() {
           <Text className="text-3xl font-extrabold text-white text-center mb-2">{album.nome}</Text>
           <View className="flex-row items-center gap-2 mb-4">
             <View className="w-6 h-6 rounded-full bg-primary/20 items-center justify-center border border-primary/30">
-              <Text className="text-primary text-[10px] font-bold">BY</Text>
+              <Text className="text-primary text-xs font-bold">BY</Text>
             </View>
             <Text className="text-gray-300 font-medium">{autorNome ?? "Autor desconhecido"}</Text>
           </View>

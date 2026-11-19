@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Stack, useRouter, useSegments } from "expo-router";
+import Head from "expo-router/head";
 import { View, Text, Platform, UIManager, LayoutAnimation, ActivityIndicator } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
@@ -86,6 +87,9 @@ export default function RootLayout() {
 
   useEffect(() => {
     inicializar();
+    if (Platform.OS === "web" && typeof document !== "undefined") {
+      document.title = "Vybe - A cena da música autoral independente";
+    }
   }, []);
 
   // IMPORTANTE: a Home agora é pública — quem não está logado pode
@@ -116,6 +120,10 @@ export default function RootLayout() {
 
 return (
   <SafeAreaProvider>
+    <Head>
+      <title>Vybe - A cena da música autoral independente</title>
+      <meta name="description" content="Plataforma digital para divulgação de músicos independentes da região de Jundiaí" />
+    </Head>
     <StatusBar style="light" />
     {banido ? (
       <ContaBanidaOverlay motivo={restricaoAtiva?.motivo ?? null} />
