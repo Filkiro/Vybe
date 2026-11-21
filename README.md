@@ -81,8 +81,8 @@ Em um único ambiente, a plataforma reúne perfis artísticos com portfólio de 
 
 ### 1. Clone o repositório
 ```bash
-git clone https://github.com/SEU-USUARIO/SEU-REPOSITORIO.git
-cd SEU-REPOSITORIO
+git clone https://github.com/https://github.com/Filkiro/Vybe.git
+cd Vybe
 ```
 
 ### 2. Instale as dependências
@@ -91,21 +91,21 @@ npm install
 ```
 
 ### 3. Configure as variáveis de ambiente
-Crie um arquivo `.env` na raiz do projeto com as credenciais do seu projeto Supabase:
+Remova o somente o `.exemple` do arquivo `.env.exemple` na raiz do projeto, e insira com as credenciais do seu projeto Supabase:
 ```env
-VITE_SUPABASE_URL=sua_url_do_supabase
-VITE_SUPABASE_ANON_KEY=sua_chave_anon_do_supabase
+EXPO_PUBLIC_SUPABASE_URL=[URL_DO_SUPABASE_PUBLICA]
+EXPO_PUBLIC_SUPABASE_ANON_KEY=[ANON_KEY_DO_SUPABASE]
 ```
-*(Caso o projeto utilize Create React App em vez de Vite, substitua o prefixo `VITE_` por `REACT_APP_`.)*
+
 
 ### 4. Execute o servidor de desenvolvimento
 ```bash
-npm run dev
+npx expo start -w
 ```
-*(Ou `npm start`, conforme o script configurado no `package.json`.)*
+
 
 ### 5. Acesse no navegador
-Abra o endereço exibido no terminal (geralmente `http://localhost:5173` ou `http://localhost:3000`).
+Abra o endereço exibido no terminal (geralmente `http://localhost:8081`).
 
 ---
 
@@ -121,7 +121,7 @@ CHAVE, Arthur Costa; SANTOS, Filipe Gomes dos; COIMBRA, João Miguel de Campos. 
 
 Em caso de dúvidas sobre o projeto, entre em contato com a equipe:
 * **Arthur Costa Chave:** arthur.chave@aluno.cps.sp.gov.br
-* **Filipe Gomes dos Santos:** filipe.santos8@aluno.cps.sp.gov.br
+* **Filipe Gomes dos Santos:** gomeslipeff8888@gmail.com
 * **João Miguel de Campos Coimbra:** joao.coimbra2@aluno.cps.sp.gov.br
 
 Para acessar o trabalho escrito do projeto no Repositório Institucional do Conhecimento do Centro Paula Souza:
