@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./public/logo-vybe.png" alt="Logotipo Vybe" width="240" />
+  <img src="assets/logo.png" alt="Logotipo Vybe" width="240" />
 </p>
 
 <h1 align="center">Vybe — Plataforma Digital para Músicos Independentes</h1>
