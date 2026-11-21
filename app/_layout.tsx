@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Stack, useRouter, useSegments } from "expo-router";
 import Head from "expo-router/head";
-import { View, Text, Platform, UIManager, LayoutAnimation, ActivityIndicator } from "react-native";
+import { View, Text, Platform, UIManager, LayoutAnimation, ActivityIndicator, useWindowDimensions } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import "../global.css";
@@ -28,6 +28,8 @@ function GlobalPlayerWrapper() {
   const insets = useSafeAreaInsets();
   const ehDesktop = useEhDesktop();
   const segmentos = useSegments();
+  const { width } = useWindowDimensions();
+  const marginHorizontal = width < 400 ? 12 : 20;
 
   const bottomInset = Math.max(insets.bottom, 14);
   const naTelaDeTabs = segmentos[0] === "(tabs)";
@@ -50,8 +52,8 @@ function GlobalPlayerWrapper() {
     <View
       style={{
         position: "absolute",
-        left: 20,
-        right: 20,
+        left: marginHorizontal,
+        right: marginHorizontal,
         bottom: bottomPosition,
         zIndex: 9999,
       }}

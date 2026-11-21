@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Tabs } from "expo-router";
-import { View, StyleSheet, Platform } from "react-native";
+import { View, StyleSheet, Platform, useWindowDimensions } from "react-native";
 import { Home, Compass, Plus, User, ShieldCheck, Settings, MessageCircle } from "lucide-react-native";
 import { BlurView } from "expo-blur";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -51,6 +51,9 @@ export default function TabsLayout() {
 
   // 2. Estado para controlar a visibilidade do SearchOverlay
   const [pesquisaAberta, setPesquisaAberta] = useState(false);
+
+  const { width } = useWindowDimensions();
+  const marginHorizontal = width < 400 ? 12 : 20;
 
   // Calcula margem inferior considerando safe areas
   const bottomInset = Math.max(insets.bottom, 14);
@@ -114,8 +117,8 @@ export default function TabsLayout() {
                   ? { display: "none" }
                   : {
                         position: "absolute",
-                        left: 20,
-                        right: 20,
+                        left: marginHorizontal,
+                        right: marginHorizontal,
                         bottom: bottomInset,
                         height: TAB_BAR_CAPSULE_HEIGHT,
                         borderRadius: TAB_BAR_CAPSULE_HEIGHT / 2,

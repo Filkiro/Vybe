@@ -305,8 +305,8 @@ export default function PerfilPublico() {
 
               {/* Nome e Tags */}
               <View className="items-center sm:items-start mb-2">
-                <View className="flex-row items-center gap-2">
-                  <Text className="text-3xl sm:text-4xl font-black text-textDark tracking-tight">
+                <View className="flex-row flex-wrap items-center justify-center sm:justify-start gap-2">
+                  <Text className="text-2xl sm:text-4xl font-black text-textDark tracking-tight text-center sm:text-left">
                     {usuario.nome}
                   </Text>
                   {dadosPerfil?.apelido && <Text className="text-muted font-medium text-sm">(@{dadosPerfil.apelido})</Text>}

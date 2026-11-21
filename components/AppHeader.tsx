@@ -189,75 +189,75 @@ export function AppHeader({ onOpenSearch }: AppHeaderProps) {
 
   return (
     <View
-      style={{ paddingTop: insets.top }}
+      style={{ paddingTop: Math.max(insets.top, 8) }}
       accessibilityRole="header"
       // @ts-ignore
       role="banner"
       aria-label="Cabeçalho da aplicação"
+      className="w-full bg-[#0B101E]/95 border-b border-white/5 backdrop-blur-md"
     >
-      <View className="px-5 pb-4 pt-2 flex-row items-center justify-between">
-        {ehHome ? (
-          usuario ? (
-            <Pressable
-              onPress={() => router.push("/(tabs)/perfil")}
-              className="flex-row items-center gap-3"
-            >
-              <View className="w-12 h-12 rounded-full overflow-hidden border-2 border-[#2563EB] border-opacity-50 items-center justify-center bg-[#2563EB]">
-                {fotoUrl ? (
-                  <Image source={{ uri: fotoUrl }} alt={`Foto de ${nomeExibido}`} accessibilityLabel={`Foto de ${nomeExibido}`} className="w-full h-full" />
-                ) : (
-                  <Text className="text-white font-bold">{obterIniciais(nomeExibido)}</Text>
-                )}
-              </View>
-              <View>
-                {rotuloPerfil && <Text className="text-muted text-sm font-medium">{rotuloPerfil}</Text>}
-                <Text className="text-textDark text-xl font-bold tracking-tight">Olá, {nomeExibido}</Text>
-              </View>
-            </Pressable>
-          ) : (
-            <View className="flex-row items-center gap-3">
-              <View className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 items-center justify-center">
-                <Text className="text-[#3B82F6] font-black text-sm">VY</Text>
-              </View>
-              <View>
-                <Text className="text-muted text-xs font-medium">Cena Autoral</Text>
-                <Text className="text-textDark text-lg font-bold tracking-tight">Jundiaí & Região</Text>
-              </View>
+      <View className="px-4 pb-3 pt-2 flex-row items-center justify-between gap-2 max-w-full overflow-hidden">
+        {/* Esquerda: Logo Vybe e Contexto da Tela */}
+        <Pressable
+          onPress={() => router.push("/(tabs)/home")}
+          accessibilityRole="button"
+          accessibilityLabel="Ir para o início do Vybe"
+          className="flex-row items-center gap-1.5 shrink-0 active:opacity-80"
+        >
+          <Text className="text-white text-2xl font-black tracking-tight">vybe</Text>
+          <View className="w-2 h-2 rounded-full bg-[#3B82F6] mb-1" />
+          {!ehHome && tituloPagina && (
+            <View className="flex-row items-center gap-1.5 ml-1">
+              <Text className="text-gray-500 text-xs font-semibold">•</Text>
+              <Text className="text-gray-300 text-xs font-bold truncate max-w-[110px] sm:max-w-[180px]" numberOfLines={1}>
+                {tituloPagina}
+              </Text>
             </View>
-          )
-        ) : (
-          <Text className="text-textDark font-bold text-xl tracking-wide">
-            {tituloPagina || ""}
-          </Text>
-        )}
+          )}
+        </Pressable>
 
-        <View className="flex-row items-center gap-2">
+        {/* Direita: Busca, Avatar/Sair ou Entrar/Criar Conta */}
+        <View className="flex-row items-center gap-2 shrink-0">
           <Pressable 
             onPress={onOpenSearch} 
             accessibilityRole="button"
             accessibilityLabel="Abrir pesquisa"
-            className="w-9 h-9 rounded-full bg-surface items-center justify-center border border-border active:scale-95 transition-transform"
+            className="w-9 h-9 rounded-full bg-white/5 border border-white/10 items-center justify-center active:scale-95"
           >
-            <Search color="#8B95A8" size={18} />
+            <Search color="#94A3B8" size={17} />
           </Pressable>
 
           {usuario ? (
-            <Pressable
-              onPress={handleSair}
-              accessibilityRole="button"
-              accessibilityLabel="Sair da conta"
-              className="flex-row items-center gap-1 px-3 py-1.5 rounded-full bg-red-500/10 border border-red-500/20 active:scale-95 transition-transform"
-            >
-              <LogOut color="#EF4444" size={14} />
-              <Text className="text-red-400 font-bold text-xs">Sair</Text>
-            </Pressable>
+            <View className="flex-row items-center gap-2">
+              <Pressable
+                onPress={() => router.push("/(tabs)/perfil")}
+                accessibilityRole="button"
+                accessibilityLabel={`Perfil de ${nomeExibido}`}
+                className="w-9 h-9 rounded-full overflow-hidden border border-[#2563EB]/60 bg-[#2563EB] items-center justify-center active:scale-95"
+              >
+                {fotoUrl ? (
+                  <Image source={{ uri: fotoUrl }} alt={`Foto de ${nomeExibido}`} accessibilityLabel={`Foto de ${nomeExibido}`} className="w-full h-full" />
+                ) : (
+                  <Text className="text-white font-bold text-xs">{obterIniciais(nomeExibido)}</Text>
+                )}
+              </Pressable>
+
+              <Pressable
+                onPress={handleSair}
+                accessibilityRole="button"
+                accessibilityLabel="Sair da conta"
+                className="w-9 h-9 rounded-full bg-red-500/10 border border-red-500/20 items-center justify-center active:scale-95"
+              >
+                <LogOut color="#EF4444" size={15} />
+              </Pressable>
+            </View>
           ) : (
             <View className="flex-row items-center gap-1.5">
               <Pressable
                 onPress={() => router.push("/(auth)/entrar?aba=login")}
                 accessibilityRole="button"
                 accessibilityLabel="Entrar na conta"
-                className="px-3 py-1.5 rounded-full border border-white/20 bg-white/5 active:scale-95"
+                className="px-2.5 py-1.5 rounded-full border border-white/20 bg-white/5 active:scale-95"
               >
                 <Text className="text-white font-semibold text-xs">Entrar</Text>
               </Pressable>

@@ -117,15 +117,15 @@ export default function Perfil() {
         {temBiblioteca ? (
           <View className="px-4 mt-2">
             {/* Seletor de Abas Estilo Segmented Control */}
-            <View className="flex-row items-center justify-between gap-4 mb-6 z-10">
-              <View className="flex-row p-1.5 rounded-full bg-[#141A24] border border-white/10" style={{ backgroundColor: "#141A24" }}>
+            <View className="flex-row items-center justify-start mb-6 z-10 w-full">
+              <View className="flex-row w-full sm:w-auto p-1 rounded-full bg-[#141A24] border border-white/10" style={{ backgroundColor: "#141A24" }}>
                 <Pressable
                   onPress={() => setAba("biblioteca")}
                   accessibilityRole="tab"
                   accessibilityLabel="Aba Sua Biblioteca"
                   // @ts-ignore
                   aria-label="Aba Sua Biblioteca"
-                  className={`flex-row items-center gap-2 px-6 py-2 rounded-full transition-all ${
+                  className={`flex-1 sm:flex-initial flex-row items-center justify-center gap-2 px-3 sm:px-6 py-2.5 rounded-full transition-all ${
                     aba === "biblioteca" ? "bg-[#1D4ED8]" : "bg-[#141A24]"
                   }`}
                   style={{
@@ -149,7 +149,7 @@ export default function Perfil() {
                   accessibilityLabel="Aba Dados Pessoais"
                   // @ts-ignore
                   aria-label="Aba Dados Pessoais"
-                  className={`flex-row items-center gap-2 px-6 py-2 rounded-full transition-all ${
+                  className={`flex-1 sm:flex-initial flex-row items-center justify-center gap-2 px-3 sm:px-6 py-2.5 rounded-full transition-all ${
                     aba === "dados" ? "bg-[#1D4ED8]" : "bg-[#141A24]"
                   }`}
                   style={{
@@ -539,12 +539,12 @@ function CabecalhoPerfil({ usuario }: { usuario: any }) {
 
             {/* Nome e Tags */}
             <View className="items-center sm:items-start mb-2">
-              <View className="flex-row items-center gap-2">
+              <View className="flex-row flex-wrap items-center justify-center sm:justify-start gap-2">
                 <Text
                   accessibilityRole="header"
                   // @ts-ignore
                   aria-level={1}
-                  className="text-3xl sm:text-4xl font-black text-textDark tracking-tight"
+                  className="text-2xl sm:text-4xl font-black text-textDark tracking-tight text-center sm:text-left"
                 >
                   {usuario.nome}
                 </Text>
@@ -593,7 +593,7 @@ function CabecalhoPerfil({ usuario }: { usuario: any }) {
 
         {/* Faixa de Métricas */}
         {ehMusico && (
-          <View className="flex-row items-center gap-8 mt-6 pt-4 border-t border-white/10 bg-black/20 p-4 rounded-xl">
+          <View className="flex-row items-center justify-around sm:justify-start gap-4 sm:gap-8 mt-6 pt-4 border-t border-white/10 bg-black/20 p-4 rounded-xl">
             <View className="flex-col items-center sm:items-start px-2">
               <Text className="text-2xl font-black text-textDark">{totalMusicas}</Text>
               <Text className="text-xs text-gray-300 font-bold uppercase tracking-wider mt-1">Faixas lançadas</Text>
@@ -653,6 +653,8 @@ function BibliotecaPropria({ tipoConta, usuarioId }: { tipoConta: string; usuari
 }
 
 function BibliotecaMusico({ usuarioId }: { usuarioId: string }) {
+  const { width } = useWindowDimensions();
+  const ehDesk = width >= 768;
   const [musicas, setMusicas] = useState<any[]>([]);
   const [albuns, setAlbuns] = useState<any[]>([]);
   const [eventos, setEventos] = useState<any[]>([]);
@@ -822,12 +824,12 @@ function BibliotecaMusico({ usuarioId }: { usuarioId: string }) {
           </View>
         </View>
 
-        <View className="flex-row flex-wrap justify-start items-stretch gap-5 w-full">
+        <View className="flex-row flex-wrap justify-start items-stretch gap-3 sm:gap-5 w-full">
           {albuns.slice(0, 3).map((item) => (
             <Pressable
               key={item.id}
               onPress={() => router.push(`/album/${item.id}`)}
-              style={{ width: "31%", minWidth: 150 }}
+              style={{ width: ehDesk ? "31%" : "47%", minWidth: 120 }}
               className="group rounded-2xl bg-white/5 border border-white/5 p-4 flex-col justify-between hover:bg-white/10 shadow-lg"
             >
               <View className="w-full aspect-square rounded-xl overflow-hidden mb-4 relative">
@@ -988,9 +990,9 @@ function BibliotecaMusico({ usuarioId }: { usuarioId: string }) {
       {/* SECTION: Navegação Rápida */}
       <View className="flex-col gap-5 items-stretch w-full">
         <Text className="text-xl font-bold text-white w-full text-left">Navegação Rápida do Artista</Text>
-        <View className="flex-row flex-wrap justify-center items-stretch gap-5 w-full">
+        <View className="flex-row flex-wrap justify-center items-stretch gap-4 sm:gap-5 w-full">
           
-          <Pressable onPress={() => router.push("/dashboard")} className="flex-1 min-w-[280px] group rounded-2xl bg-[#121724] border border-white/5 p-6 flex-col justify-between hover:bg-[#1a2133] active:scale-[0.98] transition-all shadow-xl">
+          <Pressable onPress={() => router.push("/dashboard")} className="w-full sm:flex-1 sm:min-w-[260px] group rounded-2xl bg-[#121724] border border-white/5 p-6 flex-col justify-between hover:bg-[#1a2133] active:scale-[0.98] transition-all shadow-xl">
             <View className="flex-col gap-3 w-full">
               <View className="w-12 h-12 rounded-xl bg-white/10 items-center justify-center group-hover:bg-[#3B82F6] transition-colors">
                 <BarChart3 color="white" size={24} />
@@ -1004,7 +1006,7 @@ function BibliotecaMusico({ usuarioId }: { usuarioId: string }) {
             </View>
           </Pressable>
 
-          <Pressable onPress={() => router.push("/minhas-publicacoes")} className="flex-1 min-w-[280px] group rounded-2xl bg-[#121724] border border-white/5 p-6 flex-col justify-between hover:bg-[#1a2133] active:scale-[0.98] transition-all shadow-xl">
+          <Pressable onPress={() => router.push("/minhas-publicacoes")} className="w-full sm:flex-1 sm:min-w-[260px] group rounded-2xl bg-[#121724] border border-white/5 p-6 flex-col justify-between hover:bg-[#1a2133] active:scale-[0.98] transition-all shadow-xl">
             <View className="flex-col gap-3 w-full">
               <View className="w-12 h-12 rounded-xl bg-white/10 items-center justify-center group-hover:bg-[#3B82F6] transition-colors">
                 <Rss color="white" size={24} />
@@ -1018,7 +1020,7 @@ function BibliotecaMusico({ usuarioId }: { usuarioId: string }) {
             </View>
           </Pressable>
 
-          <Pressable onPress={() => router.push("/suporte")} className="flex-1 min-w-[280px] group rounded-2xl bg-[#121724] border border-white/5 p-6 flex-col justify-between hover:bg-[#1a2133] active:scale-[0.98] transition-all shadow-xl">
+          <Pressable onPress={() => router.push("/suporte")} className="w-full sm:flex-1 sm:min-w-[260px] group rounded-2xl bg-[#121724] border border-white/5 p-6 flex-col justify-between hover:bg-[#1a2133] active:scale-[0.98] transition-all shadow-xl">
             <View className="flex-col gap-3 w-full">
               <View className="w-12 h-12 rounded-xl bg-white/10 items-center justify-center group-hover:bg-[#3B82F6] transition-colors">
                 <LifeBuoy color="white" size={24} />

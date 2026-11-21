@@ -120,10 +120,11 @@ export function ModalConvidarMusico({
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable onPress={onClose} className="flex-1 bg-black/80 items-center justify-center p-4">
+      <Pressable onPress={onClose} className="flex-1 bg-black/80 items-center justify-center p-3 sm:p-4">
         <Pressable
           onPress={(e) => e.stopPropagation()}
-          className="w-full max-w-lg bg-[#121829] border border-white/10 rounded-3xl p-6 shadow-2xl relative"
+          className="w-full max-w-lg bg-[#121829] border border-white/10 rounded-3xl p-5 sm:p-6 shadow-2xl relative"
+          style={{ maxHeight: "90%" }}
         >
           {/* Header */}
           <View className="flex-row items-center justify-between pb-4 border-b border-white/5">
@@ -190,7 +191,11 @@ export function ModalConvidarMusico({
               </Pressable>
             </View>
           ) : (
-            <ScrollView className="max-h-[380px] my-3 pr-1" showsVerticalScrollIndicator={false}>
+            <ScrollView 
+              className="my-3 pr-1" 
+              style={{ maxHeight: 360 }}
+              showsVerticalScrollIndicator={false}
+            >
               <View className="flex-col gap-3">
                 {eventos.map((evento) => {
                   const statusConvite = convitesExistentes[evento.id];

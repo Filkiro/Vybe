@@ -850,7 +850,7 @@ await Promise.all([
               >
                 <View className="relative w-24 h-24 mb-4">
                   <View className="w-full h-full rounded-full overflow-hidden border-4 border-[#181C24] shadow-xl bg-[#1e293b] items-center justify-center">
-                    {artista.imagem_url ? (
+                    {artista.imagem_url && artista.imagem_url.trim() ? (
                       <Image
                         importantForAccessibility="yes"
                         accessibilityRole="image"

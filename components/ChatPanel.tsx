@@ -545,7 +545,10 @@
           }}
         />
 
-        <View className="bg-[#0B101E] border-t border-white/5 px-4 pt-3 pb-8">
+        <View 
+          className="bg-[#0B101E] border-t border-white/5 px-4 pt-3"
+          style={{ paddingBottom: Math.max(playerPaddingBottom, 20) }}
+        >
           <View className="flex-row items-end">
             {usuario?.tipo_conta === "organizador" && (
               <Pressable
@@ -589,8 +592,11 @@
 
         {/* Modal de Envio de Convite */}
         <Modal transparent visible={modalConviteAberto} animationType="slide" onRequestClose={() => setModalConviteAberto(false)}>
-          <View className="flex-1 justify-end bg-black/50">
-            <View className="bg-[#1A2235] rounded-t-3xl p-6 border-t border-white/10 max-h-[80%]">
+          <View className="flex-1 justify-end bg-black/60">
+            <View 
+              className="bg-[#1A2235] rounded-t-3xl p-6 border-t border-white/10"
+              style={{ maxHeight: "85%", paddingBottom: Math.max(playerPaddingBottom, 24) }}
+            >
               <View className="flex-row justify-between items-center mb-4">
                 <Text className="text-white font-bold text-lg">Convidar para Evento</Text>
                 <Pressable onPress={() => setModalConviteAberto(false)} className="p-2">

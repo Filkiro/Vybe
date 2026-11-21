@@ -131,7 +131,7 @@ function CampoTexto({ label, ...props }: React.ComponentProps<typeof TextInput> 
       {label && <Text className="text-white text-xs font-semibold mb-2 ml-1">{label}</Text>}
       <TextInput
         placeholderTextColor="#64748B"
-        className="bg-[#161D30] border border-border/60 rounded-2xl px-4 py-3.5 text-white font-medium focus:border-primary"
+        className="bg-[#161D30] border border-border/60 rounded-2xl px-4 py-3.5 text-white font-medium focus:border-primary min-h-[48px]"
         {...props}
       />
     </View>
@@ -156,7 +156,7 @@ function CampoSelecionavel({
       <Text className="text-white text-xs font-semibold mb-2 ml-1">{label}</Text>
       <Pressable
         onPress={onPress}
-        className="bg-[#161D30] border border-border/60 rounded-2xl px-4 py-3.5 flex-row items-center justify-between"
+        className="bg-[#161D30] border border-border/60 rounded-2xl px-4 py-3.5 flex-row items-center justify-between min-h-[48px]"
       >
         <Text className={`font-medium ${valor ? "text-white" : "text-[#94A3B8]"}`}>
           {valor || placeholder}
@@ -505,7 +505,7 @@ function FormMusica({ usuarioId }: { usuarioId: string }) {
                 <Text className="text-xs text-[#94A3B8]">{nome.length}/60</Text>
               </View>
               <TextInput
-                className="bg-[#0a0e16] border border-white/10 w-full text-white text-sm px-4 py-3 rounded-xl"
+                className="bg-[#0a0e16] border border-white/10 w-full text-white text-sm px-4 py-3 rounded-xl min-h-[48px]"
                 placeholder="Ex: Melodia da Noite"
                 placeholderTextColor="#94A3B8"
                 accessibilityLabel="Título da Faixa"
@@ -539,7 +539,7 @@ function FormMusica({ usuarioId }: { usuarioId: string }) {
               <View className="flex-col gap-1.5 flex-1">
                 <Text className="text-sm font-semibold text-white">Gênero Musical</Text>
                 <TextInput
-                  className="bg-[#0a0e16] border border-white/10 w-full text-white text-sm px-4 py-3 rounded-xl"
+                  className="bg-[#0a0e16] border border-white/10 w-full text-white text-sm px-4 py-3 rounded-xl min-h-[48px]"
                   placeholder="Ex: Rock, MPB..."
                   placeholderTextColor="#94A3B8"
                   accessibilityLabel="Gênero Musical"
@@ -555,7 +555,7 @@ function FormMusica({ usuarioId }: { usuarioId: string }) {
                   onPress={() => setMostrarCalendario(true)}
                   accessibilityRole="button"
                   accessibilityLabel="Selecionar Data de Lançamento"
-                  className="bg-[#0a0e16] border border-white/10 w-full px-4 py-3 rounded-xl flex-row items-center justify-between"
+                  className="bg-[#0a0e16] border border-white/10 w-full px-4 py-3 rounded-xl flex-row items-center justify-between min-h-[48px]"
                 >
                   <Text className={`text-sm ${dataLancamento ? 'text-white' : 'text-[#94A3B8]'}`}>
                     {dataLancamento || "DD/MM/AAAA"}
@@ -624,7 +624,7 @@ function FormMusica({ usuarioId }: { usuarioId: string }) {
                   disabled={enviando}
                   accessibilityRole="button"
                   accessibilityLabel="Publicar Música"
-                  className="flex-row items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#2563EB] hover:bg-blue-600 shadow-[0_0_24px_rgba(37,99,235,0.4)] active:opacity-90"
+                  className="flex-row items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#2563EB] hover:bg-blue-600 shadow-[0_0_24px_rgba(37,99,235,0.4)] active:opacity-90 min-h-[48px]"
                 >
                   {enviando ? <ActivityIndicator color="#fff" size="small" /> : (
                     <>
@@ -638,8 +638,8 @@ function FormMusica({ usuarioId }: { usuarioId: string }) {
           </View>
         </View>
 
-        {/* RIGHT COLUMN: PREVIEW */}
-        <View className="hidden lg:flex w-full lg:flex-[5] flex-col gap-4 lg:sticky top-4">
+        {/* RIGHT COLUMN: PREVIEW (empilhado suavemente abaixo no mobile, ao lado no desktop) */}
+        <View className="flex w-full lg:flex-[5] flex-col gap-4 lg:sticky top-4 mt-8 lg:mt-0">
           <View className="bg-[#141a24]/80 border border-white/5 rounded-2xl overflow-hidden shadow-2xl">
             {/* Preview header */}
             <View className="flex-row items-center justify-between px-5 py-3 border-b border-white/5">
@@ -831,7 +831,7 @@ function FormAlbum({ usuarioId }: { usuarioId: string }) {
             <View className="flex-col gap-1.5 w-full">
               <Text className="text-sm font-semibold text-white">Nome do Álbum</Text>
               <TextInput
-                className="bg-[#0a0e16]/75 border border-white/10 w-full text-white text-sm px-4 py-3 rounded-xl focus:border-[#A855F7]"
+                className="bg-[#0a0e16]/75 border border-white/10 w-full text-white text-sm px-4 py-3 rounded-xl focus:border-[#A855F7] min-h-[48px]"
                 placeholder="Ex: Meu Primeiro Disco"
                 placeholderTextColor="#94A3B8"
                 accessibilityLabel="Nome do Álbum"
@@ -916,7 +916,7 @@ function FormAlbum({ usuarioId }: { usuarioId: string }) {
               disabled={enviando}
               accessibilityRole="button"
               accessibilityLabel="Publicar Álbum"
-              className="bg-[#9333EA] rounded-xl py-4 items-center active:opacity-90 shadow-lg shadow-[#9333EA]/30"
+              className="bg-[#9333EA] rounded-xl py-3.5 items-center active:opacity-90 shadow-lg shadow-[#9333EA]/30 min-h-[48px] justify-center"
             >
               {enviando ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold text-sm">Criar Álbum</Text>}
             </Pressable>
@@ -924,8 +924,8 @@ function FormAlbum({ usuarioId }: { usuarioId: string }) {
         </View>
       </View>
 
-      {/* RIGHT COLUMN: PREVIEW */}
-      <View className="hidden lg:flex w-full lg:flex-[5] flex-col gap-4 lg:sticky top-4">
+      {/* RIGHT COLUMN: PREVIEW (empilhado suavemente abaixo no mobile, ao lado no desktop) */}
+      <View className="flex w-full lg:flex-[5] flex-col gap-4 lg:sticky top-4 mt-8 lg:mt-0">
         <View className="bg-[#181C24]/50 border border-white/5 rounded-2xl p-6 backdrop-blur-sm">
           <View className="flex-row items-center gap-2 mb-4">
             <Disc size={18} color="#C084FC" />
@@ -1248,7 +1248,7 @@ function FormEvento({ usuarioId }: { usuarioId: string }) {
               <View className="flex-col gap-1.5 flex-[2]">
                 <Text className="text-sm font-semibold text-white">Nome do Evento</Text>
                 <TextInput
-                  className="bg-[#0a0e16]/75 border border-white/10 w-full text-white text-sm px-4 py-3 rounded-xl focus:border-emerald-500"
+                  className="bg-[#0a0e16]/75 border border-white/10 w-full text-white text-sm px-4 py-3 rounded-xl focus:border-emerald-500 min-h-[48px]"
                   placeholder="Ex: Festival de Inverno"
                   placeholderTextColor="#64748B"
                   value={nome}
@@ -1258,7 +1258,7 @@ function FormEvento({ usuarioId }: { usuarioId: string }) {
               <View className="flex-col gap-1.5 flex-1">
                 <Text className="text-sm font-semibold text-white">Capacidade</Text>
                 <TextInput
-                  className="bg-[#0a0e16]/75 border border-white/10 w-full text-white text-sm px-4 py-3 rounded-xl focus:border-emerald-500"
+                  className="bg-[#0a0e16]/75 border border-white/10 w-full text-white text-sm px-4 py-3 rounded-xl focus:border-emerald-500 min-h-[48px]"
                   placeholder="Ex: 500"
                   placeholderTextColor="#64748B"
                   value={capacidade}
@@ -1272,7 +1272,7 @@ function FormEvento({ usuarioId }: { usuarioId: string }) {
               <View className="flex-col gap-1.5 flex-1">
                 <Text className="text-sm font-semibold text-white">Localização</Text>
                 <TextInput
-                  className="bg-[#0a0e16]/75 border border-white/10 w-full text-white text-sm px-4 py-3 rounded-xl focus:border-emerald-500"
+                  className="bg-[#0a0e16]/75 border border-white/10 w-full text-white text-sm px-4 py-3 rounded-xl focus:border-emerald-500 min-h-[48px]"
                   placeholder="Ex: Av. Paulista, 1000 - SP"
                   placeholderTextColor="#64748B"
                   value={localizacao}
@@ -1282,7 +1282,7 @@ function FormEvento({ usuarioId }: { usuarioId: string }) {
               <View className="flex-col gap-1.5 flex-1">
                 <Text className="text-sm font-semibold text-white">Gênero Principal</Text>
                 <TextInput
-                  className="bg-[#0a0e16]/75 border border-white/10 w-full text-white text-sm px-4 py-3 rounded-xl focus:border-emerald-500"
+                  className="bg-[#0a0e16]/75 border border-white/10 w-full text-white text-sm px-4 py-3 rounded-xl focus:border-emerald-500 min-h-[48px]"
                   placeholder="Ex: Indie / Rock"
                   placeholderTextColor="#64748B"
                   value={generoMusical}
@@ -1296,7 +1296,7 @@ function FormEvento({ usuarioId }: { usuarioId: string }) {
                 <Text className="text-sm font-semibold text-white">Data</Text>
                 <Pressable
                   onPress={() => setMostrarCalendario(true)}
-                  className="bg-[#0a0e16]/75 border border-white/10 w-full px-4 py-3 rounded-xl flex-row items-center justify-between"
+                  className="bg-[#0a0e16]/75 border border-white/10 w-full px-4 py-3 rounded-xl flex-row items-center justify-between min-h-[48px]"
                 >
                   <Text className={`text-sm ${data ? "text-white" : "text-[#94A3B8]"}`}>
                     {data || "Selecionar data"}
@@ -1308,7 +1308,7 @@ function FormEvento({ usuarioId }: { usuarioId: string }) {
                 <Text className="text-sm font-semibold text-white">Horário</Text>
                 <Pressable
                   onPress={() => setMostrarRelogio(true)}
-                  className="bg-[#0a0e16]/75 border border-white/10 w-full px-4 py-3 rounded-xl flex-row items-center justify-between"
+                  className="bg-[#0a0e16]/75 border border-white/10 w-full px-4 py-3 rounded-xl flex-row items-center justify-between min-h-[48px]"
                 >
                   <Text className={`text-sm ${horario ? "text-white" : "text-[#94A3B8]"}`}>
                     {horario || "Selecionar horário"}
@@ -1579,7 +1579,7 @@ function FormEvento({ usuarioId }: { usuarioId: string }) {
               <Pressable
                 onPress={() => publicar(false)}
                 disabled={enviando}
-                className="flex-row items-center justify-center px-7 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 flex-row items-center gap-2 shadow-[0_0_24px_rgba(16,185,129,0.4)] transition-all"
+                className="flex-row items-center justify-center px-7 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 flex-row items-center gap-2 shadow-[0_0_24px_rgba(16,185,129,0.4)] transition-all min-h-[48px]"
               >
                 {enviando ? <ActivityIndicator size="small" color="#fff" /> : (
                   <Text className="text-white text-sm font-semibold">Publicar Evento</Text>
@@ -1589,8 +1589,8 @@ function FormEvento({ usuarioId }: { usuarioId: string }) {
           </View>
         </View>
 
-        {/* RIGHT COLUMN: PREVIEW */}
-        <View className="hidden lg:flex flex-col gap-5 w-full lg:flex-[5] lg:sticky top-8">
+        {/* RIGHT COLUMN: PREVIEW (empilhado suavemente abaixo no mobile, ao lado no desktop) */}
+        <View className="flex flex-col gap-5 w-full lg:flex-[5] lg:sticky top-8 mt-8 lg:mt-0">
           <View className="bg-[#141a24]/70 rounded-2xl p-6 flex-col gap-4 shadow-2xl border border-white/5 backdrop-blur-xl relative overflow-hidden">
             <View className="flex-row items-center justify-between pb-1">
               <View className="flex-row items-center gap-1.5">

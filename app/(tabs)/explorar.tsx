@@ -197,6 +197,42 @@ export default function Explorar() {
           );
         })}
       </ScrollView>
+
+      {/* Artistas em Destaque no Mobile (empilhado suavemente antes do feed) */}
+      {!isDesktop && destaques.length > 0 && (
+        <View className="mt-4 bg-[#121724]/90 rounded-2xl p-4 border border-white/5 shadow-lg">
+          <View className="flex-row items-center justify-between mb-3">
+            <View className="flex-row items-center gap-2">
+              <TrendingUp color="#60a5fa" size={16} />
+              <Text className="text-sm font-bold text-white">Artistas em Destaque</Text>
+            </View>
+            <View className="px-2 py-0.5 rounded-full bg-[#2563eb]/20">
+              <Text className="text-xs text-[#93c5fd] font-bold">Cena Local</Text>
+            </View>
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10 }}>
+            {destaques.map((dest) => (
+              <Pressable
+                key={dest.id}
+                onPress={() => router.push(`/usuario/${dest.id}`)}
+                className="flex-row items-center gap-3 p-3 rounded-xl bg-white/5 active:bg-white/10 border border-white/5 w-[220px]"
+              >
+                <View className="w-10 h-10 rounded-full items-center justify-center overflow-hidden bg-[#1e293b] border border-white/10 shrink-0">
+                  {dest.foto && dest.foto.trim() ? (
+                    <Image source={{ uri: dest.foto }} alt={`Foto de ${dest.apelido}`} className="w-full h-full" />
+                  ) : (
+                    <Text className="text-primary font-bold text-xs">{obterIniciais(dest.apelido)}</Text>
+                  )}
+                </View>
+                <View className="flex-1 min-w-0">
+                  <Text className="text-white text-xs font-bold truncate" numberOfLines={1}>{dest.apelido}</Text>
+                  <Text className="text-[#94a3b8] text-[11px] truncate mt-0.5" numberOfLines={1}>{dest.genero}</Text>
+                </View>
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
+      )}
     </View>
   );
 
