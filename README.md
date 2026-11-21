@@ -24,9 +24,9 @@ Em um único ambiente, a plataforma reúne perfis artísticos com portfólio de 
 
 ## Equipe
 
-* **Arthur Costa Chave** — `[Inserir função, ex: Front-end / UI-UX]`
-* **Filipe Gomes dos Santos** — `[Inserir função, ex: Full-stack / Banco de Dados]`
-* **João Miguel de Campos Coimbra** — `[Inserir função, ex: Back-end / Integração]`
+* **Arthur Costa Chave** — `UI/UX`
+* **Filipe Gomes dos Santos** — `Front-end/Back-end`
+* **João Miguel de Campos Coimbra** — `QA/QC`
 
 **Orientação:**
 * Prof.ª Barbara Kathellen Andrade Porfirio
@@ -35,14 +35,21 @@ Em um único ambiente, a plataforma reúne perfis artísticos com portfólio de 
 ---
 
 ## Tecnologias Utilizadas
-
-> *Substitua os campos entre colchetes pelas versões exatas listadas no seu `package.json` e ambiente local.*
-
-* **HTML5 & CSS3** — Estruturação e estilização responsiva (mobile-first)
-* **JavaScript** (ES6+) — Lógica da aplicação
-* **React** (`v[ex: 18.x / 19.x]`) — Construção da interface de usuário
-* **Node.js** (`v[ex: 20.x]`) — Ambiente de execução e gerenciamento de pacotes (`npm`)
-* **Supabase** (`@supabase/supabase-js v[ex: 2.x]`) — Banco de dados PostgreSQL, Autenticação, Storage e Realtime
+| Ferramenta / Biblioteca | Versão Instalada | Finalidade no Projeto |
+| --- | --- | --- |
+| Node.js | `v26.13.0` | Runtime JavaScript local |
+| npm | `v11.20.0` | Gerenciador de dependências |
+| React | `v19.1.0` | Biblioteca base de UI |
+| React Native | `v0.81.5` | Componentes nativos e primitivos visuais |
+| React Native Web | `v0.21.2` | Compilação da interface para navegadores web |
+| Expo | `v54.0.37` | Plataforma e ecossistema de compilação |
+| Expo Router | `v6.0.24` | Roteamento nativo e URLs amigáveis |
+| Supabase JS Client | `v2.112.4` (`^2.45.0`) | SDK de banco PostgreSQL, Auth e Realtime |
+| Tailwind CSS | `v3.4.19` | Framework de classes utilitárias CSS |
+| NativeWind | `v4.1.23` | Integração do Tailwind com React Native |
+| TypeScript | `v5.9.3` | Superset tipado para o código-fonte |
+| Zustand | `v4.5.7` | Gerenciamento de estado (Audio Player & Auth) |
+| Lucide React Native | `v0.468.0` | Ícones da interface |
 * **Ferramentas de Apoio:** Visual Studio Code, Figma (prototipagem), Visual Paradigm (DCU) e MySQL Workbench (DER)
 
 ---
