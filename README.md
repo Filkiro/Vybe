@@ -93,14 +93,16 @@ Os arquivos de documentação, modelagem, design e banco de dados do TCC estão 
 
 ```text
 Vybe/
-├── docs/        # Documentação do TCC (questionário, fichamento, relatórios, etc.)
+├── database/        #  Scripts SQL (tabelas, enums, políticas de RLS) e modelos de dados
 ├── design/      # Protótipos, diagramas, identidade visual e capturas de tela
-└── database/    # Scripts SQL (tabelas, enums, políticas de RLS) e modelos de dados
+├── docs/      # Documentação do TCC (questionário, fichamento, relatórios, etc.)
+└── src/    # Arquivos do site
 ```
 
-- **`/docs`** — Reúne toda a documentação acadêmica e de pesquisa do TCC, incluindo o questionário aplicado à pesquisa de campo, fichamentos bibliográficos, levantamentos de requisitos e demais materiais escritos de apoio.
-- **`/design`** — Centraliza os artefatos visuais e de modelagem da interface e do sistema, como o protótipo de média fidelidade (Figma), Diagrama de Casos de Uso (DCU), Diagrama Entidade-Relacionamento (DER), identidade visual (logotipo e paleta) e as capturas de tela da aplicação desenvolvida.
 - **`/database`** — Contém os scripts SQL de estruturação do banco de dados no Supabase (criação de `ENUM`s, tabelas, chaves estrangeiras e políticas de segurança *Row Level Security — RLS*), além dos modelos de dados utilizados para replicar o ambiente.
+- **`/design`** — Centraliza os artefatos visuais e de modelagem da interface e do sistema, como o protótipo de média fidelidade (Figma), Diagrama de Casos de Uso (DCU), Diagrama Entidade-Relacionamento (DER), identidade visual (logotipo e paleta) e as capturas de tela da aplicação desenvolvida.
+- **`/docs`** — Reúne toda a documentação acadêmica e de pesquisa do TCC, incluindo o questionário aplicado à pesquisa de campo, fichamentos bibliográficos, levantamentos de requisitos e demais materiais escritos de apoio.
+- **`/src`** — Código-fonte completo da plataforma web **Vybe**, reunindo a programação (telas, componentes, rotas e integração com o Supabase), estilização, recursos visuais (`assets`) e arquivos de configuração do projeto.
 
 ---
 ## Como Executar o Projeto (Passo a Passo)
@@ -117,7 +119,7 @@ Uma conta e projeto configurados no [Supabase](https://supabase.com/)
 
 ```bash
 git clone https://github.com/Filkiro/Vybe.git
-cd Vybe
+cd Vybe/src
 ```
 
 ### 2. Instale as dependências
