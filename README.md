@@ -108,7 +108,9 @@ Vybe/
 ### Pré-requisitos
 
 [Node.js](https://nodejs.org/) instalado (`v18+` recomendado)
+
 [Git](https://git-scm.com/) instalado
+
 Uma conta e projeto configurados no [Supabase](https://supabase.com/)
 
 ### 1. Clone o repositório
