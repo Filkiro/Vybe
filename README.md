@@ -162,7 +162,9 @@ CHAVE, Arthur Costa; SANTOS, Filipe Gomes dos; COIMBRA, João Miguel de Campos. 
 Em caso de dúvidas sobre o projeto, entre em contato com a equipe:
 
 **Arthur Costa Chave:** arthur.chave@aluno.cps.sp.gov.br
+
 **Filipe Gomes dos Santos:** gomeslipeff8888@gmail.com
+
 **João Miguel de Campos Coimbra:** joao.coimbra2@aluno.cps.sp.gov.br
 
 
