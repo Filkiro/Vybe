@@ -87,34 +87,57 @@ A versão web da plataforma **Vybe** está hospedada e disponível para acesso d
 
 ---
 
+## Estrutura do Projeto
+
+Os arquivos de documentação, modelagem, design e banco de dados do TCC estão organizados nos seguintes diretórios principais:
+
+```text
+Vybe/
+├── docs/        # Documentação do TCC (questionário, fichamento, relatórios, etc.)
+├── design/      # Protótipos, diagramas, identidade visual e capturas de tela
+└── database/    # Scripts SQL (tabelas, enums, políticas de RLS) e modelos de dados
+```
+
+- **`/docs`** — Reúne toda a documentação acadêmica e de pesquisa do TCC, incluindo o questionário aplicado à pesquisa de campo, fichamentos bibliográficos, levantamentos de requisitos e demais materiais escritos de apoio.
+- **`/design`** — Centraliza os artefatos visuais e de modelagem da interface e do sistema, como o protótipo de média fidelidade (Figma), Diagrama de Casos de Uso (DCU), Diagrama Entidade-Relacionamento (DER), identidade visual (logotipo e paleta) e as capturas de tela da aplicação desenvolvida.
+- **`/database`** — Contém os scripts SQL de estruturação do banco de dados no Supabase (criação de `ENUM`s, tabelas, chaves estrangeiras e políticas de segurança *Row Level Security — RLS*), além dos modelos de dados utilizados para replicar o ambiente.
+
+---
 ## Como Executar o Projeto (Passo a Passo)
 
 ### Pré-requisitos
-- [Node.js](https://nodejs.org/) instalado (`v18+` recomendado)
-- [Git](https://git-scm.com/) instalado
-- Uma conta e projeto configurados no [Supabase](https://supabase.com/)
+
+[Node.js](https://nodejs.org/) instalado (`v18+` recomendado)
+[Git](https://git-scm.com/) instalado
+Uma conta e projeto configurados no [Supabase](https://supabase.com/)
 
 ### 1. Clone o repositório
+
 ```bash
 git clone https://github.com/Filkiro/Vybe.git
 cd Vybe
 ```
 
 ### 2. Instale as dependências
+
 ```bash
 npm install
 ```
 
 ### 3. Configure as variáveis de ambiente
+
 Renomeie o arquivo `.env.exemple` na raiz do projeto para `.env` (removendo somente o `.exemple`) e insira as credenciais do seu projeto Supabase:
+
 ```env
 EXPO_PUBLIC_SUPABASE_URL=[URL_DO_SUPABASE_PUBLICA]
 EXPO_PUBLIC_SUPABASE_ANON_KEY=[ANON_KEY_DO_SUPABASE]
 ```
 
 ### 4. Execute o servidor de desenvolvimento
+
 ```bash
 npx expo start -w
+
 ```
 
 ### 5. Acesse no navegador
@@ -130,12 +153,17 @@ CHAVE, Arthur Costa; SANTOS, Filipe Gomes dos; COIMBRA, João Miguel de Campos. 
 
 ---
 
+
+
 ## Contato e Documentação
 
 Em caso de dúvidas sobre o projeto, entre em contato com a equipe:
-- **Arthur Costa Chave:** arthur.chave@aluno.cps.sp.gov.br
-- **Filipe Gomes dos Santos:** gomeslipeff8888@gmail.com
-- **João Miguel de Campos Coimbra:** joao.coimbra2@aluno.cps.sp.gov.br
+
+**Arthur Costa Chave:** arthur.chave@aluno.cps.sp.gov.br
+**Filipe Gomes dos Santos:** gomeslipeff8888@gmail.com
+**João Miguel de Campos Coimbra:** joao.coimbra2@aluno.cps.sp.gov.br
+
 
 Para acessar o trabalho escrito do projeto no Repositório Institucional do Conhecimento do Centro Paula Souza:
-- **RIC-CPS:** https://ric.cps.sp.gov.br/
+
+**RIC-CPS:** https://ric.cps.sp.gov.br/
