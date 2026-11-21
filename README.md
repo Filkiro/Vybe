@@ -9,6 +9,12 @@
   Trabalho de Conclusão de Curso — Técnico em Informática para a Internet (ETEC de Campo Limpo Paulista - CPS)
 </p>
 
+<p align="center">
+  <a href="https://vybe-fawn.vercel.app/" target="_blank">
+    <img src="https://img.shields.io/badge/Acessar_Plataforma-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Acessar na Vercel" />
+  </a>
+</p>
+
 ---
 
 ## Descrição
@@ -22,19 +28,28 @@ Em um único ambiente, a plataforma reúne perfis artísticos com portfólio de 
 
 ---
 
+## Acesso Online (Deploy)
+
+A versão web da plataforma **Vybe** está hospedada e disponível para acesso diretamente pelo navegador através da **Vercel**:
+
+- **Link da aplicação:** https://vybe-fawn.vercel.app/
+
+---
+
 ## Equipe
 
-* **Arthur Costa Chave** — `UI/UX`
-* **Filipe Gomes dos Santos** — `Front-end/Back-end`
-* **João Miguel de Campos Coimbra** — `QA/QC`
+- **Arthur Costa Chave** — `UI/UX`
+- **Filipe Gomes dos Santos** — `Front-end/Back-end`
+- **João Miguel de Campos Coimbra** — `QA/QC`
 
 **Orientação:**
-* Prof.ª Barbara Kathellen Andrade Porfirio
-* Prof.ª Thaynara Cristina Maia dos Santos
+- Prof.ª Barbara Kathellen Andrade Porfirio
+- Prof.ª Thaynara Cristina Maia dos Santos
 
 ---
 
 ## Tecnologias Utilizadas
+
 | Ferramenta / Biblioteca | Versão Instalada | Finalidade no Projeto |
 | --- | --- | --- |
 | Node.js | `v26.13.0` | Runtime JavaScript local |
@@ -50,7 +65,9 @@ Em um único ambiente, a plataforma reúne perfis artísticos com portfólio de 
 | TypeScript | `v5.9.3` | Superset tipado para o código-fonte |
 | Zustand | `v4.5.7` | Gerenciamento de estado (Audio Player & Auth) |
 | Lucide React Native | `v0.468.0` | Ícones da interface |
-* **Ferramentas de Apoio:** Visual Studio Code, Figma (prototipagem), Visual Paradigm (DCU) e MySQL Workbench (DER)
+| **Vercel** | `Cloud` | Hospedagem e deploy contínuo da aplicação web |
+
+- **Ferramentas de Apoio:** Visual Studio Code, Figma (prototipagem), Visual Paradigm (DCU) e MySQL Workbench (DER)
 
 ---
 
@@ -75,13 +92,13 @@ Em um único ambiente, a plataforma reúne perfis artísticos com portfólio de 
 ## Como Executar o Projeto (Passo a Passo)
 
 ### Pré-requisitos
-* [Node.js](https://nodejs.org/) instalado (`v18+` recomendado)
-* [Git](https://git-scm.com/) instalado
-* Uma conta e projeto configurados no [Supabase](https://supabase.com/)
+- [Node.js](https://nodejs.org/) instalado (`v18+` recomendado)
+- [Git](https://git-scm.com/) instalado
+- Uma conta e projeto configurados no [Supabase](https://supabase.com/)
 
 ### 1. Clone o repositório
 ```bash
-git clone https://github.com/https://github.com/Filkiro/Vybe.git
+git clone https://github.com/Filkiro/Vybe.git
 cd Vybe
 ```
 
@@ -91,18 +108,16 @@ npm install
 ```
 
 ### 3. Configure as variáveis de ambiente
-Remova o somente o `.exemple` do arquivo `.env.exemple` na raiz do projeto, e insira com as credenciais do seu projeto Supabase:
+Renomeie o arquivo `.env.exemple` na raiz do projeto para `.env` (removendo somente o `.exemple`) e insira as credenciais do seu projeto Supabase:
 ```env
 EXPO_PUBLIC_SUPABASE_URL=[URL_DO_SUPABASE_PUBLICA]
 EXPO_PUBLIC_SUPABASE_ANON_KEY=[ANON_KEY_DO_SUPABASE]
 ```
 
-
 ### 4. Execute o servidor de desenvolvimento
 ```bash
 npx expo start -w
 ```
-
 
 ### 5. Acesse no navegador
 Abra o endereço exibido no terminal (geralmente `http://localhost:8081`).
@@ -120,9 +135,9 @@ CHAVE, Arthur Costa; SANTOS, Filipe Gomes dos; COIMBRA, João Miguel de Campos. 
 ## Contato e Documentação
 
 Em caso de dúvidas sobre o projeto, entre em contato com a equipe:
-* **Arthur Costa Chave:** arthur.chave@aluno.cps.sp.gov.br
-* **Filipe Gomes dos Santos:** gomeslipeff8888@gmail.com
-* **João Miguel de Campos Coimbra:** joao.coimbra2@aluno.cps.sp.gov.br
+- **Arthur Costa Chave:** arthur.chave@aluno.cps.sp.gov.br
+- **Filipe Gomes dos Santos:** gomeslipeff8888@gmail.com
+- **João Miguel de Campos Coimbra:** joao.coimbra2@aluno.cps.sp.gov.br
 
 Para acessar o trabalho escrito do projeto no Repositório Institucional do Conhecimento do Centro Paula Souza:
-* **RIC-CPS:** https://ric.cps.sp.gov.br/
+- **RIC-CPS:** https://ric.cps.sp.gov.br/
