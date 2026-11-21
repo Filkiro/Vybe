@@ -17,6 +17,13 @@ import { MapPin, Play, User as UserIcon, Calendar, Heart, X, Flame, Check } from
 import { AnimatedBackgroundBlobs } from "../../components/AnimatedBackgroundBlobs";
 import { EscolhaADedo } from "../../components/EscolhaADedo";
 import { parseDateFromDB } from "../../lib/dateMask";
+import { obterIniciais } from "../../lib/avatarUtils";
+import {
+  DEMO_EVENTOS_JUNDIAI,
+  DEMO_MUSICAS_JUNDIAI,
+  DEMO_ALBUNS_JUNDIAI,
+  DEMO_ARTISTAS_JUNDIAI,
+} from "../../lib/jundiaiDemoData";
 
 type MusicaComAutor = {
   id: string;
@@ -183,7 +190,11 @@ export default function Home() {
       descricao: e.descricao,
     }));
 
-    setEventosProximos(lista);
+    if (lista.length === 0) {
+      setEventosProximos(DEMO_EVENTOS_JUNDIAI);
+    } else {
+      setEventosProximos(lista);
+    }
   }, []);
 
   // --- Artistas em destaque, ordenados por curtidas nos posts (publicacao) ---
@@ -192,25 +203,29 @@ export default function Home() {
       .from("curtida_musica")
       .select("musica:musica_id(usuario_id)");
 
-    if (!curtidas) {
-      setArtistasDestaque([]);
-      return;
-    }
-
     const curtidasPorUsuario = new Map<string, number>();
-    curtidas.forEach((c: any) => {
+    (curtidas ?? []).forEach((c: any) => {
       const autorId = c.musica?.usuario_id;
       if (!autorId) return;
       curtidasPorUsuario.set(autorId, (curtidasPorUsuario.get(autorId) ?? 0) + 1);
     });
 
-    const idsOrdenados = [...curtidasPorUsuario.entries()]
+    let idsOrdenados = [...curtidasPorUsuario.entries()]
       .sort((a, b) => b[1] - a[1])
       .slice(0, 10)
       .map(([id]) => id);
 
+    // Se ainda não houver curtidas, busca os perfis de músico cadastrados
     if (idsOrdenados.length === 0) {
-      setArtistasDestaque([]);
+      const { data: perfisCadastrados } = await supabase
+        .from("perfil_musico")
+        .select("usuario_id")
+        .limit(10);
+      idsOrdenados = (perfisCadastrados ?? []).map((p) => p.usuario_id);
+    }
+
+    if (idsOrdenados.length === 0) {
+      setArtistasDestaque(DEMO_ARTISTAS_JUNDIAI);
       return;
     }
 
@@ -234,11 +249,33 @@ export default function Home() {
       })
       .filter(Boolean) as PerfilDestaque[];
 
-    setArtistasDestaque(lista);
+    if (lista.length === 0) {
+      setArtistasDestaque(DEMO_ARTISTAS_JUNDIAI);
+    } else {
+      setArtistasDestaque(lista);
+    }
   }, []);
 
   // --- Busca os detalhes completos de um evento e abre o card ---
   async function abrirEvento(eventoId: string) {
+    if (eventoId.startsWith("demo-")) {
+      const demo = DEMO_EVENTOS_JUNDIAI.find((e) => e.id === eventoId);
+      if (demo) {
+        setEventoSelecionado({
+          id: demo.id,
+          nome: demo.titulo,
+          data: demo.data,
+          horario: demo.horario ?? "19:00",
+          localizacao: demo.local,
+          genero_musical: demo.genero_musical ?? "Autoral",
+          capacidade: demo.capacidade ?? 300,
+          status: "aberto",
+          organizador_nome: demo.organizador_nome ?? "Coletivo Cultural Jundiaí",
+        });
+      }
+      return;
+    }
+
     setCarregandoEvento(true);
     const { data } = await supabase
       .from("evento")
@@ -284,7 +321,7 @@ export default function Home() {
         .limit(LIMITE_ALBUNS_HOME),
     ]);
 
-    setMusicas(dadosMusicas ?? []);
+    setMusicas(dadosMusicas && dadosMusicas.length > 0 ? dadosMusicas : (DEMO_MUSICAS_JUNDIAI as any));
 
     // Reinicia a seção procedural "Descubra Mais" sempre que a Home recarrega do zero
     setMusicasDescoberta([]);
@@ -309,7 +346,7 @@ export default function Home() {
         }))
       );
     } else {
-      setAlbuns([]);
+      setAlbuns(DEMO_ALBUNS_JUNDIAI as any);
     }
 
     // Carrega perfil e os dois tipos de destaque (Eventos e Artistas)
@@ -812,17 +849,25 @@ await Promise.all([
                 className="p-5 rounded-2xl bg-[#181C24] hover:bg-white/5 border border-white/5 transition-all flex-col items-center text-center group shadow-md"
               >
                 <View className="relative w-24 h-24 mb-4">
-                  <View className="w-full h-full rounded-full overflow-hidden border-4 border-[#181C24] shadow-xl">
-                    <Image
-                      importantForAccessibility="yes"
-                      accessibilityRole="image"
-                      source={{ uri: artista.imagem_url ?? "https://images.unsplash.com/photo-1493225457124-a1a2a5f5f9af?q=80&w=200&auto=format&fit=crop" }}
-                      alt={`Foto de ${artista.apelido}`}
-                      accessibilityLabel={`Foto de ${artista.apelido}`}
-                      // @ts-ignore
-                      aria-label={`Foto de ${artista.apelido}`}
-                      className="w-full h-full"
-                    />
+                  <View className="w-full h-full rounded-full overflow-hidden border-4 border-[#181C24] shadow-xl bg-[#1e293b] items-center justify-center">
+                    {artista.imagem_url ? (
+                      <Image
+                        importantForAccessibility="yes"
+                        accessibilityRole="image"
+                        source={{ uri: artista.imagem_url }}
+                        alt={`Foto de ${artista.apelido}`}
+                        accessibilityLabel={`Foto de ${artista.apelido}`}
+                        // @ts-ignore
+                        aria-label={`Foto de ${artista.apelido}`}
+                        className="w-full h-full"
+                      />
+                    ) : (
+                      <View className="w-full h-full bg-[#1e293b] items-center justify-center">
+                        <Text className="text-primary font-black text-2xl tracking-wider">
+                          {obterIniciais(artista.apelido)}
+                        </Text>
+                      </View>
+                    )}
                   </View>
                   <View className="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-[#2563EB] border-2 border-[#181C24] items-center justify-center">
                     <Check size={12} color="white" strokeWidth={3} />

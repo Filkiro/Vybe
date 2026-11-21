@@ -1,12 +1,11 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, usePathname } from "expo-router";
-import { Home, Compass, Plus, MessageCircle, ShieldCheck, Settings, User, LogOut } from "lucide-react-native";
+import { Home, Compass, Plus, MessageCircle, ShieldCheck, Settings, User } from "lucide-react-native";
 import { AppLogo } from "./AppLogo";
 import { supabase } from "../lib/supabase";
 import { useAuthStore, ehContaComum, ehModerador, ehAdministrador } from "../store/authStore";
 import { useUnreadStore } from "../store/unreadStore";
-import { usePlayerStore } from "../store/playerStore";
 import { useHomeStore } from "../store/homeStore";
 
 type ItemNav = {
@@ -27,7 +26,7 @@ export function SidebarNavDesktop() {
 
   const itens: ItemNav[] = [
     { rota: "/(tabs)/home", rotulo: "Início", Icone: Home },
-    ...(comum ? [{ rota: "/(tabs)/explorar", rotulo: "Explorar", Icone: Compass }] : []),
+    ...(usuario ? [{ rota: "/(tabs)/explorar", rotulo: "Explorar", Icone: Compass }] : []),
     ...(comum ? [{ rota: "/(tabs)/criar", rotulo: "Criar", Icone: Plus }] : []),
     ...(comum
       ? [{ rota: "/(tabs)/conversa", rotulo: "Conversas", Icone: MessageCircle, badge: naoLidas }]
@@ -36,12 +35,6 @@ export function SidebarNavDesktop() {
     ...(admin ? [{ rota: "/(tabs)/admin", rotulo: "Painel", Icone: Settings }] : []),
     { rota: "/(tabs)/perfil", rotulo: "Perfil", Icone: User },
   ];
-
-  async function handleSair() {
-    usePlayerStore.getState().resetar();
-    await supabase.auth.signOut();
-    router.replace("/(tabs)/home");
-  }
 
   return (
     <View
@@ -70,7 +63,12 @@ export function SidebarNavDesktop() {
         {/* Nav Items */}
         <View className="flex-col gap-1">
           {itens.map((item) => {
-            const ativo = pathname === item.rota || pathname.endsWith(item.rota.replace("/(tabs)", ""));
+            const rotaBase = item.rota.replace("/(tabs)", "");
+            const ativo =
+              pathname === item.rota ||
+              pathname === rotaBase ||
+              pathname.endsWith(rotaBase) ||
+              (rotaBase === "/home" && (pathname === "/" || pathname === "" || pathname.startsWith("/(tabs)/home")));
             return (
               <Pressable
                 key={item.rota}
@@ -110,21 +108,6 @@ export function SidebarNavDesktop() {
             );
           })}
         </View>
-      </View>
-
-      {/* Bottom Section */}
-      <View className="px-4 mb-4">
-        {usuario && (
-          <Pressable
-            onPress={handleSair}
-            accessibilityRole="button"
-            accessibilityLabel="Sair da conta"
-            className="flex-row items-center gap-4 px-4 py-2.5 rounded-lg text-gray-400 hover:bg-red-500/20 hover:text-red-300 transition-all active:opacity-80 group"
-          >
-            <LogOut size={20} color="#C3C6D7" className="group-hover:text-red-300" />
-            <Text className="text-sm text-[#C3C6D7] group-hover:text-red-300 transition-colors">Sair</Text>
-          </Pressable>
-        )}
       </View>
     </View>
   );

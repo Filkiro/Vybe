@@ -10,12 +10,16 @@ import {
   Image,
 } from "react-native";
 import { Compass, TrendingUp, Calendar } from "lucide-react-native";
-import { router } from "expo-router";
+import { router, Redirect } from "expo-router";
 import { useAuthStore } from "../../store/authStore";
 import { supabase } from "../../lib/supabase";
 import { usePlayerAwarePadding } from "../../hooks/usePlayerAwarePadding";
 import { PublicacaoCard, PublicacaoFeedItem } from "../../components/PublicacaoCard";
-import { ModalEventoDetalhes, EventoDetalhado } from "../../components/ModalEventoDetalhes";
+import {
+  DEMO_PUBLICACOES_JUNDIAI,
+  DEMO_ARTISTAS_JUNDIAI,
+} from "../../lib/jundiaiDemoData";
+import { obterIniciais } from "../../lib/avatarUtils";
 
 const FILTROS_CENA = ["Tudo", "Lançamentos", "Eventos", "Em Alta"];
 
@@ -26,8 +30,6 @@ export default function Explorar() {
   const [carregando, setCarregando] = useState(true);
   const [atualizando, setAtualizando] = useState(false);
   const [destaques, setDestaques] = useState<any[]>([]);
-  const [oportunidade, setOportunidade] = useState<any>(null);
-  const [eventoOportunidadeModal, setEventoOportunidadeModal] = useState<EventoDetalhado | null>(null);
   const paddingBottom = usePlayerAwarePadding(140);
   const { width } = useWindowDimensions();
   const isDesktop = width >= 1024;
@@ -92,7 +94,11 @@ export default function Explorar() {
       };
     });
 
-    setPublicacoes(formatados);
+    if (formatados.length === 0) {
+      setPublicacoes(DEMO_PUBLICACOES_JUNDIAI as any);
+    } else {
+      setPublicacoes(formatados);
+    }
 
     // Compute Destaques (Top 2 musicians by total likes on their posts)
     const likesPorMusico: Record<string, number> = {};
@@ -103,7 +109,7 @@ export default function Explorar() {
     });
     
     // Sort and get top 2
-    const topDestaques = Object.entries(likesPorMusico)
+    let topDestaques = Object.entries(likesPorMusico)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 2)
         .map(([uid, likes]) => {
@@ -112,24 +118,21 @@ export default function Explorar() {
                 id: uid,
                 apelido: perf?.apelido || 'Desconhecido',
                 foto: perf?.foto_url,
-                genero: "Artista Independente", // Could fetch from DB if needed
+                genero: "Artista Independente",
                 likes
             };
         });
-    setDestaques(topDestaques);
 
-    // Fetch Oportunidade
-    const { data: ultimosEventos } = await supabase
-        .from('evento')
-        .select('id, nome, descricao, data, horario, localizacao, genero_musical, capacidade, status, organizador_id, organizador:organizador_id(nome)')
-        .order('criado_em', { ascending: false })
-        .limit(1);
-        
-    if (ultimosEventos && ultimosEventos.length > 0) {
-        setOportunidade(ultimosEventos[0]);
-    } else {
-        setOportunidade(null);
+    if (topDestaques.length === 0) {
+      topDestaques = DEMO_ARTISTAS_JUNDIAI.slice(0, 2).map((a) => ({
+        id: a.id,
+        apelido: a.apelido,
+        foto: a.imagem_url,
+        genero: a.generos,
+        likes: a.total_curtidas,
+      }));
     }
+    setDestaques(topDestaques);
     setCarregando(false);
   }, [usuarioLogado?.id]);
 
@@ -219,11 +222,11 @@ export default function Explorar() {
           <View className="flex-col gap-3">
             {destaques.length > 0 ? destaques.map((dest, i) => (
               <Pressable key={dest.id} onPress={() => router.push(`/usuario/${dest.id}`)} className="flex-row items-center gap-3 p-2.5 rounded-xl bg-white/5 active:bg-white/10">
-                <View className="w-11 h-11 rounded-full items-center justify-center overflow-hidden bg-slate-800">
+                <View className="w-11 h-11 rounded-full items-center justify-center overflow-hidden bg-[#1e293b] border border-white/10">
                   {dest.foto ? (
                     <Image source={{uri: dest.foto}} alt={`Foto de ${dest.apelido}`} accessibilityLabel={`Foto de ${dest.apelido}`} className="w-full h-full" />
                   ) : (
-                    <Text className="text-white font-bold text-sm">{dest.apelido.substring(0, 2).toUpperCase()}</Text>
+                    <Text className="text-primary font-bold text-xs">{obterIniciais(dest.apelido)}</Text>
                   )}
                 </View>
                 <View className="flex-1">
@@ -237,54 +240,12 @@ export default function Explorar() {
           </View>
         </View>
       )}
-
-      {oportunidade && (
-        <View className="rounded-2xl p-5 bg-[#151c2c] border border-[#3b82f6]/30 overflow-hidden relative">
-          <View className="absolute -right-6 -bottom-6 w-28 h-28 bg-[#3b82f6]/10 rounded-full blur-2xl pointer-events-none" />
-          <Pressable
-            onPress={() => {
-              setEventoOportunidadeModal({
-                id: oportunidade.id,
-                nome: oportunidade.nome,
-                data: oportunidade.data,
-                horario: oportunidade.horario ?? null,
-                localizacao: oportunidade.localizacao ?? null,
-                genero_musical: oportunidade.genero_musical ?? null,
-                capacidade: oportunidade.capacidade ?? null,
-                organizador_nome: oportunidade.organizador?.nome || undefined,
-                status: oportunidade.status,
-              });
-            }}
-            className="active:opacity-80"
-          >
-            <View className="flex-row items-center justify-between mb-2">
-              <View className="px-2.5 py-1 rounded bg-[#3b82f6]">
-                <Text className="text-xs font-bold uppercase text-white tracking-wider">Oportunidade</Text>
-              </View>
-              {oportunidade.data && <Text className="text-xs font-medium text-[#93c5fd]">{new Date(oportunidade.data).toLocaleDateString('pt-BR')}</Text>}
-            </View>
-            
-            <Text className="font-bold text-base text-white mt-1.5" numberOfLines={1}>{oportunidade.nome}</Text>
-            <Text className="text-sm text-[#cbd5e1] mt-1 leading-relaxed" numberOfLines={2}>
-              {oportunidade.descricao || "Participe deste evento!"}
-            </Text>
-            <Text className="text-xs text-[#93c5fd] font-bold mt-2">VER DETALHES DO EVENTO</Text>
-          </Pressable>
-          
-          <Pressable 
-            onPress={async () => {
-              if (usuarioLogado) {
-                 router.push(`/chat/novo?contatoId=${oportunidade.organizador_id}&contatoNome=${encodeURIComponent(oportunidade.organizador?.nome || 'Organizador')}`);
-              }
-            }}
-            className="w-full mt-3.5 py-2.5 rounded-xl bg-[#2563eb] items-center active:opacity-80"
-          >
-            <Text className="text-white font-semibold text-sm tracking-wide">Conversar com Organizador</Text>
-          </Pressable>
-        </View>
-      )}
     </View>
   );
+
+  if (!usuarioLogado) {
+    return <Redirect href="/(tabs)/home" />;
+  }
 
   if (carregando) {
     return (
@@ -325,8 +286,8 @@ export default function Explorar() {
           </View>
         </View>
 
-        {/* DIREITA: WIDGETS (Aparece na direita no Desktop, ou embaixo no mobile se houver oportunidade) */}
-        {(isDesktop || oportunidade) && (
+        {/* DIREITA: WIDGETS (Aparece na direita no Desktop) */}
+        {isDesktop && (
           <View className="flex-[4] min-w-0 pt-4">
             <View className="lg:sticky top-4">
               <WidgetsSidebar />
@@ -335,11 +296,6 @@ export default function Explorar() {
         )}
 
       </View>
-
-      <ModalEventoDetalhes
-        eventoSelecionado={eventoOportunidadeModal}
-        onFechar={() => setEventoOportunidadeModal(null)}
-      />
     </ScrollView>
   );
 }

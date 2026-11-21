@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { View, Text, Pressable, Image, FlatList, ActivityIndicator } from "react-native";
 import { router } from "expo-router";
-import { ChevronLeft, Pencil, Trash2, Clock, Calendar, Play } from "lucide-react-native";
+import { ChevronLeft, Pencil, Trash2, Clock, Calendar, Play, Music, Plus } from "lucide-react-native";
 import { supabase } from "../../lib/supabase";
 import { useAuthStore } from "../../store/authStore";
 import { usePlayerStore } from "../../store/playerStore";
@@ -18,7 +18,10 @@ export default function TodasMusicas() {
   const [aba, setAba] = useState<"todas" | "ativas" | "rascunhos">("todas");
 
   useEffect(() => {
-    if (!usuario) return;
+    if (!usuario) {
+      router.replace("/(tabs)/perfil");
+      return;
+    }
     supabase
       .from("musica")
       .select("id, nome, capa_url, arquivo_url, status, data_lancamento")
@@ -120,7 +123,22 @@ export default function TodasMusicas() {
           style={{ flex: 1, backgroundColor: '#0a0e16' }}
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 140, gap: 16 }}
           ListEmptyComponent={
-            <Text className="text-[#8d90a0] text-center mt-8 text-sm">Nenhuma música encontrada nesta categoria.</Text>
+            <View className="items-center justify-center py-16 px-6">
+              <View className="w-14 h-14 rounded-2xl bg-[#3B82F6]/10 border border-[#3B82F6]/20 items-center justify-center mb-4">
+                <Music color="#3B82F6" size={28} />
+              </View>
+              <Text className="text-white font-bold text-base mb-1 text-center">Nenhuma música encontrada</Text>
+              <Text className="text-[#8d90a0] text-center text-xs max-w-sm mb-5 leading-relaxed">
+                Você ainda não possui músicas cadastradas nesta categoria. Comece publicando suas faixas autorais para a cena.
+              </Text>
+              <Pressable
+                onPress={() => router.push("/(tabs)/criar")}
+                className="flex-row items-center gap-2 bg-[#2563EB] hover:bg-[#1d4ed8] active:scale-95 transition-all px-5 py-2.5 rounded-full"
+              >
+                <Plus color="white" size={16} />
+                <Text className="text-white font-bold text-xs">Publicar Nova Música</Text>
+              </Pressable>
+            </View>
           }
           renderItem={({ item }) => {
             const isAtivo = item.status === "ativo";

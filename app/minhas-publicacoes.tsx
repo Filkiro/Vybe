@@ -29,11 +29,13 @@ export default function MinhasPublicacoes() {
   const [meusAlbuns, setMeusAlbuns] = useState<any[]>([]);
 
   useEffect(() => {
-    if (usuario) {
-      carregar();
-      supabase.from("Música").select("id, nome").eq("usuario_id", usuario.id).then(({data}) => setMinhasMusicas(data ?? []));
-      supabase.from("Álbum").select("id, nome").eq("usuario_id", usuario.id).then(({data}) => setMeusAlbuns(data ?? []));
+    if (!usuario) {
+      router.replace("/(tabs)/perfil");
+      return;
     }
+    carregar();
+    supabase.from("Música").select("id, nome").eq("usuario_id", usuario.id).then(({data}) => setMinhasMusicas(data ?? []));
+    supabase.from("Álbum").select("id, nome").eq("usuario_id", usuario.id).then(({data}) => setMeusAlbuns(data ?? []));
   }, [usuario?.id]);
   async function carregar() {
     if (!usuario) return;

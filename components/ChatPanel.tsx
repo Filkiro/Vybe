@@ -13,12 +13,14 @@
     ScrollView
   } from "react-native";
   import { useLocalSearchParams, useRouter } from "expo-router";
-  import { ChevronLeft, Send, MoreVertical, Flag, Ticket, CheckCircle2, XCircle, AlertTriangle, Clock } from "lucide-react-native";
+  import { ChevronLeft, Send, MoreVertical, Flag, Ticket, CheckCircle2, XCircle, AlertTriangle, Clock, Calendar, MapPin } from "lucide-react-native";
   import { supabase, Mensagem } from "../lib/supabase";
   import { useAuthStore } from "../store/authStore";
   import { colors } from "../constants/theme";
   import { usePlayerAwarePadding } from "../hooks/usePlayerAwarePadding";
   import { ModalEventoDetalhes } from "./ModalEventoDetalhes";
+  import { enviarConviteParaMusico } from "../lib/conversaUtils";
+  import { obterIniciais } from "../lib/avatarUtils";
 
   export function ChatPanel({ conversaId, contatoNome, contatoFotoUrl, contatoId, onVoltar }: { conversaId: string; contatoNome?: string; contatoFotoUrl?: string; contatoId?: string; onVoltar: () => void; }) {
     
@@ -42,6 +44,36 @@
     const [meusEventos, setMeusEventos] = useState<any[]>([]);
     const [carregandoEventos, setCarregandoEventos] = useState(false);
     const [eventoSelecionado, setEventoSelecionado] = useState<any>(null);
+    const [resolvedContatoId, setResolvedContatoId] = useState<string | undefined>(contatoId);
+
+    useEffect(() => {
+      if (contatoId) {
+        setResolvedContatoId(contatoId);
+        return;
+      }
+      if (conversaId && usuario) {
+        supabase
+          .from("conversa")
+          .select("usuario_id1, usuario_id2")
+          .eq("id", conversaId)
+          .single()
+          .then(({ data }) => {
+            if (data) {
+              const outro = data.usuario_id1 === usuario.id ? data.usuario_id2 : data.usuario_id1;
+              setResolvedContatoId(outro);
+            }
+          });
+      }
+    }, [contatoId, conversaId, usuario?.id]);
+
+    function formatarDataBR(dataStr?: string | null) {
+      if (!dataStr) return "";
+      const partes = dataStr.split("-");
+      if (partes.length === 3) {
+        return `${partes[2]}/${partes[1]}/${partes[0]}`;
+      }
+      return dataStr;
+    }
 
     async function abrirModalConvite() {
       if (!usuario || usuario.tipo_conta !== "organizador") return;
@@ -49,7 +81,7 @@
       setCarregandoEventos(true);
       const { data } = await supabase
         .from("evento")
-        .select("id, nome, data")
+        .select("id, nome, data, horario, localizacao, genero_musical")
         .eq("organizador_id", usuario.id)
         .order("data", { ascending: true });
       setMeusEventos(data ?? []);
@@ -57,42 +89,27 @@
     }
 
     async function enviarConviteNoChat(eventoId: string) {
-      if (!usuario || !contatoId) return;
+      const targetId = resolvedContatoId || contatoId;
+      if (!usuario || !targetId) {
+        alert("Não foi possível identificar o músico destinatário.");
+        return;
+      }
       setCarregandoEventos(true);
       
-      const { data: conviteExistente } = await supabase
-        .from("evento_convite")
-        .select("id")
-        .eq("evento_id", eventoId)
-        .eq("musico_id", contatoId)
-        .maybeSingle();
-      
-      let conviteId = conviteExistente?.id;
-      
-      if (!conviteId) {
-        const { data: novoConvite } = await supabase
-          .from("evento_convite")
-          .insert({
-            evento_id: eventoId,
-            musico_id: contatoId,
-            status: "pendente"
-          })
-          .select()
-          .single();
-        if (novoConvite) conviteId = novoConvite.id;
-      }
-      
-      if (conviteId) {
-        await supabase.from("mensagem").insert({
-          conversa_id: conversaId,
-          remetente_id: usuario.id,
-          conteudo: "Você foi convidado para um evento!",
-          evento_convite_id: conviteId
-        });
-      }
-      
+      const res = await enviarConviteParaMusico({
+        organizadorId: usuario.id,
+        musicoId: targetId,
+        eventoId,
+      });
+
       setCarregandoEventos(false);
       setModalConviteAberto(false);
+
+      if (!res.sucesso) {
+        alert(res.erro || "Falha ao enviar convite.");
+      } else {
+        await carregar();
+      }
     }
 
     async function enviarDenuncia() {
@@ -150,8 +167,7 @@
     }, [conversaId, usuario?.id]);
 
     async function responderConvite(conviteId: string, resposta: "aceito" | "recusado") {
-      await supabase.from("evento_convite").update({ status: resposta }).eq("id", conviteId);
-      // Atualiza o estado local
+      // Atualização otimista imediata no estado local
       setMensagens((atual) =>
         atual.map((m) => {
           if (m.evento_convite_id === conviteId && m.evento_convite) {
@@ -160,6 +176,13 @@
           return m;
         })
       );
+
+      const { error } = await supabase.from("evento_convite").update({ status: resposta }).eq("id", conviteId);
+      if (error) {
+        // Em caso de falha, sincroniza com o banco
+        await carregar();
+        alert(`Erro ao atualizar convite: ${error.message}`);
+      }
     }
 
     const [conviteParaCancelar, setConviteParaCancelar] = useState<string | null>(null);
@@ -212,28 +235,81 @@
     function voltar() { onVoltar(); }
 
     function irParaPerfil() {
-      if (contatoId) {
-        router.push(`/usuario/${contatoId}`);
+      const targetId = resolvedContatoId || contatoId;
+      if (targetId) {
+        router.push(`/usuario/${targetId}`);
       }
     }
 
     useEffect(() => {
       carregar().then(marcarComoLidas);
 
+      const canalId = `conversa-${conversaId}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
       const canal = supabase
-        .channel(`conversa-${conversaId}`)
+        .channel(canalId)
         .on(
           "postgres_changes",
           { event: "INSERT", schema: "public", table: "mensagem", filter: `conversa_id=eq.${conversaId}` },
-          (payload) => {
+          async (payload) => {
             const nova = payload.new as Mensagem;
-            setMensagens((atual) => {
-              if (atual.some((m) => m.id === nova.id)) return atual;
-              return [...atual, nova];
-            });
+            if (nova.evento_convite_id) {
+              // Carrega mensagem completa com join em evento_convite e evento para renderizar card
+              const { data: completa } = await supabase
+                .from("mensagem")
+                .select("*, evento_convite:evento_convite_id(id, status, evento:evento_id(id, nome, data, horario, localizacao, genero_musical, capacidade))")
+                .eq("id", nova.id)
+                .single();
+              if (completa) {
+                setMensagens((atual) => {
+                  const idx = atual.findIndex((m) => m.id === completa.id);
+                  if (idx >= 0) {
+                    const clone = [...atual];
+                    clone[idx] = completa as Mensagem;
+                    return clone;
+                  }
+                  return [...atual, completa as Mensagem];
+                });
+              }
+            } else {
+              setMensagens((atual) => {
+                if (atual.some((m) => m.id === nova.id)) return atual;
+                return [...atual, nova];
+              });
+            }
             if (nova.remetente_id !== usuario?.id) {
               marcarComoLidas();
             }
+          }
+        )
+        .on(
+          "postgres_changes",
+          { event: "UPDATE", schema: "public", table: "mensagem", filter: `conversa_id=eq.${conversaId}` },
+          (payload) => {
+            const alterada = payload.new as Mensagem;
+            setMensagens((atual) =>
+              atual.map((m) => (m.id === alterada.id ? { ...m, ...alterada } : m))
+            );
+          }
+        )
+        .on(
+          "postgres_changes",
+          { event: "UPDATE", schema: "public", table: "evento_convite" },
+          (payload) => {
+            const conviteAtualizado = payload.new as { id: string; status: any };
+            setMensagens((atual) =>
+              atual.map((m) => {
+                if (m.evento_convite_id === conviteAtualizado.id && m.evento_convite) {
+                  return {
+                    ...m,
+                    evento_convite: {
+                      ...m.evento_convite,
+                      status: conviteAtualizado.status,
+                    },
+                  };
+                }
+                return m;
+              })
+            );
           }
         )
         .subscribe();
@@ -241,7 +317,7 @@
       return () => {
         supabase.removeChannel(canal);
       };
-    }, [conversaId, carregar, marcarComoLidas]);
+    }, [conversaId, carregar, marcarComoLidas, usuario?.id]);
 
     async function enviar() {
       if (!texto.trim() || !usuario) return;
@@ -295,8 +371,8 @@
                   accessibilityLabel={`Foto de perfil de ${contatoNome ?? "Contato"}`}
                 />
               ) : (
-                <View className="w-11 h-11 rounded-full bg-surface mr-3 items-center justify-center border border-white/10">
-                  <Text className="text-muted font-bold text-xl">{contatoNome?.charAt(0).toUpperCase() ?? "C"}</Text>
+                <View className="w-11 h-11 rounded-full bg-[#1e293b] mr-3 items-center justify-center border border-white/10">
+                  <Text className="text-primary font-bold text-sm">{obterIniciais(contatoNome)}</Text>
                 </View>
               )}
               <View>
@@ -352,10 +428,33 @@
                     className="bg-[#1A2235] border border-primary/40 rounded-2xl p-4 w-full max-w-[300px] active:opacity-80"
                   >
                     <View className="bg-[#2563EB]/20 border border-[#2563EB]/40 self-start px-2.5 py-1 rounded-md mb-3">
-                      <Text className="text-[#93C5FD] text-xs font-bold uppercase">Convite para Evento</Text>
+                      <Text className="text-[#93C5FD] text-xs font-bold uppercase tracking-wider">Convite para Evento</Text>
                     </View>
-                    <Text className="text-white font-bold text-lg mb-1">{convite.evento?.nome}</Text>
-                    <Text className="text-white/60 text-xs mb-4">Data: {convite.evento?.data}</Text>
+                    <Text className="text-white font-bold text-lg mb-1.5">{convite.evento?.nome}</Text>
+                    
+                    <View className="flex-row items-center gap-1.5 mb-1">
+                      <Calendar size={13} color="#94A3B8" />
+                      <Text className="text-white/70 text-xs">
+                        {formatarDataBR(convite.evento?.data)}{convite.evento?.horario ? ` às ${convite.evento.horario}` : ""}
+                      </Text>
+                    </View>
+
+                    {convite.evento?.localizacao ? (
+                      <View className="flex-row items-center gap-1.5 mb-2">
+                        <MapPin size={13} color="#94A3B8" />
+                        <Text className="text-white/70 text-xs" numberOfLines={1}>
+                          {convite.evento.localizacao}
+                        </Text>
+                      </View>
+                    ) : null}
+
+                    {convite.evento?.genero_musical ? (
+                      <View className="self-start bg-white/5 border border-white/10 px-2 py-0.5 rounded-full mb-3">
+                        <Text className="text-gray-300 text-[11px]">{convite.evento.genero_musical}</Text>
+                      </View>
+                    ) : (
+                      <View className="mb-2" />
+                    )}
                     
                     {ehPendente && !ehMinhaMensagem ? (
                       <View className="flex-row gap-2">
@@ -383,7 +482,7 @@
                           (convite.status === 'recusado' || convite.status === 'cancelado') ? 'text-red-500' : 
                           'text-white/60'
                         }`}>
-                          {convite.status === 'aceito' ? 'Convite Aceito' : 
+                          {convite.status === 'aceito' ? 'Confirmado • Convite Aceito' : 
                            convite.status === 'recusado' ? 'Convite Recusado' : 
                            convite.status === 'cancelado' ? 'Participação Cancelada' : 
                            'Aguardando resposta...'}
@@ -511,14 +610,21 @@
                   renderItem={({ item: evento }) => (
                     <Pressable
                       onPress={() => enviarConviteNoChat(evento.id)}
-                      className="bg-[#0B101E] border border-white/5 p-4 rounded-xl mb-3 flex-row justify-between items-center"
+                      className="bg-[#0B101E] border border-white/5 p-4 rounded-xl mb-3 flex-row justify-between items-center active:opacity-80"
                     >
-                      <View className="flex-1">
-                        <Text className="text-white font-bold">{evento.nome}</Text>
-                        <Text className="text-gray-400 text-xs mt-1">{evento.data}</Text>
+                      <View className="flex-1 mr-3">
+                        <Text className="text-white font-bold text-base">{evento.nome}</Text>
+                        <Text className="text-gray-400 text-xs mt-1">
+                          📅 {formatarDataBR(evento.data)}{evento.horario ? ` às ${evento.horario}` : ""}
+                        </Text>
+                        {evento.localizacao ? (
+                          <Text className="text-gray-500 text-xs mt-0.5" numberOfLines={1}>
+                            📍 {evento.localizacao}
+                          </Text>
+                        ) : null}
                       </View>
-                      <View className="bg-primary/20 px-3 py-1.5 rounded-full">
-                        <Text className="text-primary font-bold text-xs">Enviar</Text>
+                      <View className="bg-primary/20 px-3.5 py-1.5 rounded-full border border-primary/30">
+                        <Text className="text-primary font-bold text-xs">Convidar</Text>
                       </View>
                     </Pressable>
                   )}

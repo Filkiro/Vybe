@@ -1,6 +1,6 @@
 import { View, Text, Pressable } from "react-native";
 import { Ban } from "lucide-react-native";
-import { supabase } from "../lib/supabase";
+import { useAuthStore } from "../store/authStore";
 import { colors } from "../constants/theme";
 
 export function ContaBanidaOverlay({ motivo }: { motivo: string | null }) {
@@ -22,7 +22,7 @@ export function ContaBanidaOverlay({ motivo }: { motivo: string | null }) {
         </View>
       )}
       <Pressable
-        onPress={() => supabase.auth.signOut()}
+        onPress={() => useAuthStore.getState().sair()}
         className="border border-border rounded-full py-3 px-8"
       >
         <Text className="text-textDark font-medium">Sair da conta</Text>

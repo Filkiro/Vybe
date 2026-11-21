@@ -1,15 +1,18 @@
 import { useEffect, useState } from "react";
-import { View, Text, Pressable, Image, StyleSheet, ScrollView, Share, TextInput, useWindowDimensions } from "react-native";
+import { View, Text, Pressable, Image, StyleSheet, ScrollView, Share, TextInput, useWindowDimensions, Linking } from "react-native";
 import { BlurView } from "expo-blur";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
-import { ChevronLeft, Flag, Share2, ShieldCheck, UserCheck, Sparkles, MessageCircle } from "lucide-react-native";
+import { ChevronLeft, Flag, Share2, ShieldCheck, UserCheck, Sparkles, MessageCircle, Ticket, ExternalLink, MessageSquare } from "lucide-react-native";
 import { supabase, Usuario } from "../../lib/supabase";
 import { useAuthStore } from "../../store/authStore";
 import { usePlayerStore } from "../../store/playerStore";
 import { useRequireAuth } from "../../store/authPromptStore";
 import { avisar } from "../../lib/alertas";
 import { colors, rotulosTipoConta } from "../../constants/theme";
+import { DEMO_ARTISTAS_JUNDIAI, DEMO_MUSICAS_JUNDIAI, DEMO_ALBUNS_JUNDIAI } from "../../lib/jundiaiDemoData";
+import { ModalConvidarMusico } from "../../components/ModalConvidarMusico";
+import { obterIniciais } from "../../lib/avatarUtils";
 
 // Tela dedicada para ver o perfil de QUALQUER outra pessoa — sempre
 // uma rota nova (não reaproveita a pilha da aba Perfil), então
@@ -29,10 +32,51 @@ export default function PerfilPublico() {
   const [albuns, setAlbuns] = useState<any[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [contatando, setContatando] = useState(false);
+  const [modalConvidarAberto, setModalConvidarAberto] = useState(false);
   const [denunciaAberta, setDenunciaAberta] = useState(false);
   const [motivoEscolhido, setMotivoEscolhido] = useState<string | null>(null);
   const [descricaoDenuncia, setDescricaoDenuncia] = useState("");
   const [erroDenuncia, setErroDenuncia] = useState<string | null>(null);
+
+  function abrirOuCopiarContatoExterno(contato?: string | null) {
+    if (!contato) return;
+    const limpo = contato.trim();
+    if (!limpo) return;
+
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(limpo)) {
+      Linking.openURL(`mailto:${limpo}`).catch(() => copiarParaClipboard(limpo));
+      return;
+    }
+    if (limpo.startsWith("@")) {
+      Linking.openURL(`https://instagram.com/${limpo.slice(1)}`).catch(() => copiarParaClipboard(limpo));
+      return;
+    }
+    if (limpo.includes("instagram.com")) {
+      const url = limpo.startsWith("http") ? limpo : `https://${limpo}`;
+      Linking.openURL(url).catch(() => copiarParaClipboard(limpo));
+      return;
+    }
+    const digitos = limpo.replace(/\D/g, "");
+    if (digitos.length >= 10 && digitos.length <= 13) {
+      const ddi = digitos.length <= 11 ? `55${digitos}` : digitos;
+      Linking.openURL(`https://wa.me/${ddi}`).catch(() => copiarParaClipboard(limpo));
+      return;
+    }
+    if (limpo.startsWith("http://") || limpo.startsWith("https://")) {
+      Linking.openURL(limpo).catch(() => copiarParaClipboard(limpo));
+      return;
+    }
+    copiarParaClipboard(limpo);
+  }
+
+  function copiarParaClipboard(texto: string) {
+    if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(texto);
+      avisar("Copiado!", `Contato "${texto}" copiado para a área de transferência.`);
+    } else {
+      avisar("Contato do Artista", texto);
+    }
+  }
 
   useEffect(() => {
     carregar();
@@ -40,6 +84,48 @@ export default function PerfilPublico() {
 
   async function carregar() {
     setCarregando(true);
+    if (id?.startsWith("demo-")) {
+      const demo = DEMO_ARTISTAS_JUNDIAI.find((a) => a.id === id);
+      if (demo) {
+        setUsuario({
+          id: demo.id,
+          nome: demo.apelido,
+          email: `${demo.apelido.toLowerCase().replace(/[^a-z0-9]/g, "")}@vybe.demo`,
+          tipo_conta: "musico",
+          status: "ativo",
+          criado_em: new Date().toISOString(),
+        });
+        setDadosPerfil({
+          id: demo.id,
+          usuario_id: demo.id,
+          apelido: demo.apelido,
+          foto_url: demo.imagem_url,
+          banner_url: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=1200&auto=format&fit=crop&q=80",
+          genero_musical: demo.generos,
+          localizacao: demo.local,
+          descricao: demo.descricao ?? "Artista da cena autoral de Jundiaí e região.",
+          disponivel: true,
+        });
+        setMusicas(
+          DEMO_MUSICAS_JUNDIAI.filter((m) => m.autor_apelido === demo.apelido).map((m) => ({
+            id: m.id,
+            nome: m.nome,
+            capa_url: m.capa_url,
+            arquivo_url: m.arquivo_url,
+          }))
+        );
+        setAlbuns(
+          DEMO_ALBUNS_JUNDIAI.filter((a) => a.autor_apelido === demo.apelido).map((a) => ({
+            id: a.id,
+            nome: a.nome,
+            capa_url: a.capa_url,
+          }))
+        );
+      }
+      setCarregando(false);
+      return;
+    }
+
     const { data: dadosUsuario } = await supabase.from("usuario").select("*").eq("id", id).single();
     setUsuario(dadosUsuario ?? null);
 
@@ -115,7 +201,7 @@ export default function PerfilPublico() {
     }
 
     setContatando(false);
-    router.push(`/chat/${conversaId}?contatoNome=${encodeURIComponent(usuario.nome)}&contatoFotoUrl=${dadosPerfil?.foto_url ? encodeURIComponent(dadosPerfil.foto_url) : ""}`);
+    router.push(`/chat/${conversaId}?contatoId=${usuario.id}&contatoNome=${encodeURIComponent(usuario.nome)}&contatoFotoUrl=${dadosPerfil?.foto_url ? encodeURIComponent(dadosPerfil.foto_url) : ""}`);
   }
 
   async function compartilharPerfil() {
@@ -203,9 +289,9 @@ export default function PerfilPublico() {
                     {dadosPerfil?.foto_url ? (
                       <Image source={{ uri: dadosPerfil.foto_url }} className="w-full h-full" resizeMode="cover" />
                     ) : (
-                      <View className="w-full h-full bg-surface items-center justify-center">
-                        <Text className="text-4xl font-extrabold text-muted">
-                          {usuario.nome.charAt(0).toUpperCase()}
+                      <View className="w-full h-full bg-[#1e293b] items-center justify-center">
+                        <Text className="text-3xl font-black text-primary tracking-wider">
+                          {obterIniciais(dadosPerfil?.apelido ?? usuario.nome)}
                         </Text>
                       </View>
                     )}
@@ -250,12 +336,23 @@ export default function PerfilPublico() {
               </View>
             </View>
 
-            {/* Direita: Botões (Contatar) */}
+            {/* Direita: Botões (Contatar, Convidar para Evento) */}
             <View className="flex-row flex-wrap items-center justify-center gap-2 mb-2">
-              <Pressable onPress={contatar} disabled={contatando} className="flex-row items-center gap-2 px-6 py-3 rounded-full bg-primary active:bg-primary/80">
-                <MessageCircle color="white" size={16} />
-                <Text className="text-white text-sm font-bold">{contatando ? "Abrindo..." : "Contatar"}</Text>
-              </Pressable>
+              {usuarioLogado?.tipo_conta === "organizador" && usuario.tipo_conta === "musico" && usuarioLogado.id !== usuario.id && (
+                <Pressable
+                  onPress={() => setModalConvidarAberto(true)}
+                  className="flex-row items-center gap-2 px-5 py-3 rounded-full bg-emerald-600 active:bg-emerald-700"
+                >
+                  <Ticket color="white" size={16} />
+                  <Text className="text-white text-sm font-bold">Convidar para Evento</Text>
+                </Pressable>
+              )}
+              {usuarioLogado?.id !== usuario.id && (
+                <Pressable onPress={contatar} disabled={contatando} className="flex-row items-center gap-2 px-6 py-3 rounded-full bg-primary active:bg-primary/80">
+                  <MessageCircle color="white" size={16} />
+                  <Text className="text-white text-sm font-bold">{contatando ? "Abrindo..." : "Contatar"}</Text>
+                </Pressable>
+              )}
             </View>
           </View>
         </View>
@@ -276,6 +373,30 @@ export default function PerfilPublico() {
         {dadosPerfil?.descricao && (
           <Text className="text-gray-300 leading-relaxed mt-4 text-center sm:text-left">{dadosPerfil.descricao}</Text>
         )}
+
+        {/* Contato Externo / Direto */}
+        {dadosPerfil?.contato_externo ? (
+          <View className="mt-4 bg-[#141A28] border border-white/10 rounded-2xl p-4 flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <View className="flex-row items-center gap-3 flex-1 min-w-0">
+              <View className="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-500/30 items-center justify-center">
+                <MessageSquare size={18} color="#10B981" />
+              </View>
+              <View className="flex-1 min-w-0">
+                <Text className="text-white/60 text-xs font-medium">Contato Externo Direto</Text>
+                <Text className="text-white font-bold text-sm" numberOfLines={1}>
+                  {dadosPerfil.contato_externo}
+                </Text>
+              </View>
+            </View>
+            <Pressable
+              onPress={() => abrirOuCopiarContatoExterno(dadosPerfil.contato_externo)}
+              className="bg-emerald-500 px-4 py-2.5 rounded-xl flex-row items-center gap-1.5 active:bg-emerald-600 self-stretch sm:self-auto justify-center"
+            >
+              <ExternalLink size={14} color="white" />
+              <Text className="text-white text-xs font-bold">Conversar / Copiar</Text>
+            </Pressable>
+          </View>
+        ) : null}
       </View>
 
       <View className="items-center px-4">
@@ -404,6 +525,17 @@ export default function PerfilPublico() {
             </View>
           )}
         </View>
+      )}
+
+      {usuario && (
+        <ModalConvidarMusico
+          visible={modalConvidarAberto}
+          onClose={() => setModalConvidarAberto(false)}
+          musicoId={usuario.id}
+          musicoNome={dadosPerfil?.apelido ?? usuario.nome}
+          musicoFotoUrl={dadosPerfil?.foto_url}
+          musicoGenero={dadosPerfil?.genero_musical}
+        />
       )}
     </ScrollView>
   );

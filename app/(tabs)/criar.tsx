@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -39,6 +39,8 @@ import { usePlayerAwarePadding } from "../../hooks/usePlayerAwarePadding";
 import { maskDate, parseDateToDB } from "../../lib/dateMask";
 import DatePickerModal from "../../components/DatePickerModal";
 import TimePickerModal from "../../components/TimePickerModal";
+import { enviarConviteParaMusico } from "../../lib/conversaUtils";
+import { obterIniciais } from "../../lib/avatarUtils";
 
 export default function Criar() {
   const usuario = useAuthStore((s) => s.usuario);
@@ -46,8 +48,30 @@ export default function Criar() {
 
   if (!usuario) {
     return (
-      <View className="flex-1 bg-[#0B101E] items-center justify-center">
-        <ActivityIndicator size="large" color={colors.primary} />
+      <View className="flex-1 bg-[#0B101E] items-center justify-center px-8">
+        <View className="max-w-md w-full items-center p-8 rounded-3xl bg-[#121829] border border-white/10 shadow-2xl">
+          <View className="w-16 h-16 rounded-2xl bg-primary/20 items-center justify-center mb-5 border border-primary/30">
+            <Sparkles color="#3B82F6" size={32} />
+          </View>
+          <Text className="text-2xl font-bold text-white text-center mb-2 tracking-tight">
+            Compartilhe sua arte
+          </Text>
+          <Text className="text-muted text-center text-sm mb-6 leading-relaxed">
+            Crie uma conta ou faça login como músico ou organizador para publicar faixas, álbuns e eventos na cena de Jundiaí.
+          </Text>
+          <Pressable
+            onPress={() => router.push("/(auth)/entrar?aba=cadastro")}
+            className="bg-primary hover:bg-blue-600 active:scale-95 transition-all rounded-xl py-3.5 items-center w-full mb-3 shadow-lg shadow-blue-500/20"
+          >
+            <Text className="text-white font-bold text-sm">Criar Conta</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => router.push("/(auth)/entrar?aba=login")}
+            className="bg-white/5 hover:bg-white/10 active:scale-95 transition-all border border-white/10 rounded-xl py-3.5 items-center w-full"
+          >
+            <Text className="text-white font-semibold text-sm">Já tenho conta — Entrar</Text>
+          </Pressable>
+        </View>
       </View>
     );
   }
@@ -80,9 +104,23 @@ export default function Criar() {
 
   return (
     <View className="flex-1 bg-[#0B101E] items-center justify-center px-8">
-      <Text className="text-muted text-center font-medium">
-        Contas de moderador/administrador não publicam conteúdo por aqui.
-      </Text>
+      <View className="max-w-md w-full items-center p-8 rounded-3xl bg-[#121829] border border-white/10 text-center">
+        <View className="w-14 h-14 rounded-2xl bg-amber-500/10 items-center justify-center mb-4 border border-amber-500/20">
+          <Info color="#F59E0B" size={28} />
+        </View>
+        <Text className="text-xl font-bold text-white text-center mb-2">Área Artística</Text>
+        <Text className="text-muted text-center text-sm mb-6 leading-relaxed">
+          Contas de moderação e administração gerenciam a integridade da plataforma e não publicam músicas ou eventos.
+        </Text>
+        <Pressable
+          onPress={() => router.push(usuario.tipo_conta === "adm" ? "/(tabs)/admin" : "/(tabs)/moderacao")}
+          className="bg-primary hover:bg-blue-600 active:scale-95 transition-all rounded-xl py-3 px-6 items-center"
+        >
+          <Text className="text-white font-bold text-sm">
+            {usuario.tipo_conta === "adm" ? "Acessar Painel" : "Acessar Moderação"}
+          </Text>
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -889,9 +927,10 @@ function FormAlbum({ usuarioId }: { usuarioId: string }) {
       {/* RIGHT COLUMN: PREVIEW */}
       <View className="hidden lg:flex w-full lg:flex-[5] flex-col gap-4 lg:sticky top-4">
         <View className="bg-[#181C24]/50 border border-white/5 rounded-2xl p-6 backdrop-blur-sm">
-          <Text className="text-white text-sm font-bold mb-4 flex-row items-center">
-            <Disc size={16} color="#9CA3AF" className="mr-2" /> Pré-visualização do Álbum
-          </Text>
+          <View className="flex-row items-center gap-2 mb-4">
+            <Disc size={18} color="#C084FC" />
+            <Text className="text-white text-sm font-bold">Pré-visualização do Álbum</Text>
+          </View>
           
           <View className="flex-row gap-4 items-end pointer-events-none opacity-90 mb-4">
             <View className="w-32 h-32 rounded-lg bg-[#0a0e16] border border-white/10 overflow-hidden shadow-2xl">
@@ -932,22 +971,113 @@ function FormEvento({ usuarioId }: { usuarioId: string }) {
   const [erro, setErro] = useState<string | null>(null);
   const [sucesso, setSucesso] = useState(false);
   
-  // Convites
+  // Convites e Priorização de Músicos
   const [musicos, setMusicos] = useState<any[]>([]);
   const [convidados, setConvidados] = useState<string[]>([]);
-
   const [buscaArtista, setBuscaArtista] = useState("");
-  const artistasFiltrados = buscaArtista.trim().length > 0 ? musicos.filter((m) => (m.apelido || "Sem Nome").toLowerCase().includes(buscaArtista.toLowerCase())) : [];
+  const [filtroApenasDisponiveis, setFiltroApenasDisponiveis] = useState(false);
+  const [filtroJundiai, setFiltroJundiai] = useState(false);
+  const [filtroGeneroCompativel, setFiltroGeneroCompativel] = useState(false);
+  const [criterioOrdenacao, setCriterioOrdenacao] = useState<"relevancia" | "curtidas" | "disponiveis">("relevancia");
 
   const [mostrarCalendario, setMostrarCalendario] = useState(false);
   const [mostrarRelogio, setMostrarRelogio] = useState(false);
 
   useEffect(() => {
-    supabase
-      .from("perfil_musico")
-      .select("usuario_id, apelido, foto_url")
-      .then(({ data }) => setMusicos(data ?? []));
+    async function carregarMusicos() {
+      try {
+        const [{ data: perfis }, { data: curtidas }] = await Promise.all([
+          supabase
+            .from("perfil_musico")
+            .select("usuario_id, apelido, foto_url, genero_musical, localizacao, disponivel"),
+          supabase
+            .from("curtida_musica")
+            .select("musica_id, musica:musica_id(usuario_id)")
+        ]);
+
+        const contagemCurtidas: Record<string, number> = {};
+        if (curtidas) {
+          for (const c of curtidas as any[]) {
+            const uId = c.musica?.usuario_id;
+            if (uId) {
+              contagemCurtidas[uId] = (contagemCurtidas[uId] || 0) + 1;
+            }
+          }
+        }
+
+        const lista = (perfis ?? []).map((m) => ({
+          ...m,
+          totalCurtidas: contagemCurtidas[m.usuario_id] || 0,
+        }));
+        setMusicos(lista);
+      } catch (e) {
+        console.error("Erro ao carregar músicos:", e);
+      }
+    }
+    carregarMusicos();
   }, []);
+
+  const musicosFiltradosEOrdenados = useMemo(() => {
+    let res = [...musicos];
+
+    if (buscaArtista.trim().length > 0) {
+      const termo = buscaArtista.trim().toLowerCase();
+      res = res.filter((m) =>
+        (m.apelido || "").toLowerCase().includes(termo) ||
+        (m.genero_musical || "").toLowerCase().includes(termo) ||
+        (m.localizacao || "").toLowerCase().includes(termo)
+      );
+    }
+
+    if (filtroApenasDisponiveis) {
+      res = res.filter((m) => m.disponivel === true);
+    }
+
+    if (filtroJundiai) {
+      res = res.filter((m) =>
+        (m.localizacao || "").toLowerCase().includes("jundia")
+      );
+    }
+
+    if (filtroGeneroCompativel && generoMusical.trim()) {
+      const genEvt = generoMusical.trim().toLowerCase();
+      res = res.filter((m) =>
+        (m.genero_musical || "").toLowerCase().includes(genEvt) ||
+        genEvt.includes((m.genero_musical || "").toLowerCase())
+      );
+    }
+
+    res.sort((a, b) => {
+      if (criterioOrdenacao === "curtidas") {
+        return (b.totalCurtidas || 0) - (a.totalCurtidas || 0);
+      }
+      if (criterioOrdenacao === "disponiveis") {
+        const aDisp = a.disponivel ? 1 : 0;
+        const bDisp = b.disponivel ? 1 : 0;
+        if (bDisp !== aDisp) return bDisp - aDisp;
+        return (b.totalCurtidas || 0) - (a.totalCurtidas || 0);
+      }
+
+      // Relevância inteligente:
+      // Pontos: Disponibilidade (10) + Compatibilidade de gênero (15) + Região de Jundiaí (8) + Curtidas (1 por curtida)
+      const genEvt = generoMusical.trim().toLowerCase();
+      const aGenMatch = genEvt && (a.genero_musical || "").toLowerCase().includes(genEvt) ? 15 : 0;
+      const bGenMatch = genEvt && (b.genero_musical || "").toLowerCase().includes(genEvt) ? 15 : 0;
+
+      const aLocMatch = (a.localizacao || "").toLowerCase().includes("jundia") ? 8 : 0;
+      const bLocMatch = (b.localizacao || "").toLowerCase().includes("jundia") ? 8 : 0;
+
+      const aDispMatch = a.disponivel ? 10 : 0;
+      const bDispMatch = b.disponivel ? 10 : 0;
+
+      const scoreA = aDispMatch + aGenMatch + aLocMatch + (a.totalCurtidas || 0);
+      const scoreB = bDispMatch + bGenMatch + bLocMatch + (b.totalCurtidas || 0);
+
+      return scoreB - scoreA;
+    });
+
+    return res;
+  }, [musicos, buscaArtista, filtroApenasDisponiveis, filtroJundiai, filtroGeneroCompativel, generoMusical, criterioOrdenacao]);
 
   function toggleConvidado(id: string) {
     setConvidados((prev) =>
@@ -1024,46 +1154,15 @@ function FormEvento({ usuarioId }: { usuarioId: string }) {
       let redirecionarConversaId = null;
 
       if (convidados.length > 0 && novoEvento) {
-        const convites = convidados.map((musicoId) => ({
-          evento_id: novoEvento.id,
-          musico_id: musicoId,
-          status: "pendente",
-        }));
-        
-        const { data: convitesInseridos } = await supabase
-          .from("evento_convite")
-          .insert(convites)
-          .select();
-
-        if (convitesInseridos) {
-          for (const convite of convitesInseridos) {
-            let conversaId;
-            const { data: convExistente } = await supabase
-              .from("conversa")
-              .select("id")
-              .or(`and(usuario_id1.eq.${usuarioId},usuario_id2.eq.${convite.musico_id}),and(usuario_id1.eq.${convite.musico_id},usuario_id2.eq.${usuarioId})`)
-              .maybeSingle();
-
-            if (convExistente) {
-              conversaId = convExistente.id;
-            } else {
-              const { data: novaConv } = await supabase
-                .from("conversa")
-                .insert({ usuario_id1: usuarioId, usuario_id2: convite.musico_id })
-                .select()
-                .single();
-              if (novaConv) conversaId = novaConv.id;
-            }
-
-            if (conversaId) {
-              redirecionarConversaId = conversaId;
-              await supabase.from("mensagem").insert({
-                conversa_id: conversaId,
-                remetente_id: usuarioId,
-                conteudo: "Você foi convidado para um evento!",
-                evento_convite_id: convite.id,
-              });
-            }
+        for (const musicoId of convidados) {
+          const res = await enviarConviteParaMusico({
+            organizadorId: usuarioId,
+            musicoId,
+            eventoId: novoEvento.id,
+            eventoNome: novoEvento.nome,
+          });
+          if (res.sucesso && res.conversaId) {
+            redirecionarConversaId = res.conversaId;
           }
         }
       }
@@ -1233,79 +1332,233 @@ function FormEvento({ usuarioId }: { usuarioId: string }) {
             </View>
 
             {/* Convidar Artistas */}
-            <View className="flex-col gap-3 pt-2 border-t border-white/5">
+            <View className="flex-col gap-3 pt-4 border-t border-white/5">
               <View className="flex-col gap-1">
-                <Text className="text-sm font-semibold text-white flex-row items-center gap-1.5"><UserSearch size={16} color="#34d399" /> Convidar Artistas da Cena</Text>
-                <Text className="text-xs text-[#94A3B8]">Eles receberão um convite no chat para confirmar a participação.</Text>
+                <View className="flex-row items-center gap-1.5">
+                  <UserSearch size={16} color="#34d399" />
+                  <Text className="text-sm font-semibold text-white">Convidar Artistas da Cena</Text>
+                </View>
+                <Text className="text-xs text-[#94A3B8]">
+                  Eles receberão um convite interativo no chat para confirmar a participação no evento.
+                </Text>
               </View>
 
-              <View className="relative z-50">
+              {/* Barra de Busca de Artistas */}
+              <View className="relative">
                 <TextInput
                   className="bg-[#0a0e16]/75 border border-white/10 w-full text-white text-sm px-4 py-3 rounded-xl focus:border-emerald-500"
-                  placeholder="Digite o nome do artista para buscar..."
+                  placeholder="Buscar por nome, gênero ou cidade..."
                   placeholderTextColor="#64748B"
                   value={buscaArtista}
                   onChangeText={setBuscaArtista}
                 />
-                
-                {/* Search Results */}
                 {buscaArtista.trim().length > 0 && (
-                  <View className="absolute top-full mt-2 w-full bg-[#182030] border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden max-h-48">
-                    <ScrollView nestedScrollEnabled>
-                      {artistasFiltrados.length === 0 ? (
-                        <Text className="text-[#94A3B8] text-sm text-center py-4">Nenhum artista encontrado.</Text>
-                      ) : (
-                        artistasFiltrados.map((m) => {
-                          const selecionado = convidados.includes(m.usuario_id);
-                          return (
-                            <Pressable
-                              key={m.usuario_id}
-                              onPress={() => {
-                                toggleConvidado(m.usuario_id);
-                                setBuscaArtista("");
-                              }}
-                              className={`flex-row items-center gap-3 p-3 border-b border-white/5 active:bg-white/5 ${selecionado ? "bg-emerald-500/10" : ""}`}
-                            >
-                              {m.foto_url ? (
-                                <Image source={{ uri: m.foto_url }} className="w-8 h-8 rounded-full" />
-                              ) : (
-                                <View className="w-8 h-8 rounded-full bg-white/10 items-center justify-center">
-                                  <UserSearch size={14} color="#94A3B8" />
-                                </View>
-                              )}
-                              <Text className={`text-sm font-medium flex-1 ${selecionado ? "text-emerald-400" : "text-white"}`}>{m.apelido || "Sem Nome"}</Text>
-                              {selecionado && <CheckCircle2 size={16} color="#34d399" />}
-                            </Pressable>
-                          );
-                        })
-                      )}
-                    </ScrollView>
-                  </View>
+                  <Pressable
+                    onPress={() => setBuscaArtista("")}
+                    className="absolute right-3 top-3.5 p-1"
+                  >
+                    <X size={16} color="#94A3B8" />
+                  </Pressable>
                 )}
+              </View>
+
+              {/* Filtros Inteligentes de Priorização */}
+              <View className="flex-row flex-wrap gap-2 pt-1">
+                <Pressable
+                  onPress={() => setFiltroApenasDisponiveis(!filtroApenasDisponiveis)}
+                  className={`px-3 py-1.5 rounded-full border flex-row items-center gap-1.5 ${
+                    filtroApenasDisponiveis
+                      ? "bg-emerald-500/20 border-emerald-500/50"
+                      : "bg-white/5 border-white/10"
+                  }`}
+                >
+                  <View className={`w-2 h-2 rounded-full ${filtroApenasDisponiveis ? "bg-emerald-400" : "bg-emerald-600/70"}`} />
+                  <Text className={`text-xs font-semibold ${filtroApenasDisponiveis ? "text-emerald-300" : "text-gray-300"}`}>
+                    Apenas disponíveis
+                  </Text>
+                </Pressable>
+
+                <Pressable
+                  onPress={() => setFiltroJundiai(!filtroJundiai)}
+                  className={`px-3 py-1.5 rounded-full border flex-row items-center gap-1.5 ${
+                    filtroJundiai
+                      ? "bg-primary/20 border-primary/50"
+                      : "bg-white/5 border-white/10"
+                  }`}
+                >
+                  <MapPin size={12} color={filtroJundiai ? colors.primary : "#94A3B8"} />
+                  <Text className={`text-xs font-semibold ${filtroJundiai ? "text-blue-300" : "text-gray-300"}`}>
+                    Região de Jundiaí
+                  </Text>
+                </Pressable>
+
+                {generoMusical.trim().length > 0 && (
+                  <Pressable
+                    onPress={() => setFiltroGeneroCompativel(!filtroGeneroCompativel)}
+                    className={`px-3 py-1.5 rounded-full border flex-row items-center gap-1.5 ${
+                      filtroGeneroCompativel
+                        ? "bg-purple-500/20 border-purple-500/50"
+                        : "bg-white/5 border-white/10"
+                    }`}
+                  >
+                    <Sparkles size={12} color={filtroGeneroCompativel ? "#C084FC" : "#94A3B8"} />
+                    <Text className={`text-xs font-semibold ${filtroGeneroCompativel ? "text-purple-300" : "text-gray-300"}`}>
+                      Gênero compatível ({generoMusical})
+                    </Text>
+                  </Pressable>
+                )}
+              </View>
+
+              {/* Critério de Ordenação */}
+              <View className="flex-row items-center justify-between mt-1 pt-2 border-t border-white/5">
+                <Text className="text-xs text-gray-400 font-medium">Ordenar por:</Text>
+                <View className="flex-row gap-1.5">
+                  <Pressable
+                    onPress={() => setCriterioOrdenacao("relevancia")}
+                    className={`px-2.5 py-1 rounded-lg ${
+                      criterioOrdenacao === "relevancia" ? "bg-white/15" : "bg-transparent"
+                    }`}
+                  >
+                    <Text className={`text-xs font-semibold ${criterioOrdenacao === "relevancia" ? "text-white" : "text-gray-400"}`}>
+                      Relevância
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => setCriterioOrdenacao("curtidas")}
+                    className={`px-2.5 py-1 rounded-lg ${
+                      criterioOrdenacao === "curtidas" ? "bg-white/15" : "bg-transparent"
+                    }`}
+                  >
+                    <Text className={`text-xs font-semibold ${criterioOrdenacao === "curtidas" ? "text-white" : "text-gray-400"}`}>
+                      Mais curtidos
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => setCriterioOrdenacao("disponiveis")}
+                    className={`px-2.5 py-1 rounded-lg ${
+                      criterioOrdenacao === "disponiveis" ? "bg-white/15" : "bg-transparent"
+                    }`}
+                  >
+                    <Text className={`text-xs font-semibold ${criterioOrdenacao === "disponiveis" ? "text-white" : "text-gray-400"}`}>
+                      Disponíveis
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
+
+              {/* Lista Priorizada de Artistas */}
+              <View className="bg-[#0e1422] border border-white/10 rounded-2xl overflow-hidden max-h-64 mt-1">
+                <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={false}>
+                  {musicosFiltradosEOrdenados.length === 0 ? (
+                    <Text className="text-[#94A3B8] text-sm text-center py-6">
+                      Nenhum artista encontrado com os filtros selecionados.
+                    </Text>
+                  ) : (
+                    musicosFiltradosEOrdenados.map((m) => {
+                      const selecionado = convidados.includes(m.usuario_id);
+                      const genEvt = generoMusical.trim().toLowerCase();
+                      const ehCompativel = genEvt && (m.genero_musical || "").toLowerCase().includes(genEvt);
+
+                      return (
+                        <Pressable
+                          key={m.usuario_id}
+                          onPress={() => toggleConvidado(m.usuario_id)}
+                          className={`flex-row items-center justify-between p-3 border-b border-white/5 active:bg-white/5 ${
+                            selecionado ? "bg-emerald-500/10" : ""
+                          }`}
+                        >
+                          <View className="flex-row items-center gap-3 flex-1 mr-2">
+                            {m.foto_url ? (
+                              <Image source={{ uri: m.foto_url }} className="w-10 h-10 rounded-full border border-white/10" />
+                            ) : (
+                              <View className="w-10 h-10 rounded-full bg-[#1e293b] border border-white/10 items-center justify-center">
+                                <Text className="text-primary font-bold text-xs">{obterIniciais(m.apelido)}</Text>
+                              </View>
+                            )}
+
+                            <View className="flex-1">
+                              <View className="flex-row items-center gap-1.5 flex-wrap">
+                                <Text className={`text-sm font-bold ${selecionado ? "text-emerald-400" : "text-white"}`}>
+                                  {m.apelido || "Sem Nome"}
+                                </Text>
+                                {m.disponivel && (
+                                  <View className="bg-emerald-500/20 border border-emerald-500/40 px-1.5 py-0.5 rounded-md flex-row items-center gap-1">
+                                    <View className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                                    <Text className="text-[10px] text-emerald-300 font-bold">Disponível</Text>
+                                  </View>
+                                )}
+                                {ehCompativel && (
+                                  <View className="bg-purple-500/20 border border-purple-500/40 px-1.5 py-0.5 rounded-md">
+                                    <Text className="text-[10px] text-purple-300 font-bold">✨ Compatível</Text>
+                                  </View>
+                                )}
+                              </View>
+
+                              <View className="flex-row items-center gap-2 mt-0.5 flex-wrap">
+                                {m.genero_musical ? (
+                                  <Text className="text-gray-400 text-xs">{m.genero_musical}</Text>
+                                ) : null}
+                                {m.localizacao ? (
+                                  <Text className="text-gray-500 text-xs">• {m.localizacao}</Text>
+                                ) : null}
+                                {m.totalCurtidas > 0 ? (
+                                  <Text className="text-gray-500 text-xs">• ❤️ {m.totalCurtidas}</Text>
+                                ) : null}
+                              </View>
+                            </View>
+                          </View>
+
+                          <View
+                            className={`px-3 py-1.5 rounded-full border ${
+                              selecionado
+                                ? "bg-emerald-500 border-emerald-400"
+                                : "bg-white/5 border-white/10"
+                            }`}
+                          >
+                            <Text
+                              className={`text-xs font-bold ${
+                                selecionado ? "text-white" : "text-gray-300"
+                              }`}
+                            >
+                              {selecionado ? "✓ Convidado" : "+ Convidar"}
+                            </Text>
+                          </View>
+                        </Pressable>
+                      );
+                    })
+                  )}
+                </ScrollView>
               </View>
 
               {/* Selected Chips */}
               {convidados.length > 0 && (
-                <View className="flex-col md:flex-row items-stretch md:items-center gap-3 mt-2 w-full">
-                  {convidados.map(id => {
-                    const musico = musicos.find(m => m.usuario_id === id);
-                    if (!musico) return null;
-                    return (
-                      <Pressable 
-                        key={id}
-                        onPress={() => toggleConvidado(id)}
-                        className="flex-row items-center gap-2 pl-1.5 pr-3 py-1.5 bg-emerald-500/20 border border-emerald-500/30 rounded-full"
-                      >
-                        {musico.foto_url ? (
-                          <Image source={{ uri: musico.foto_url }} className="w-5 h-5 rounded-full" />
-                        ) : (
-                          <View className="w-5 h-5 rounded-full bg-white/20" />
-                        )}
-                        <Text className="text-emerald-300 text-xs font-semibold">{musico.apelido}</Text>
-                        <Text className="text-emerald-400 text-xs ml-1 font-bold">×</Text>
-                      </Pressable>
-                    );
-                  })}
+                <View className="mt-2 pt-2 border-t border-white/5">
+                  <Text className="text-xs text-gray-400 mb-2 font-medium">
+                    Artistas selecionados ({convidados.length}):
+                  </Text>
+                  <View className="flex-row flex-wrap gap-2">
+                    {convidados.map((id) => {
+                      const musico = musicos.find((m) => m.usuario_id === id);
+                      if (!musico) return null;
+                      return (
+                        <Pressable 
+                          key={id}
+                          onPress={() => toggleConvidado(id)}
+                          className="flex-row items-center gap-2 pl-1.5 pr-3 py-1.5 bg-emerald-500/20 border border-emerald-500/30 rounded-full active:opacity-70"
+                        >
+                          {musico.foto_url ? (
+                            <Image source={{ uri: musico.foto_url }} className="w-5 h-5 rounded-full" />
+                          ) : (
+                            <View className="w-5 h-5 rounded-full bg-[#1e293b] items-center justify-center">
+                              <Text className="text-primary font-bold text-[9px]">{obterIniciais(musico.apelido)}</Text>
+                            </View>
+                          )}
+                          <Text className="text-emerald-300 text-xs font-semibold">{musico.apelido}</Text>
+                          <Text className="text-emerald-400 text-xs ml-1 font-bold">×</Text>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
                 </View>
               )}
             </View>

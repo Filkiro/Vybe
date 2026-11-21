@@ -9,6 +9,7 @@ import { useRequireAuth } from "../store/authPromptStore";
 import { useAbrirPerfil } from "../store/perfilModalStore";
 import { colors, rotulosTipoConta } from "../constants/theme";
 import { ModalEventoDetalhes, EventoDetalhado } from "./ModalEventoDetalhes";
+import { obterIniciais } from "../lib/avatarUtils";
 
 export type PublicacaoFeedItem = {
   id: string;
@@ -233,7 +234,7 @@ async function alternarCurtida() {
                   className="w-full h-full rounded-full"
                 />
               ) : (
-                <Text className="text-white font-bold text-sm">{getLetrasIniciais(item.apelido || item.usuario?.nome)}</Text>
+                <Text className="text-white font-bold text-sm">{obterIniciais(item.apelido || item.usuario?.nome)}</Text>
               )}
             </View>
             <View className="absolute bottom-0 right-0 w-3 h-3 bg-[#3b82f6] rounded-full border-2 border-[#121724]" />

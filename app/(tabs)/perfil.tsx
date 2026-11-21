@@ -35,6 +35,7 @@ import {
   Calendar,
   Disc,
   Plus,
+  Compass,
   MapPin,
   Clock,
   Settings,
@@ -47,6 +48,7 @@ import { useAuthStore, ehContaComum } from "../../store/authStore";
 import { enviarArquivoParaStorage } from "../../lib/upload";
 import { usePlayerStore } from "../../store/playerStore";
 import { AppLogo } from "../../components/AppLogo";
+import { obterIniciais } from "../../lib/avatarUtils";
 import { colors, rotulosTipoConta } from "../../constants/theme";
 import { usePlayerAwarePadding } from "../../hooks/usePlayerAwarePadding";
 
@@ -64,7 +66,7 @@ export default function Perfil() {
 
   async function handleLogout() {
     usePlayerStore.getState().resetar();
-    await supabase.auth.signOut();
+    await useAuthStore.getState().sair();
     router.replace("/(tabs)/home");
   }
 
@@ -292,6 +294,35 @@ function CabecalhoPerfil({ usuario }: { usuario: any }) {
     }
   }, [usuario.id, usuario.tipo_conta, ehMusico, ehOrganizador, ehModerador]);
 
+  useEffect(() => {
+    if (!ehMusico) return;
+    const canalId = `musico-shows-count-${usuario.id}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    const canal = supabase
+      .channel(canalId)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "evento_convite",
+          filter: `musico_id=eq.${usuario.id}`,
+        },
+        () => {
+          supabase
+            .from("evento_convite")
+            .select("id", { count: "exact" })
+            .eq("musico_id", usuario.id)
+            .eq("status", "aceito")
+            .then(({ count }) => setTotalShows(count || 0));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(canal);
+    };
+  }, [ehMusico, usuario.id]);
+
   async function trocarFoto() {
     const permissao = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permissao.granted) return;
@@ -467,9 +498,9 @@ function CabecalhoPerfil({ usuario }: { usuario: any }) {
                         accessibilityLabel={`Foto de perfil de ${usuario.nome}`}
                       />
                     ) : (
-                      <View className="w-full h-full bg-surface items-center justify-center">
-                        <Text className="text-4xl font-extrabold text-muted">
-                          {usuario.nome.charAt(0).toUpperCase()}
+                      <View className="w-full h-full bg-[#1e293b] items-center justify-center">
+                        <Text className="text-3xl font-black text-primary tracking-wider">
+                          {obterIniciais(apelido ?? usuario.nome)}
                         </Text>
                       </View>
                     )}
@@ -644,12 +675,38 @@ function BibliotecaMusico({ usuarioId }: { usuarioId: string }) {
       .eq("status", "ativo")
       .order("criado_em", { ascending: false })
       .then(({ data }) => setAlbuns(data ?? []));
-    supabase
-      .from("evento_convite")
-      .select("id, evento:evento_id(*)")
-      .eq("musico_id", usuarioId)
-      .eq("status", "aceito")
-      .then(({ data }) => setEventos((data ?? []).map((d: any) => d.evento).filter(Boolean)));
+
+    function carregarShowsConfirmados() {
+      supabase
+        .from("evento_convite")
+        .select("id, evento:evento_id(*)")
+        .eq("musico_id", usuarioId)
+        .eq("status", "aceito")
+        .then(({ data }) => setEventos((data ?? []).map((d: any) => d.evento).filter(Boolean)));
+    }
+
+    carregarShowsConfirmados();
+
+    const canalId = `musico-shows-list-${usuarioId}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    const canal = supabase
+      .channel(canalId)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "evento_convite",
+          filter: `musico_id=eq.${usuarioId}`,
+        },
+        () => {
+          carregarShowsConfirmados();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(canal);
+    };
   }, [usuarioId]);
 
   return (
@@ -728,7 +785,24 @@ function BibliotecaMusico({ usuarioId }: { usuarioId: string }) {
             </Pressable>
           ))}
           {musicas.length === 0 && (
-            <Text className="text-muted text-xs text-center p-4">Você ainda não publicou nenhuma música.</Text>
+            <View className="w-full rounded-2xl bg-white/[0.03] border border-dashed border-white/10 p-6 items-center text-center">
+              <View className="w-14 h-14 rounded-2xl bg-[#3B82F6]/10 border border-[#3B82F6]/20 items-center justify-center mb-3">
+                <Music color="#3B82F6" size={26} />
+              </View>
+              <Text className="text-white font-bold text-base mb-1 text-center">
+                Sua discografia começa aqui
+              </Text>
+              <Text className="text-gray-400 text-xs text-center max-w-sm mb-4 leading-relaxed">
+                Publique suas músicas autorais em MP3 ou WAV. Suas faixas ficam disponíveis no player, entram nos rankings da cena e podem ser descobertas por fãs e contratantes de Jundiaí e região.
+              </Text>
+              <Pressable
+                onPress={() => router.push("/(tabs)/criar")}
+                className="flex-row items-center gap-2 bg-[#2563EB] hover:bg-[#1d4ed8] active:scale-95 transition-all px-5 py-2.5 rounded-full shadow-lg shadow-blue-500/20"
+              >
+                <Plus color="white" size={16} />
+                <Text className="text-white font-bold text-xs tracking-wide">Publicar Primeira Música</Text>
+              </Pressable>
+            </View>
           )}
         </View>
       </View>
@@ -787,7 +861,24 @@ function BibliotecaMusico({ usuarioId }: { usuarioId: string }) {
             </Pressable>
           ))}
           {albuns.length === 0 && (
-            <Text className="text-muted text-xs p-4">Nenhum álbum criado.</Text>
+            <View className="w-full rounded-2xl bg-white/[0.03] border border-dashed border-white/10 p-6 items-center text-center">
+              <View className="w-14 h-14 rounded-2xl bg-purple-500/10 border border-purple-500/20 items-center justify-center mb-3">
+                <Disc color="#A855F7" size={26} />
+              </View>
+              <Text className="text-white font-bold text-base mb-1 text-center">
+                Reúna suas faixas em um Álbum ou EP
+              </Text>
+              <Text className="text-gray-400 text-xs text-center max-w-sm mb-4 leading-relaxed">
+                Crie um conceito musical completo com capa personalizada, lista de faixas e data de lançamento. Álbuns e EPs têm destaque especial no feed da cena independente.
+              </Text>
+              <Pressable
+                onPress={() => router.push("/(tabs)/criar")}
+                className="flex-row items-center gap-2 bg-[#2563EB] hover:bg-[#1d4ed8] active:scale-95 transition-all px-5 py-2.5 rounded-full shadow-lg shadow-blue-500/20"
+              >
+                <Plus color="white" size={16} />
+                <Text className="text-white font-bold text-xs tracking-wide">Criar Álbum ou EP</Text>
+              </Pressable>
+            </View>
           )}
         </View>
       </View>
@@ -864,7 +955,32 @@ function BibliotecaMusico({ usuarioId }: { usuarioId: string }) {
             );
           })}
           {eventos.length === 0 && (
-             <Text className="text-muted text-xs p-4">Nenhum show confirmado.</Text>
+            <View className="w-full rounded-2xl bg-white/[0.03] border border-dashed border-white/10 p-6 items-center text-center">
+              <View className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 items-center justify-center mb-3">
+                <Calendar color="#10B981" size={26} />
+              </View>
+              <Text className="text-white font-bold text-base mb-1 text-center">
+                Nenhum show ou apresentação agendada
+              </Text>
+              <Text className="text-gray-400 text-xs text-center max-w-sm mb-4 leading-relaxed">
+                Quando organizadores de eventos convidarem você pelo chat ou confirmarem sua participação, seus próximos shows em Jundiaí e região aparecerão aqui.
+              </Text>
+              <View className="flex-row items-center gap-2.5 flex-wrap justify-center">
+                <Pressable
+                  onPress={() => router.push("/(tabs)/explorar")}
+                  className="flex-row items-center gap-2 bg-[#2563EB] hover:bg-[#1d4ed8] active:scale-95 transition-all px-4 py-2.5 rounded-full shadow-lg shadow-blue-500/20"
+                >
+                  <Compass color="white" size={16} />
+                  <Text className="text-white font-bold text-xs tracking-wide">Explorar Oportunidades</Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => router.push("/meus-eventos")}
+                  className="bg-white/5 hover:bg-white/10 active:scale-95 transition-all border border-white/10 px-4 py-2.5 rounded-full"
+                >
+                  <Text className="text-gray-300 font-semibold text-xs">Ver Agenda Completa</Text>
+                </Pressable>
+              </View>
+            </View>
           )}
         </View>
       </View>

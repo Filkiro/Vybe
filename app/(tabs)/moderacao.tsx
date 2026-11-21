@@ -211,7 +211,7 @@ export default function ModeracaoScreen() {
     return data.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
   };
 
-  if (usuario && usuario.tipo_conta !== "moderador" && usuario.tipo_conta !== "adm") {
+  if (!usuario || (usuario.tipo_conta !== "moderador" && usuario.tipo_conta !== "adm")) {
     return <Redirect href="/(tabs)/home" />;
   }
 

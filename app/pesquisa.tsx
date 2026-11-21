@@ -19,18 +19,10 @@ import { useRequireAuth } from "../store/authPromptStore";
 import { useEhDesktop } from "../hooks/useEhDesktop";
 import { buscarApelidos } from "../lib/buscaUtils";
 import { AnimatedBackgroundBlobs } from "../components/AnimatedBackgroundBlobs";
+import { obterIniciais } from "../lib/avatarUtils";
 
 type Aba = "musicas" | "albuns" | "perfis";
 type ModoPerfil = "nome" | "genero";
-
-function obterIniciais(titulo: string) {
-  if (!titulo) return "VY";
-  const partes = titulo.trim().split(/\s+/);
-  if (partes.length === 1) {
-    return partes[0].slice(0, 2).toUpperCase();
-  }
-  return (partes[0][0] + partes[1][0]).toUpperCase();
-}
 
 export default function Pesquisa() {
   const insets = useSafeAreaInsets();

@@ -42,21 +42,34 @@ export const useAuthStore = create<AuthState>()(
   restricaoAtiva: null,
 
   inicializar: async () => {
-    const { data } = await supabase.auth.getSession();
-    if (data.session?.user) {
-      const { data: perfil } = await supabase
-        .from("usuario")
-        .select("*")
-        .eq("id", data.session.user.id)
-        .single();
-      set({ usuario: perfil ?? null });
-      if (get().carregando) set({ carregando: false });
-    } else {
-      set({ usuario: null });
+    try {
+      const { data } = await supabase.auth.getSession();
+      if (data.session?.user) {
+        const { data: perfil } = await supabase
+          .from("usuario")
+          .select("*")
+          .eq("id", data.session.user.id)
+          .single();
+        set({ usuario: perfil ?? null });
+        if (perfil) {
+          await carregarRestricao(perfil.id, set);
+        }
+      } else {
+        set({ usuario: null, restricaoAtiva: null });
+      }
+    } catch (e) {
+      console.error("Erro ao inicializar sessão:", e);
+      set({ usuario: null, restricaoAtiva: null });
+    } finally {
       if (get().carregando) set({ carregando: false });
     }
 
-    supabase.auth.onAuthStateChange(async (_event, session) => {
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === "SIGNED_OUT" || !session?.user) {
+        set({ usuario: null, restricaoAtiva: null });
+        return;
+      }
+
       if (session?.user) {
         const { data: perfil } = await supabase
           .from("usuario")
@@ -64,8 +77,9 @@ export const useAuthStore = create<AuthState>()(
           .eq("id", session.user.id)
           .single();
         set({ usuario: perfil ?? null });
-      } else {
-        set({ usuario: null });
+        if (perfil) {
+          await carregarRestricao(perfil.id, set);
+        }
       }
     });
   },
@@ -146,8 +160,14 @@ export const useAuthStore = create<AuthState>()(
   },
 
   sair: async () => {
-    await supabase.auth.signOut();
-    set({ usuario: null });
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {
+      console.warn("Aviso ao deslogar no Supabase:", e);
+    } finally {
+      set({ usuario: null, restricaoAtiva: null });
+      if (get().carregando) set({ carregando: false });
+    }
   },
     }),
     {

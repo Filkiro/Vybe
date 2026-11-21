@@ -19,7 +19,10 @@ export default function Dashboard() {
   const [carregando, setCarregando] = useState(true);
 
   useEffect(() => {
-    if (!usuario) return;
+    if (!usuario) {
+      router.replace("/(tabs)/perfil");
+      return;
+    }
     carregar();
   }, [usuario?.id]);
 

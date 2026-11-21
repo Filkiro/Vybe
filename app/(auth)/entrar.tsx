@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -34,6 +34,12 @@ export default function AuthScreen() {
   const [aba, setAba] = useState<"cadastro" | "login">(
     abaParam === "login" ? "login" : "cadastro"
   );
+
+  useEffect(() => {
+    if (abaParam === "login" || abaParam === "cadastro") {
+      setAba(abaParam);
+    }
+  }, [abaParam]);
 
   function fechar() {
     if (router.canGoBack()) {

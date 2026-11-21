@@ -7,6 +7,7 @@ import { useAuthStore } from "../../store/authStore";
 import { colors } from "../../constants/theme";
 import { usePlayerAwarePadding } from "../../hooks/usePlayerAwarePadding";
 import { ChatPanel } from "../../components/ChatPanel";
+import { obterIniciais } from "../../lib/avatarUtils";
 
 type ConversaComContato = {
   id: string;
@@ -19,6 +20,7 @@ type ConversaComContato = {
   naoLida: boolean;
   naoLidasContagem: number;
   contatoTipo: "musico" | "organizador" | "comum";
+  ultimoConviteStatus?: "pendente" | "aceito" | "recusado" | "cancelado" | null;
 };
 
 export default function Conversa() {
@@ -111,7 +113,7 @@ export default function Conversa() {
         supabase.from("usuario").select("id, nome").eq("id", contatoId).single(),
         supabase
           .from("mensagem")
-          .select("conteudo, remetente_id, lida, data_hora")
+          .select("conteudo, remetente_id, lida, data_hora, evento_convite_id, evento_convite:evento_convite_id(status)")
           .eq("conversa_id", linha.id)
           .order("data_hora", { ascending: false })
           .limit(1),
@@ -139,19 +141,25 @@ export default function Conversa() {
 
       const ultima = ultimasMsgs?.[0];
       const ultimaMensagemEhMinha = ultima?.remetente_id === usuario.id;
+      const conviteStatus = (ultima as any)?.evento_convite?.status ?? null;
+
+      let previewTexto = ultima?.conteudo ?? null;
+      if (conviteStatus) {
+        if (conviteStatus === "pendente") previewTexto = "🎟️ Convite de evento (Aguardando resposta)";
+        else if (conviteStatus === "aceito") previewTexto = "✅ Convite aceito • Show confirmado";
+        else if (conviteStatus === "recusado") previewTexto = "❌ Convite recusado";
+        else if (conviteStatus === "cancelado") previewTexto = "⚠️ Participação cancelada";
+      }
 
       resultado.push({
         id: linha.id,
         contatoId,
         contatoNome: contato?.nome ?? "Usuário",
         contatoFotoUrl: fotoContato,
-        ultimaMensagem: ultima?.conteudo ?? null,
+        ultimaMensagem: previewTexto,
         ultimaMensagemData: ultima?.data_hora ?? null,
         ultimaMensagemEhMinha,
-        // "Não lida" pra fins de negrito só se aplica à última
-        // mensagem quando ela veio da OUTRA pessoa — uma mensagem
-        // que eu mesmo mandei já está, por definição, "vista" por
-        // mim, mesmo que o outro lado ainda não tenha lido.
+        ultimoConviteStatus: conviteStatus,
         naoLida: !ultimaMensagemEhMinha && !!ultima && !ultima.lida,
         naoLidasContagem: naoLidasContagem ?? 0,
         contatoTipo: pMusico ? "musico" : pOrg ? "organizador" : "comum",
@@ -197,7 +205,56 @@ export default function Conversa() {
 
   const wrapperPaddingBottom = usePlayerAwarePadding(isDesktop ? 16 : 0);
 
-  if (!usuario) return null;
+  if (!usuario) {
+    return (
+      <View className="flex-1 bg-[#0a0e16] items-center justify-center px-8">
+        <View className="max-w-md w-full items-center p-8 rounded-3xl bg-[#121829] border border-white/10 shadow-2xl">
+          <View className="w-16 h-16 rounded-2xl bg-primary/20 items-center justify-center mb-5 border border-primary/30">
+            <MessageCircle color="#3B82F6" size={32} />
+          </View>
+          <Text className="text-2xl font-bold text-white text-center mb-2 tracking-tight">
+            Conversas da Comunidade
+          </Text>
+          <Text className="text-muted text-center text-sm mb-6 leading-relaxed">
+            Entre na sua conta para conversar diretamente com músicos, bandas e produtores de eventos da cena de Jundiaí.
+          </Text>
+          <Pressable
+            onPress={() => router.push("/(auth)/entrar?aba=cadastro")}
+            className="bg-primary hover:bg-blue-600 active:scale-95 transition-all rounded-xl py-3.5 items-center w-full mb-3 shadow-lg shadow-blue-500/20"
+          >
+            <Text className="text-white font-bold text-sm">Criar Conta</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => router.push("/(auth)/entrar?aba=login")}
+            className="bg-white/5 hover:bg-white/10 active:scale-95 transition-all border border-white/10 rounded-xl py-3.5 items-center w-full"
+          >
+            <Text className="text-white font-semibold text-sm">Já tenho conta — Entrar</Text>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
+
+  if (usuario.tipo_conta === "moderador" || usuario.tipo_conta === "adm") {
+    return (
+      <View className="flex-1 bg-[#0a0e16] items-center justify-center px-8">
+        <View className="max-w-md w-full items-center p-8 rounded-3xl bg-[#121829] border border-white/10 text-center">
+          <Text className="text-xl font-bold text-white text-center mb-2">Canal de Comunicação</Text>
+          <Text className="text-muted text-center text-sm mb-6 leading-relaxed">
+            Contas de moderação e administração tratam suporte e denúncias pela Central de Moderação.
+          </Text>
+          <Pressable
+            onPress={() => router.push(usuario.tipo_conta === "adm" ? "/(tabs)/admin" : "/(tabs)/moderacao")}
+            className="bg-primary hover:bg-blue-600 active:scale-95 transition-all rounded-xl py-3 px-6 items-center"
+          >
+            <Text className="text-white font-bold text-sm">
+              {usuario.tipo_conta === "adm" ? "Acessar Painel" : "Acessar Moderação"}
+            </Text>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
 
   const conversasFiltradas = conversas.filter((c) => {
     if (filtro === "todos") return true;
@@ -282,9 +339,17 @@ export default function Conversa() {
               ListEmptyComponent={
                 <View className="items-center mt-20 px-8">
                   <MessageCircle color="#475569" size={48} strokeWidth={1.5} />
-                  <Text className="text-[#94A3B8] text-center mt-4 text-sm">
-                    Nenhuma conversa ainda.{"\n"}Vá ao perfil de alguém e toque em "Contatar" para começar.
+                  <Text className="text-[#94A3B8] text-center mt-4 text-sm leading-relaxed">
+                    Nenhuma conversa ainda.{"\n"}Conecte-se com artistas e produtores da cena para trocar mensagens ou enviar convites de shows.
                   </Text>
+                  <Pressable
+                    onPress={() => router.push("/(tabs)/home")}
+                    className="mt-6 px-5 py-2.5 rounded-full bg-primary active:bg-primary/80"
+                  >
+                    <Text className="text-white text-xs font-bold">
+                      {usuario?.tipo_conta === "organizador" ? "Descobrir Artistas da Cena" : "Explorar Oportunidades na Home"}
+                    </Text>
+                  </Pressable>
                 </View>
               }
               renderItem={({ item }) => {
@@ -321,8 +386,8 @@ export default function Conversa() {
                           accessibilityLabel={`Foto de perfil de ${item.contatoNome}`}
                         />
                       ) : (
-                        <View className="w-11 h-11 rounded-full bg-[#1A2235] mr-3 items-center justify-center border border-white/5">
-                          <Text className="text-[#94A3B8] font-bold text-lg">{item.contatoNome.charAt(0).toUpperCase()}</Text>
+                        <View className="w-11 h-11 rounded-full bg-[#1e293b] mr-3 items-center justify-center border border-white/10">
+                          <Text className="text-primary font-bold text-xs">{obterIniciais(item.contatoNome)}</Text>
                         </View>
                       )}
                       

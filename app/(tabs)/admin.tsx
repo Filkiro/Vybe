@@ -55,7 +55,7 @@ export default function AdminScreen() {
     showAdminModal = setModalConfig;
   }, []);
 
-  if (usuario && usuario.tipo_conta !== "adm") {
+  if (!usuario || usuario.tipo_conta !== "adm") {
     return <Redirect href="/(tabs)/home" />;
   }
 

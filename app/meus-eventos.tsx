@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { View, Text, FlatList, Pressable, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
-import { ChevronLeft, Calendar, MapPin, MessageCircle } from "lucide-react-native";
+import { ChevronLeft, Calendar, MapPin, MessageCircle, Compass } from "lucide-react-native";
 import { supabase } from "../lib/supabase";
 import { useAuthStore } from "../store/authStore";
 import { colors } from "../constants/theme";
@@ -16,34 +16,61 @@ function MeusEventos() {
 
   useEffect(() => {
     if (!usuario) return;
-    setCarregando(true);
-    supabase
-      .from("evento_convite")
-      .select("id, status, evento:evento_id(*, organizador:usuario!organizador_id(nome, id))")
-      .eq("musico_id", usuario.id)
-      .eq("status", "aceito")
-      .then(({ data }) => {
-        let evts = (data ?? []) as any[];
-        const hoje = new Date();
-        hoje.setHours(0, 0, 0, 0); // Considerar inicio do dia atual
-        
-        if (aba === "confirmados") {
-           evts = evts.filter(d => {
-             const ev = (Array.isArray(d.evento) ? d.evento[0] : d.evento) as any;
-             if (!ev?.data) return true;
-             return new Date(ev.data + "T12:00:00Z") >= hoje;
-           });
-        } else {
-           evts = evts.filter(d => {
-             const ev = (Array.isArray(d.evento) ? d.evento[0] : d.evento) as any;
-             if (!ev?.data) return false;
-             return new Date(ev.data + "T12:00:00Z") < hoje;
-           });
-        }
+    const usuarioId = usuario.id;
 
-        setEventos(evts);
-        setCarregando(false);
-      });
+    function carregarEventos() {
+      setCarregando(true);
+      supabase
+        .from("evento_convite")
+        .select("id, status, evento:evento_id(*, organizador:usuario!organizador_id(nome, id))")
+        .eq("musico_id", usuarioId)
+        .eq("status", "aceito")
+        .then(({ data }) => {
+          let evts = (data ?? []) as any[];
+          const hoje = new Date();
+          hoje.setHours(0, 0, 0, 0); // Considerar inicio do dia atual
+          
+          if (aba === "confirmados") {
+             evts = evts.filter(d => {
+               const ev = (Array.isArray(d.evento) ? d.evento[0] : d.evento) as any;
+               if (!ev?.data) return true;
+               return new Date(ev.data + "T12:00:00Z") >= hoje;
+             });
+          } else {
+             evts = evts.filter(d => {
+               const ev = (Array.isArray(d.evento) ? d.evento[0] : d.evento) as any;
+               if (!ev?.data) return false;
+               return new Date(ev.data + "T12:00:00Z") < hoje;
+             });
+          }
+
+          setEventos(evts);
+          setCarregando(false);
+        });
+    }
+
+    carregarEventos();
+
+    const canalId = `eventos-contratados-${usuarioId}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    const canal = supabase
+      .channel(canalId)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "evento_convite",
+          filter: `musico_id=eq.${usuario.id}`,
+        },
+        () => {
+          carregarEventos();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(canal);
+    };
   }, [usuario, aba]);
 
   async function irParaChat(organizadorId: string, nomeOrganizador: string) {
@@ -117,9 +144,21 @@ function MeusEventos() {
           contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 120 }}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
-            <View className="items-center justify-center py-20">
-              <Calendar color="#434655" size={48} strokeWidth={1.5} />
-              <Text className="text-[#8d90a0] text-center mt-4">Nenhum evento encontrado nesta categoria.</Text>
+            <View className="items-center justify-center py-16 px-6">
+              <View className="w-14 h-14 rounded-2xl bg-[#2563eb]/10 border border-[#2563eb]/20 items-center justify-center mb-4">
+                <Calendar color="#93C5FD" size={28} />
+              </View>
+              <Text className="text-white font-bold text-base mb-1 text-center">Nenhum evento encontrado</Text>
+              <Text className="text-[#8d90a0] text-center text-xs max-w-sm mb-5 leading-relaxed">
+                Nenhum show ou apresentação nesta lista. Conecte-se com organizadores pelo chat ou explore oportunidades na cena de Jundiaí.
+              </Text>
+              <Pressable
+                onPress={() => router.push("/(tabs)/explorar")}
+                className="flex-row items-center gap-2 bg-[#2563EB] hover:bg-[#1d4ed8] active:scale-95 transition-all px-5 py-2.5 rounded-full"
+              >
+                <Compass color="white" size={16} />
+                <Text className="text-white font-bold text-xs">Explorar Oportunidades na Cena</Text>
+              </Pressable>
             </View>
           }
           renderItem={({ item }) => {

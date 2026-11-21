@@ -146,7 +146,7 @@ export default function TabsLayout() {
             <Tabs.Screen
               name="explorar"
               options={{
-                href: comum ? "/(tabs)/explorar" : null,
+                href: usuario ? "/(tabs)/explorar" : null,
                 title: "Explorar",
                 tabBarAccessibilityLabel: "Explorar",
                 tabBarIcon: ({ focused }) => <TabIcon Icone={Compass} focado={focused} />,

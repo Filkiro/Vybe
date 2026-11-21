@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { View, Text, Pressable, Image, FlatList, ActivityIndicator } from "react-native";
 import { router } from "expo-router";
-import { ChevronLeft, Pencil, Trash2, Calendar, Disc } from "lucide-react-native";
+import { ChevronLeft, Pencil, Trash2, Calendar, Disc, Plus } from "lucide-react-native";
 import { supabase } from "../../lib/supabase";
 import { useAuthStore } from "../../store/authStore";
 import { excluirAlbum } from "../../lib/biblioteca";
@@ -15,7 +15,10 @@ export default function TodosAlbuns() {
   const [aba, setAba] = useState<"todos" | "ativos" | "rascunhos">("todos");
 
   useEffect(() => {
-    if (!usuario) return;
+    if (!usuario) {
+      router.replace("/(tabs)/perfil");
+      return;
+    }
     supabase
       .from("album")
       .select("id, nome, capa_url, status, criado_em")
@@ -116,7 +119,22 @@ export default function TodosAlbuns() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 140, gap: 16 }}
           ListEmptyComponent={
-            <Text className="text-[#8d90a0] text-center mt-8 text-sm">Nenhum álbum encontrado nesta categoria.</Text>
+            <View className="items-center justify-center py-16 px-6">
+              <View className="w-14 h-14 rounded-2xl bg-purple-500/10 border border-purple-500/20 items-center justify-center mb-4">
+                <Disc color="#A855F7" size={28} />
+              </View>
+              <Text className="text-white font-bold text-base mb-1 text-center">Nenhum álbum encontrado</Text>
+              <Text className="text-[#8d90a0] text-center text-xs max-w-sm mb-5 leading-relaxed">
+                Você ainda não possui álbuns ou EPs criados. Agrupe suas músicas com conceito e capa exclusiva para a cena.
+              </Text>
+              <Pressable
+                onPress={() => router.push("/(tabs)/criar")}
+                className="flex-row items-center gap-2 bg-[#2563EB] hover:bg-[#1d4ed8] active:scale-95 transition-all px-5 py-2.5 rounded-full"
+              >
+                <Plus color="white" size={16} />
+                <Text className="text-white font-bold text-xs">Criar Novo Álbum</Text>
+              </Pressable>
+            </View>
           }
           renderItem={({ item }) => {
             const isAtivo = item.status === "ativo";
