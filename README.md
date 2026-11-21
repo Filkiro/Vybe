@@ -73,18 +73,16 @@ A versão web da plataforma **Vybe** está hospedada e disponível para acesso d
 
 ## Demonstração do Sistema
 
-> *Adicione as capturas de tela atualizadas na pasta `docs/images/` (ou ajuste os caminhos abaixo).*
-
 ### Página Inicial (Home)
-![Página Inicial do Vybe](./docs/images/home.png)
+![Página Inicial do Vybe](design/image/home.png)
 *Exibição de eventos em aberto, lançamentos em alta e artistas independentes da comunidade.*
 
 ### Conversas e Envio de Convites para Eventos
-![Chat e Convite de Evento](./docs/images/conversas-convite.png)
+![Chat e Convite de Evento](design/image/chat.png)
 *Comunicação direta entre organizadores e músicos com envio de convites interativos e atualização em tempo real.*
 
 ### Central de Criação (Músico e Organizador)
-![Central de Criação](./docs/images/central-criacao.png)
+![Central de Criação](design/image/criarmusico.png)
 *Publicação de faixas, álbuns, eventos e postagens no Feed da Cena com pré-visualização em tempo real.*
 
 ---
